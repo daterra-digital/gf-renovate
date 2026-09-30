@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RENOVATE - 2ª Sessão do Grupo Focal | ESAS Santarém</title>
+  <meta name="description" content="Aplicação de suporte à 2ª Sessão do Grupo Focal do projeto europeu RENOVATE, organizada pela DATERRA na Escola Superior Agrária de Santarém.">
+  <link rel="icon" type="image/png" href="logo-renovate.png">
+
+  <!-- Tailwind CSS via CDN com personalização de cores -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            renovate: {
+              yellow: '#FFCC66',
+              yellowHover: '#FBBF24',
+              yellowLight: '#FEF3C7',
+              dark: '#0F172A',
+              slateBg: '#F8FAFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos Customizados -->
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased pb-20 md:pb-10">
+
+  <!-- Side Note Discreta: EuroTech Day (Não compete com o foco da sessão) -->
+  <aside id="eurotech-sidenote-banner" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs py-1.5 px-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 truncate">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+        <span class="truncate">
+          <strong class="text-slate-800">Nota Colaborativa:</strong> Ação articulada no âmbito das iniciativas de disseminação do 
+          <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900 font-medium">EuroTech Day</a>.
+        </span>
+      </div>
+      <button id="btn-dismiss-sidenote" class="text-slate-400 hover:text-slate-700 p-0.5" title="Fechar nota">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Header Principal com Logótipos e Acesso de Moderação -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Bloco de Logótipos Institucionais na Raiz -->
+      <div class="flex items-center gap-3 sm:gap-5">
+        <!-- Logótipo RENOVATE -->
+        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" title="Website do Projeto RENOVATE" class="shrink-0 flex items-center">
+          <img src="logo-renovate.png" alt="Logótipo RENOVATE" class="h-9 sm:h-11 w-auto object-contain" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
+        </a>
+
+        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
+
+        <!-- Logótipo DATERRA -->
+        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" title="DATERRA - Lógica de Terra" class="shrink-0 flex items-center">
+          <img src="logo-daterra.png" alt="Logótipo DATERRA" class="h-8 sm:h-10 w-auto object-contain" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-1 rounded bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300\'>DATERRA</span>';">
+        </a>
+
+        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
+
+        <!-- Logótipo ESAS (Escola Superior Agrária de Santarém) -->
+        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
+          <img src="logo-esas.png" alt="Logótipo ESAS" class="h-8 sm:h-10 w-auto object-contain" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-1 rounded bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300\'>ESAS</span>';">
+        </a>
+      </div>
+
+      <!-- Título de Contexto & Acesso de Moderação -->
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden md:block">
+          <h1 class="text-sm font-bold text-slate-900 leading-tight">2ª Sessão do Grupo Focal</h1>
+          <p class="text-[11px] text-slate-500 font-medium">06 Outubro 2026 • ESAS - Santarém</p>
+        </div>
+
+        <!-- Botão Modal do Moderador (Opção C) -->
+        <button type="button" class="btn-open-moderator-modal inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition" title="Área Reservada do Moderador (PIN)">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+          <span class="hidden sm:inline">Moderação</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Navegação Desktop (Tabs Superiores) -->
+    <nav class="border-t border-slate-100 bg-white hidden md:block">
+      <div class="max-w-6xl mx-auto px-4 flex space-x-1">
+        <button type="button" data-tab="live" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+          <i data-lucide="radio" class="w-4 h-4 text-amber-600"></i>
+          Sessão ao Vivo
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        </button>
+        <button type="button" data-tab="program" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          Programa & Slides
+        </button>
+        <button type="button" data-tab="gf1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+          <i data-lucide="history" class="w-4 h-4"></i>
+          Grupo Focal 1 (Lisboa)
+        </button>
+        <button type="button" data-tab="results" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+          <i data-lucide="folder-check" class="w-4 h-4"></i>
+          Resultados & Media
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SESSÃO AO VIVO (FLUXO INTERATIVO)   -->
+    <!-- ========================================== -->
+    <section id="tab-live" class="tab-pane space-y-6">
+      
+      <!-- Banner de Boas-Vindas & Configuração de Código do Participante -->
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#FFCC66] text-[#0F172A] text-xs font-bold">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              Fluxo Guiado Interativo
+            </div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+              Sessão Prática de Validação Digital
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-2xl">
+              Siga cada fase da sessão técnica. Os passos práticos são desbloqueados em sintonia com a moderação da sala. O seu código é injetado automaticamente nos formulários.
+            </p>
+          </div>
+
+          <!-- Caixa de Gestão do Código de Participante -->
+          <div class="bg-white p-3.5 rounded-xl border border-amber-300 shadow-sm w-full lg:w-auto shrink-0">
+            <label for="participant-code-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span>Código de Participante</span>
+              <span id="current-participant-code" class="text-slate-400 italic font-mono">Não definido</span>
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="participant-code-input" placeholder="Ex: P01, EXP-08" 
+                     class="uppercase px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none w-36">
+              <button type="button" id="btn-save-participant-code" 
+                      class="px-3 py-1.5 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center gap-1">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                Guardar
+              </button>
+            </div>
+            <p id="participant-code-notice" class="text-[11px] text-amber-700 mt-1.5 flex items-center gap-1">
+              <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
+              Introduza o seu código para associar as respostas.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grelha de Fases da Sessão ao Vivo -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- FASE 1: Registo & Diagnóstico Inicial (Desbloqueado por defeito) -->
+        <article id="step-card-1" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FFCC66] text-[#0F172A] font-extrabold text-sm border border-slate-900">1</span>
+              <div id="step-lock-badge-1"></div>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 1: Diagnóstico Inicial (Baseline)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Breve inquérito de entrada para avaliar a experiência prévia com ferramentas digitais e práticas de proteção de culturas.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-actions-1" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <a id="btn-form-1" href="#" target="_blank" rel="noopener noreferrer" 
+               class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
+              Abrir Inquérito Inicial (Google Form 1)
+            </a>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+              <input type="checkbox" id="step-checkbox-1" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Fase 1 como Concluída</span>
+            </label>
+          </div>
+        </article>
+
+        <!-- FASE 2: Serious Game (Tallentto) -->
+        <article id="step-card-2" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">2</span>
+              <div id="step-lock-badge-2"></div>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 2: Serious Game (Tallentto)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Dinâmica de formação gamificada para tomada de decisão em proteção de culturas e calibração de pulverização.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-actions-2" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <a href="https://tallentto.com" target="_blank" rel="noopener noreferrer" 
+                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
+                <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+                Jogar Tallentto
+              </a>
+              <a id="btn-form-2" href="#" target="_blank" rel="noopener noreferrer" 
+                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
+                Avaliar Jogo (Form 2)
+              </a>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+              <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Fase 2 como Concluída</span>
+            </label>
+          </div>
+        </article>
+
+        <!-- FASE 3: Simulador Virtual (Virmedex) -->
+        <article id="step-card-3" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">3</span>
+              <div id="step-lock-badge-3"></div>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 3: Simulador Virtual (Virmedex)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Ambiente interativo de simulação 3D para otimização de parâmetros operacionais e redução de deriva e perdas fitossanitárias.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-actions-3" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <a href="https://virmedex.com" target="_blank" rel="noopener noreferrer" 
+                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
+                <i data-lucide="laptop" class="w-4 h-4"></i>
+                Abrir Simulador
+              </a>
+              <a id="btn-form-3" href="#" target="_blank" rel="noopener noreferrer" 
+                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
+                Avaliar Simulador (Form 3)
+              </a>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+              <input type="checkbox" id="step-checkbox-3" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Fase 3 como Concluída</span>
+            </label>
+          </div>
+        </article>
+
+        <!-- FASE 4: Encerramento & Feedback Global -->
+        <article id="step-card-4" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">4</span>
+              <div id="step-lock-badge-4"></div>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 4: Avaliação Final & Síntese</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Avaliação global do evento, recomendações para o consórcio e disponibilização dos materiais finais do estudo.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-actions-4" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" 
+               class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
+              Concluir & Aceder a Recursos DATERRA
+            </a>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+              <input type="checkbox" id="step-checkbox-4" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Sessão como Totalmente Concluída</span>
+            </label>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: PROGRAMA & SLIDES                   -->
+    <!-- ========================================== -->
+    <section id="tab-program" class="tab-pane hidden space-y-8">
+      
+      <!-- Apresentação em Google Slides (Embed 16:9) -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="presentation" class="w-5 h-5 text-amber-600"></i>
+            <h2 class="text-lg font-bold text-slate-900">Apresentação Oficial da Sessão</h2>
+          </div>
+          <a href="https://docs.google.com/presentation" target="_blank" rel="noopener noreferrer" 
+             class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition">
+            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+            Ecrã Inteiro / Abrir Slides
+          </a>
+        </div>
+
+        <!-- Contentor 16:9 Responsivo -->
+        <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-inner">
+          <iframe 
+            src="https://docs.google.com/presentation/d/e/2PACX-1vT-PLACEHOLDER/embed?start=false&loop=false&delayms=3000" 
+            title="Apresentação Google Slides - RENOVATE FG2"
+            allowfullscreen="true" 
+            mozallowfullscreen="true" 
+            webkitallowfullscreen="true">
+          </iframe>
+        </div>
+        <p class="text-[11px] text-slate-500 italic">
+          Os diapositivos acompanham o desenrolar das dinâmicas em auditório. Atualize para sincronizar alterações em tempo real.
+        </p>
+      </div>
+
+      <!-- Tabela do Programa Oficial -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Programa Oficial dos Trabalhos</h2>
+            <p class="text-xs text-slate-500 font-medium">06 de outubro de 2026 • Auditório ESAS - Santarém</p>
+          </div>
+          <button type="button" onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            Imprimir Programa
+          </button>
+        </div>
+
+        <!-- Lista em Timeline -->
+        <div id="schedule-container" class="space-y-4 pt-2">
+          <!-- Renderizado via app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: GRUPO FOCAL 1 (LISBOA, 22-10-2024)  -->
+    <!-- ========================================== -->
+    <section id="tab-gf1" class="tab-pane hidden space-y-8">
+      
+      <!-- Cabeçalho do GF1 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center gap-2 text-xs font-bold text-amber-700 uppercase tracking-wider">
+          <i data-lucide="map-pin" class="w-4 h-4"></i>
+          Lisboa • 22 de outubro de 2024
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900">
+          1ª Sessão do Grupo Focal RENOVATE
+        </h2>
+        <p class="text-sm text-slate-600 max-w-3xl leading-relaxed">
+          O primeiro Grupo Focal em Portugal reuniu peritos agrários, formadores e consultores para mapear as principais necessidades de formação em proteção sustentável das culturas e analisar a permeabilidade do setor a soluções digitais.
+        </p>
+
+        <!-- Métricas Chave do GF1 -->
+        <div id="gf1-metrics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+          <!-- Renderizado via app.js -->
+        </div>
+      </div>
+
+      <!-- Principais Conclusões e Artigo DATERRA -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
+            Principais Conclusões & Diretrizes Extraídas
+          </h3>
+          <ul id="gf1-highlights-container" class="space-y-3">
+            <!-- Renderizado via app.js -->
+          </ul>
+        </div>
+
+        <!-- Cartão com Ligação ao Portal DATERRA -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div class="space-y-3">
+            <span class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">Portal DATERRA</span>
+            <h4 class="text-lg font-bold leading-snug">Artigo Completo & Cobertura do Evento</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Consulte a cobertura jornalística, testemunhos dos intervenientes e a galeria fotográfica detalhada da sessão de Lisboa.
+            </p>
+          </div>
+          <div class="pt-6">
+            <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold transition w-full justify-center">
+              <span>Ler no Portal DATERRA</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: RESULTADOS & MEDIA                  -->
+    <!-- ========================================== -->
+    <section id="tab-results" class="tab-pane hidden space-y-8">
+      
+      <!-- Deliverable 1.4 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs">Deliverable 1.4</span>
+            <span class="text-xs text-slate-500 font-medium">Documento Consolidado</span>
+          </div>
+          <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
+             class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 underline">
+            Ver Entregáveis no Site RENOVATE &rarr;
+          </a>
+        </div>
+
+        <h2 class="text-xl font-extrabold text-slate-900">
+          Relatório de Requisitos e Validação de Ferramentas Digitais para Formação em Proteção de Culturas
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          Este entregável técnico sintetiza a metodologia de validação de ferramentas pedagógicas digitais (Serious Games e Simuladores 3D), incorporando o feedback direto recolhido nas sessões práticas de campo.
+        </p>
+
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Pontos Fundamentais do Relatório:</h3>
+          <ul id="deliverable-highlights-container" class="space-y-2">
+            <!-- Renderizado via app.js -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hub de Vídeos (YouTube Embeds) -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
+          Vídeos & Demonstrações Técnicas
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-3 p-4">
+            <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden">
+              <iframe 
+                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" 
+                title="Visão Geral do Projeto RENOVATE"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <h4 class="font-bold text-slate-900 text-sm">Visão Geral do Projeto RENOVATE</h4>
+            <p class="text-xs text-slate-600">Apresentação da estratégia europeia para formação e sustentabilidade fitossanitária.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-3 p-4">
+            <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden">
+              <iframe 
+                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" 
+                title="Demonstração do Serious Game (Tallentto)"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <h4 class="font-bold text-slate-900 text-sm">Demonstração: Serious Game (Tallentto)</h4>
+            <p class="text-xs text-slate-600">Mecânica de simulação de decisões em ambiente lúdico interativo.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Galeria de Imagens do Evento -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="image" class="w-5 h-5 text-amber-600"></i>
+          Galeria Fotográfica
+        </h3>
+        <div id="media-gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Renderizado via app.js -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECÇÃO DE PARCEIROS & CONSÓRCIO            -->
+    <!-- ========================================== -->
+    <section class="mt-12 pt-8 border-t border-slate-200 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Consórcio RENOVATE & Parceiros</h3>
+          <p class="text-xs text-slate-500">
+            Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém & Consórcio Internacional
+          </p>
+        </div>
+        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
+           class="text-xs font-bold text-amber-800 hover:text-amber-900 underline flex items-center gap-1">
+          Website Oficial RENOVATE &rarr;
+        </a>
+      </div>
+
+      <!-- Grelha de Parceiros com Links Oficiais -->
+      <div id="partners-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Renderizado via app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="bg-white border-t border-slate-200 py-6 px-4 text-xs text-slate-500 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+      <div>
+        <p class="font-bold text-slate-800">Projeto RENOVATE - 2ª Sessão do Grupo Focal</p>
+        <p class="text-[11px] text-slate-500">
+          Organização: DATERRA • Anfitrião: Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém
+        </p>
+      </div>
+      <div class="flex items-center gap-4 text-xs font-medium">
+        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">Projeto RENOVATE</a>
+        <span>•</span>
+        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">DATERRA</a>
+        <span>•</span>
+        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">ESAS</a>
+        <span>•</span>
+        <button type="button" class="btn-open-moderator-modal hover:text-slate-900 transition font-bold text-amber-700">Painel Moderador</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Navegação Inferior para Mobile (Fixed Bottom Bar) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-2 py-1 shadow-lg">
+    <div class="grid grid-cols-4 gap-1 text-center">
+      <button type="button" data-tab="live" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
+        <i data-lucide="radio" class="w-4 h-4 mb-0.5"></i>
+        <span>Ao Vivo</span>
+      </button>
+      <button type="button" data-tab="program" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
+        <i data-lucide="calendar" class="w-4 h-4 mb-0.5"></i>
+        <span>Programa</span>
+      </button>
+      <button type="button" data-tab="gf1" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
+        <i data-lucide="history" class="w-4 h-4 mb-0.5"></i>
+        <span>GF1</span>
+      </button>
+      <button type="button" data-tab="results" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
+        <i data-lucide="folder-check" class="w-4 h-4 mb-0.5"></i>
+        <span>Resultados</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- MODAL DO MODERADOR (OPÇÃO C: PIN 2026)     -->
+  <!-- ========================================== -->
+  <div id="moderator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-fadeIn">
+      
+      <!-- Cabeçalho da Modal -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Painel do Moderador</h3>
+            <p class="text-[11px] text-slate-500">Controlo de Desbloqueio das Fases</p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-moderator-modal" class="text-slate-400 hover:text-slate-700 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Secção de Autenticação (PIN) -->
+      <div id="moderator-auth-section" class="space-y-4">
+        <p class="text-xs text-slate-600">
+          Introduza o PIN de segurança para aceder aos comandos de gestão da sessão.
+        </p>
+        <div>
+          <input type="password" id="moderator-pin-input" maxlength="8" placeholder="Introduzir PIN" 
+                 class="w-full text-center tracking-widest text-lg font-mono font-bold px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none">
+          <p id="moderator-pin-error" class="text-xs text-rose-600 mt-1.5 hidden text-center font-semibold"></p>
+        </div>
+        <button type="button" id="btn-verify-moderator-pin" 
+                class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+          Autenticar Moderador
+        </button>
+      </div>
+
+      <!-- Secção do Painel de Controlo (Após PIN Válido) -->
+      <div id="moderator-panel-section" class="space-y-5 hidden">
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estado das Fases</div>
+          <div id="moderator-step-toggles" class="space-y-2">
+            <!-- Toggles individuais renderizados dinamicamente -->
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+          <button type="button" id="btn-mod-unlock-all" 
+                  class="w-full py-2 px-3 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center justify-center gap-1.5">
+            <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+            Desbloquear Tudo
+          </button>
+          <button type="button" id="btn-mod-reset" 
+                  class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            Repor Padrão
+          </button>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-[11px] text-amber-900 space-y-1">
+          <div class="font-bold flex items-center gap-1">
+            <i data-lucide="link-2" class="w-3.5 h-3.5"></i>
+            Atalho de Desbloqueio via URL:
+          </div>
+          <p class="text-slate-600">
+            Pode projetar ou partilhar com os participantes um QR code com o parâmetro:
+            <code class="bg-white px-1.5 py-0.5 rounded border border-amber-300 font-mono font-bold text-slate-900">?unlock=all</code>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts da Aplicação -->
+  <script src="assets/js/content-data.js"></script>
+  <script src="assets/js/live-session.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

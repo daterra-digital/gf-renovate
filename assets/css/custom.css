@@ -1,0 +1,123 @@
+/**
+ * RENOVATE FG2 - Custom Stylesheet
+ * Identidade Visual: #FFCC66 (Amarelo RENOVATE) | #F8FAFC (Slate 50) | #0F172A (Dark Slate)
+ */
+
+:root {
+  --renovate-yellow: #FFCC66;
+  --renovate-yellow-hover: #FBBF24;
+  --renovate-yellow-light: #FEF3C7;
+  --renovate-dark: #0F172A;
+  --renovate-slate-50: #F8FAFC;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--renovate-slate-50);
+  color: var(--renovate-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #E2E8F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #94A3B8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+/* 16:9 Aspect Ratio Container for Google Slides */
+.aspect-16-9 {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+.aspect-16-9 iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Phase Card States */
+.step-card {
+  transition: all 0.25s ease-in-out;
+}
+.step-card.locked {
+  opacity: 0.65;
+  filter: grayscale(0.2);
+}
+.step-card.active {
+  border-color: var(--renovate-yellow);
+  box-shadow: 0 4px 20px -2px rgba(255, 204, 102, 0.35);
+}
+.step-card.completed {
+  border-color: #10B981;
+}
+
+/* High Contrast & Accessibility */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 3px solid #0F172A;
+  outline-offset: 2px;
+}
+
+/* Smooth modal transitions */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Badge Styling */
+.badge-renovate {
+  background-color: var(--renovate-yellow);
+  color: var(--renovate-dark);
+  font-weight: 600;
+}
+
+/* Pulsing Badge for Live Session */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}
+.pulse-live {
+  animation: pulse-soft 2.5s infinite ease-in-out;
+}
+
+/* Toast Notifications */
+#toast-container {
+  pointer-events: none;
+  z-index: 9999;
+}
+.toast {
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Print Optimization for Event Day */
+@media print {
+  header, footer, nav, .no-print, button, #moderator-btn {
+    display: none !important;
+  }
+  body {
+    background: #FFF !important;
+    color: #000 !important;
+  }
+  .step-card, .tab-pane {
+    box-shadow: none !important;
+    border: 1px solid #CCC !important;
+    break-inside: avoid;
+  }
+}
