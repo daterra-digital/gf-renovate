@@ -78,7 +78,7 @@ Para facilitar a dinâmica em auditório (por exemplo, via projeção de QR Code
 ### Ficheiro CNAME
 O repositório já inclui o ficheiro `CNAME` configurado para o subdomínio institucional:
 ```
-gfrenovate.daterra.com.pt
+renovate.daterra.com.pt
 ```
 
 ### Configuração no GitHub
@@ -86,11 +86,11 @@ gfrenovate.daterra.com.pt
 2. Ir a **Settings** > **Pages**.
 3. Em **Build and deployment** > **Source**, selecionar **Deploy from a branch**.
 4. Definir branch **`main`** e diretoria **`/ (root)`**.
-5. Em **Custom domain**, o GitHub detetará automaticamente `gfrenovate.daterra.com.pt`.
+5. Em **Custom domain**, o GitHub detetará automaticamente `renovate.daterra.com.pt`.
 6. Ativar **Enforce HTTPS**.
 
 ### Apontamento de DNS na Zona DATERRA (`daterra.com.pt`)
 Adicionar a seguinte entrada CNAME no fornecedor de DNS:
 - **Tipo:** `CNAME`
-- **Nome/Host:** `gfrenovate`
+- **Nome/Host:** `renovate`
 - **Destino/Valor:** `daterra-digital.github.io.`
