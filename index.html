@@ -33,10 +33,10 @@
   <!-- Estilos Customizados -->
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased pb-20 md:pb-10">
+<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
   <!-- Side Note Discreta: EuroTech Day (Não compete com o foco da sessão) -->
-  <aside id="eurotech-sidenote-banner" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs py-1.5 px-4">
+  <aside id="eurotech-sidenote-banner" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs py-1.5 px-3 sm:px-4">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 truncate">
         <span class="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
@@ -53,29 +53,29 @@
 
   <!-- Header Principal com Logótipos e Acesso de Moderação -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
       
-      <!-- Bloco de Logótipos Institucionais na Raiz -->
-      <div class="flex items-center gap-3 sm:gap-5">
+      <!-- Bloco de Logótipos Institucionais na Raiz (Responsivos para todos os ecrãs) -->
+      <div class="flex items-center gap-2 sm:gap-4 md:gap-5">
         <!-- Logótipo RENOVATE -->
-        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" title="Website do Projeto RENOVATE" class="shrink-0 flex items-center">
-          <img src="logo-renovate.png" alt="Logótipo RENOVATE" class="h-9 sm:h-11 w-auto object-contain" 
-               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
+        <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Website do Projeto RENOVATE" class="shrink-0 flex items-center">
+          <img src="logo-renovate.png" alt="Logótipo RENOVATE" class="h-7 sm:h-9 md:h-11 w-auto max-w-[95px] sm:max-w-none object-contain" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-0.5 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-xs sm:text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
         </a>
 
-        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
+        <div class="h-5 sm:h-7 w-[1px] bg-slate-200"></div>
 
         <!-- Logótipo DATERRA -->
-        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" title="DATERRA - Lógica de Terra" class="shrink-0 flex items-center">
-          <img src="logo-daterra.png" alt="Logótipo DATERRA" class="h-8 sm:h-10 w-auto object-contain" 
-               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-1 rounded bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300\'>DATERRA</span>';">
+        <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" title="DATERRA - Lógica de Terra" class="shrink-0 flex items-center">
+          <img src="logo-daterra.png" alt="Logótipo DATERRA" class="h-6 sm:h-8 md:h-10 w-auto max-w-[80px] sm:max-w-none object-contain" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold text-[10px] sm:text-xs border border-slate-300\'>DATERRA</span>';">
         </a>
 
-        <div class="h-7 w-[1px] bg-slate-200 hidden sm:block"></div>
+        <div class="h-5 sm:h-7 w-[1px] bg-slate-200"></div>
 
         <!-- Logótipo ESAS (Escola Superior Agrária de Santarém) -->
         <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
-          <img src="logo-esas.png" alt="Logótipo ESAS" class="h-8 sm:h-10 w-auto object-contain" 
+          <img src="logo-esas.png" alt="Logótipo ESAS" class="h-6 sm:h-8 md:h-10 w-auto max-w-[80px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.src='assets/images/partners/esas.svg';">
         </a>
       </div>
@@ -618,8 +618,8 @@
     </div>
   </footer>
 
-  <!-- Navegação Inferior para Mobile (Fixed Bottom Bar) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-2 py-1 shadow-lg">
+  <!-- Navegação Inferior para Mobile (Fixed Bottom Bar com Safe Area) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-2 py-1 safe-bottom shadow-lg">
     <div class="grid grid-cols-4 gap-1 text-center">
       <button type="button" data-tab="live" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="radio" class="w-4 h-4 mb-0.5"></i>
@@ -643,8 +643,8 @@
   <!-- ========================================== -->
   <!-- MODAL DO MODERADOR (OPÇÃO C: PIN 2026)     -->
   <!-- ========================================== -->
-  <div id="moderator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-fadeIn">
+  <div id="moderator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 modal-backdrop hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-5 animate-fadeIn max-h-[92vh] overflow-y-auto">
       
       <!-- Cabeçalho da Modal -->
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
