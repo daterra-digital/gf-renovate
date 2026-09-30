@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+    <text x="10" y="36" font-family="system-ui, sans-serif" font-size="24" font-weight="900" fill="#005596">InHort</text>
+    <rect x="96" y="18" width="7" height="7" fill="#78BE20"/>
+    <rect x="105" y="18" width="7" height="7" fill="#005596"/>
+    <rect x="96" y="27" width="7" height="7" fill="#E87722"/>
+    <rect x="105" y="27" width="7" height="7" fill="#DA291C"/>
+    <text x="10" y="47" font-family="system-ui, sans-serif" font-size="7" font-weight="700" fill="#666" letter-spacing="0.5">INSTYTUT OGRODNICTWA</text>
+  </svg>

@@ -117,14 +117,27 @@ const LiveSession = (function () {
   }
 
   /**
-   * Gera URL de Google Form com prefill do código de participante
+   * Atualiza as URLs dos 3 Google Forms anexando o parâmetro ?entry.code=${code}
    */
-  function getPrefilledFormUrl(baseUrl) {
-    if (!baseUrl) return "#";
-    if (!state.participantCode) return baseUrl;
-    const separator = baseUrl.includes("?") ? "&" : "?";
-    // Parâmetro genérico para formulários Google. Pode ser personalizado com o entry ID real.
-    return `${baseUrl}${separator}usp=pp_url&entry.1000000=${encodeURIComponent(state.participantCode)}`;
+  function updateFormLinks(code) {
+    const activeCode = (code !== undefined ? code : state.participantCode) || "";
+    const formBtns = [
+      { id: "btn-form-1", url: RENOVATE_CONFIG.externalLinks.googleFormPreSession },
+      { id: "btn-form-2", url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto },
+      { id: "btn-form-3", url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex }
+    ];
+
+    formBtns.forEach(item => {
+      const btn = document.getElementById(item.id);
+      if (btn && item.url) {
+        if (!activeCode) {
+          btn.href = item.url;
+        } else {
+          const sep = item.url.includes("?") ? "&" : "?";
+          btn.href = `${item.url}${sep}entry.code=${encodeURIComponent(activeCode)}`;
+        }
+      }
+    });
   }
 
   /**
@@ -145,6 +158,19 @@ const LiveSession = (function () {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Desbloqueia até ao passo X indicado (Ação do Moderador)
+   */
+  function unlockUpToStep(stepNumber) {
+    const target = Math.min(Math.max(parseInt(stepNumber, 10) || 1, 1), TOTAL_STEPS);
+    state.unlockedSteps = [];
+    for (let i = 1; i <= target; i++) {
+      state.unlockedSteps.push(i);
+    }
+    saveStorageState();
+    renderLiveSessionUI();
   }
 
   /**
@@ -267,15 +293,8 @@ const LiveSession = (function () {
       }
     }
 
-    // 3. Atualizar botões com link para Google Forms (injetando prefill)
-    const formBtn1 = document.getElementById("btn-form-1");
-    if (formBtn1) formBtn1.href = getPrefilledFormUrl(RENOVATE_CONFIG.externalLinks.googleFormPreSession);
-
-    const formBtn2 = document.getElementById("btn-form-2");
-    if (formBtn2) formBtn2.href = getPrefilledFormUrl(RENOVATE_CONFIG.externalLinks.googleFormGameTallentto);
-
-    const formBtn3 = document.getElementById("btn-form-3");
-    if (formBtn3) formBtn3.href = getPrefilledFormUrl(RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex);
+    // 3. Atualizar botões com link para Google Forms (injetando ?entry.code=${code})
+    updateFormLinks(state.participantCode);
 
     // 4. Re-inicializar ícones Lucide nos badges alterados
     if (window.lucide) {
@@ -288,10 +307,11 @@ const LiveSession = (function () {
     init,
     getState: () => ({ ...state }),
     setParticipantCode,
-    getPrefilledFormUrl,
+    updateFormLinks,
     verifyModeratorPin,
     unlockStep,
     unlockAllSteps,
+    unlockUpToStep,
     lockStep,
     toggleStepCompleted,
     render: renderLiveSessionUI

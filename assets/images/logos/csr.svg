@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 60" fill="none">
+    <circle cx="30" cy="30" r="18" fill="#FFFDF0" stroke="#C8A030" stroke-width="2"/>
+    <text x="30" y="36" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">ČSR</text>
+    <text x="58" y="28" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#333">Česká společnost</text>
+    <text x="58" y="42" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#C8A030">rostlinolékařská</text>
+  </svg>

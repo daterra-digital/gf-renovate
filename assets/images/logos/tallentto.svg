@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+    <g transform="translate(15, 12)">
+      <rect x="0" y="0" width="10" height="7" fill="#0072CE"/>
+      <rect x="12" y="0" width="10" height="7" fill="#E63946"/>
+      <rect x="24" y="0" width="10" height="7" fill="#2A9D8F"/>
+      <rect x="12" y="9" width="10" height="18" fill="#E63946"/>
+    </g>
+    <text x="60" y="36" font-family="system-ui, sans-serif" font-size="22" font-weight="800" fill="#222">tallentto</text>
+  </svg>

@@ -5,10 +5,44 @@
 
 :root {
   --renovate-yellow: #FFCC66;
-  --renovate-yellow-hover: #FBBF24;
-  --renovate-yellow-light: #FEF3C7;
+  --renovate-gold: #F5B842;
+  --renovate-gold-hover: #E5A630;
+  --renovate-gold-light: #FEF3C7;
   --renovate-dark: #0F172A;
+  --renovate-brown: #3A2D28;
+  --renovate-brown-dark: #2A1F1B;
   --renovate-slate-50: #F8FAFC;
+}
+
+/* RENOVATE Signature Multi-Color Brand Stripe (from official website) */
+.renovate-palette-bar {
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    #2F5233 0% 9%,
+    #E7DFC6 9% 18%,
+    #3F6C6B 18% 27%,
+    #82A7C9 27% 36%,
+    #6B8E4E 36% 45%,
+    #1B5256 45% 54%,
+    #1C3B5E 54% 63%,
+    #D4E6EB 63% 72%,
+    #F4B846 72% 81%,
+    #DF8A34 81% 90%,
+    #4A2E2B 90% 100%
+  );
+}
+
+/* High Contrast Card Elevations */
+.card-high-contrast {
+  border: 1.5px solid #CBD5E1;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.08);
+}
+.card-high-contrast:hover {
+  border-color: #F5B842;
+  box-shadow: 0 8px 24px -4px rgba(245, 184, 66, 0.2);
 }
 
 html, body {

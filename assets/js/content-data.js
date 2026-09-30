@@ -28,7 +28,7 @@ const RENOVATE_CONFIG = {
     shortName: "ESAS - Santarém",
     country: "Portugal",
     role: "Entidade Anfitriã da 2ª Sessão do Grupo Focal",
-    logo: "assets/images/partners/esas.svg",
+    logo: "assets/images/logos/esas.svg",
     url: "http://www.esa.ipsantarem.pt"
   },
 
@@ -45,7 +45,7 @@ const RENOVATE_CONFIG = {
       shortName: "UPC",
       country: "Spain",
       countryPt: "Espanha",
-      logo: "assets/images/partners/upc.svg",
+      logo: "assets/images/logos/upc.svg",
       url: "https://www.upc.edu",
       role: "Coordenação Geral"
     },
@@ -54,7 +54,7 @@ const RENOVATE_CONFIG = {
       shortName: "UNITO",
       country: "Italy",
       countryPt: "Itália",
-      logo: "assets/images/partners/unito.svg",
+      logo: "assets/images/logos/unito.svg",
       url: "https://www.unito.it",
       role: "Investigação Agronómica"
     },
@@ -63,7 +63,7 @@ const RENOVATE_CONFIG = {
       shortName: "INRAE",
       country: "France",
       countryPt: "França",
-      logo: "assets/images/partners/inrae.svg",
+      logo: "assets/images/logos/inrae.svg",
       url: "https://www.inrae.fr",
       role: "Investigação & Inovação"
     },
@@ -72,7 +72,7 @@ const RENOVATE_CONFIG = {
       shortName: "da TERRA",
       country: "Portugal",
       countryPt: "Portugal",
-      logo: "assets/images/partners/daterra.svg",
+      logo: "assets/images/logos/daterra.svg",
       url: "https://daterra.com.pt",
       role: "Consultoria Agrária & Organização"
     },
@@ -81,7 +81,7 @@ const RENOVATE_CONFIG = {
       shortName: "pcfruit",
       country: "Belgium",
       countryPt: "Bélgica",
-      logo: "assets/images/partners/pcfruit.svg",
+      logo: "assets/images/logos/pcfruit.svg",
       url: "https://www.pcfruit.be",
       role: "Investigação em Fruticultura"
     },
@@ -90,7 +90,7 @@ const RENOVATE_CONFIG = {
       shortName: "InHort",
       country: "Poland",
       countryPt: "Polónia",
-      logo: "assets/images/partners/inhort.svg",
+      logo: "assets/images/logos/inhort.svg",
       url: "https://www.inhort.pl",
       role: "Investigação Hortícola"
     },
@@ -99,7 +99,7 @@ const RENOVATE_CONFIG = {
       shortName: "Dept. Agriculture Cyprus",
       country: "Cyprus",
       countryPt: "Chipre",
-      logo: "assets/images/partners/dep-agri-cyprus.svg",
+      logo: "assets/images/logos/dep-agri-cyprus.svg",
       url: "http://www.moa.gov.cy/da",
       role: "Entidade Governamental"
     },
@@ -108,7 +108,7 @@ const RENOVATE_CONFIG = {
       shortName: "Laore",
       country: "Italy",
       countryPt: "Itália",
-      logo: "assets/images/partners/laore.svg",
+      logo: "assets/images/logos/laore.svg",
       url: "https://www.agenzialaore.it",
       role: "Desenvolvimento Agrário"
     },
@@ -117,7 +117,7 @@ const RENOVATE_CONFIG = {
       shortName: "ČSR",
       country: "Czech Republic",
       countryPt: "República Checa",
-      logo: "assets/images/partners/csr.svg",
+      logo: "assets/images/logos/csr.svg",
       url: "https://www.rostlinolekari.cz",
       role: "Proteção Fitossanitária"
     },
@@ -126,7 +126,7 @@ const RENOVATE_CONFIG = {
       shortName: "Π.Ε.Κ.",
       country: "Cyprus",
       countryPt: "Chipre",
-      logo: "assets/images/partners/pek.svg",
+      logo: "assets/images/logos/pek.svg",
       url: "https://pek.org.cy",
       role: "Associação de Agricultores"
     },
@@ -135,7 +135,7 @@ const RENOVATE_CONFIG = {
       shortName: "Coop. Valenciana",
       country: "Spain",
       countryPt: "Espanha",
-      logo: "assets/images/partners/coop-valenciana.svg",
+      logo: "assets/images/logos/coop-valenciana.svg",
       url: "https://agroalimentariescv.coop",
       role: "Cooperativismo Agrário"
     },
@@ -144,7 +144,7 @@ const RENOVATE_CONFIG = {
       shortName: "HORT@",
       country: "Italy",
       countryPt: "Itália",
-      logo: "assets/images/partners/horta.svg",
+      logo: "assets/images/logos/horta.svg",
       url: "https://www.horta-srl.it",
       role: "Sistemas de Suporte à Decisão"
     },
@@ -153,7 +153,7 @@ const RENOVATE_CONFIG = {
       shortName: "Tallentto",
       country: "Spain",
       countryPt: "Espanha",
-      logo: "assets/images/partners/tallentto.svg",
+      logo: "assets/images/logos/tallentto.svg",
       url: "https://tallentto.com",
       role: "Serious Games & Gamificação"
     },
@@ -162,7 +162,7 @@ const RENOVATE_CONFIG = {
       shortName: "artica+",
       country: "Spain",
       countryPt: "Espanha",
-      logo: "assets/images/partners/artica.svg",
+      logo: "assets/images/logos/artica.svg",
       url: "https://articaingenieria.com",
       role: "Engenharia & Inovação"
     },
@@ -171,7 +171,7 @@ const RENOVATE_CONFIG = {
       shortName: "Virmedex",
       country: "Spain",
       countryPt: "Espanha",
-      logo: "assets/images/partners/virmedex.svg",
+      logo: "assets/images/logos/virmedex.svg",
       url: "https://virmedex.com",
       role: "Simulação Virtual 3D"
     },
@@ -180,7 +180,7 @@ const RENOVATE_CONFIG = {
       shortName: "CNR-STEMS",
       country: "Italy",
       countryPt: "Itália",
-      logo: "assets/images/partners/cnr-stems.svg",
+      logo: "assets/images/logos/cnr-stems.svg",
       url: "https://www.stems.cnr.it",
       role: "Investigação Científica"
     }

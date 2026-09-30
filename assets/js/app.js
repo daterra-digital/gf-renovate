@@ -35,23 +35,32 @@ function initTabNavigation() {
   const tabPanes = document.querySelectorAll(".tab-pane");
 
   function switchTab(targetTab) {
+    // Normalizar aliases (ex: fg1 e gf1)
+    if (targetTab === "gf1") targetTab = "fg1";
     if (!tabs.includes(targetTab)) targetTab = "live";
 
     // Atualizar Botões de Navegação
     navButtons.forEach(btn => {
-      const btnTab = btn.getAttribute("data-tab");
+      let btnTab = btn.getAttribute("data-tab");
+      if (btnTab === "gf1") btnTab = "fg1";
+
       if (btnTab === targetTab) {
-        btn.classList.add("bg-amber-100", "text-slate-900", "border-amber-400", "font-bold");
-        btn.classList.remove("text-slate-600", "hover:bg-slate-100", "border-transparent");
+        btn.classList.add("bg-[#F5B842]", "text-[#0F172A]", "border-slate-900", "font-extrabold", "shadow-sm");
+        btn.classList.remove("text-slate-600", "hover:bg-slate-100", "border-transparent", "font-semibold");
       } else {
-        btn.classList.remove("bg-amber-100", "text-slate-900", "border-amber-400", "font-bold");
-        btn.classList.add("text-slate-600", "hover:bg-slate-100", "border-transparent");
+        btn.classList.remove("bg-[#F5B842]", "text-[#0F172A]", "border-slate-900", "font-extrabold", "shadow-sm");
+        btn.classList.add("text-slate-600", "hover:bg-slate-100", "border-transparent", "font-semibold");
       }
     });
 
-    // Atualizar Conteúdo dos Painéis
+    // Atualizar Conteúdo dos Painéis (#content-live, #content-program, #content-fg1, #content-results)
     tabPanes.forEach(pane => {
-      if (pane.id === `tab-${targetTab}`) {
+      const paneId = pane.id;
+      const isTarget = paneId === `content-${targetTab}` || 
+                       paneId === `tab-${targetTab}` || 
+                       (targetTab === "fg1" && (paneId === "content-fg1" || paneId === "tab-gf1" || paneId === "content-gf1"));
+
+      if (isTarget) {
         pane.classList.remove("hidden");
         pane.classList.add("animate-fadeIn");
       } else {
@@ -422,6 +431,16 @@ function initModeratorModal() {
       showToast("Passos repostos ao estado inicial.");
     });
   }
+
+  // Desbloquear até ao Passo X
+  document.querySelectorAll(".btn-unlock-upto").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetStep = parseInt(btn.getAttribute("data-target-step"), 10);
+      LiveSession.unlockUpToStep(targetStep);
+      updateModeratorControlList();
+      showToast(`Passos desbloqueados até ao Passo ${targetStep}!`);
+    });
+  });
 }
 
 /**

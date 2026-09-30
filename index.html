@@ -108,7 +108,7 @@
           <i data-lucide="calendar" class="w-4 h-4"></i>
           Programa & Slides
         </button>
-        <button type="button" data-tab="gf1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+        <button type="button" data-tab="fg1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="history" class="w-4 h-4"></i>
           Grupo Focal 1 (Lisboa)
         </button>
@@ -118,6 +118,8 @@
         </button>
       </div>
     </nav>
+    <!-- Faixa de Cores Oficial RENOVATE (Inspirada no website oficial) -->
+    <div class="renovate-palette-bar"></div>
   </header>
 
   <!-- Conteúdo Principal -->
@@ -126,7 +128,7 @@
     <!-- ========================================== -->
     <!-- TAB 1: SESSÃO AO VIVO (FLUXO INTERATIVO)   -->
     <!-- ========================================== -->
-    <section id="tab-live" class="tab-pane space-y-6">
+    <section id="content-live" class="tab-pane space-y-6">
       
       <!-- Banner de Boas-Vindas & Configuração de Código do Participante -->
       <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
@@ -358,7 +360,7 @@
     <!-- ========================================== -->
     <!-- TAB 2: PROGRAMA & SLIDES                   -->
     <!-- ========================================== -->
-    <section id="tab-program" class="tab-pane hidden space-y-8">
+    <section id="content-program" class="tab-pane hidden space-y-8">
       
       <!-- Apresentação em Google Slides (Embed 16:9) -->
       <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
@@ -412,7 +414,7 @@
     <!-- ========================================== -->
     <!-- TAB 3: GRUPO FOCAL 1 (LISBOA, 22-10-2024)  -->
     <!-- ========================================== -->
-    <section id="tab-gf1" class="tab-pane hidden space-y-8">
+    <section id="content-fg1" class="tab-pane hidden space-y-8">
       
       <!-- Cabeçalho do GF1 -->
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
@@ -468,7 +470,7 @@
     <!-- ========================================== -->
     <!-- TAB 4: RESULTADOS & MEDIA                  -->
     <!-- ========================================== -->
-    <section id="tab-results" class="tab-pane hidden space-y-8">
+    <section id="content-results" class="tab-pane hidden space-y-8">
       
       <!-- Deliverable 1.4 -->
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
@@ -597,23 +599,26 @@
 
   </main>
 
-  <!-- Rodapé Institucional -->
-  <footer class="bg-white border-t border-slate-200 py-6 px-4 text-xs text-slate-500 mt-auto">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-      <div>
-        <p class="font-bold text-slate-800">Projeto RENOVATE - Grant Agreement nº 101134024 | Financiado pela União Europeia</p>
-        <p class="text-[11px] text-slate-500">
+  <!-- Rodapé Institucional com Alto Contraste & Estilo Oficial RENOVATE -->
+  <footer class="bg-[#2A1F1B] border-t-4 border-[#F5B842] py-8 px-4 text-xs text-slate-300 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+      <div class="space-y-1">
+        <div class="flex items-center justify-center md:justify-start gap-2 flex-wrap">
+          <span class="inline-block px-2 py-0.5 rounded bg-[#F5B842] text-[#2A1F1B] font-extrabold text-[10px] uppercase tracking-wider">União Europeia</span>
+          <p class="font-extrabold text-white text-xs sm:text-sm">Projeto RENOVATE - Grant Agreement nº 101134024 | Financiado pela União Europeia</p>
+        </div>
+        <p class="text-[11px] text-amber-100/70">
           Organização: DATERRA • Anfitrião: Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém
         </p>
       </div>
-      <div class="flex items-center gap-4 text-xs font-medium">
-        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">Projeto RENOVATE</a>
-        <span>•</span>
-        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">DATERRA</a>
-        <span>•</span>
-        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition">ESAS</a>
-        <span>•</span>
-        <button type="button" class="btn-open-moderator-modal hover:text-slate-900 transition font-bold text-amber-700">Painel Moderador</button>
+      <div class="flex items-center justify-center gap-3 sm:gap-4 text-xs font-semibold flex-wrap">
+        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">Projeto RENOVATE</a>
+        <span class="text-slate-500">•</span>
+        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">DATERRA</a>
+        <span class="text-slate-500">•</span>
+        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">ESAS</a>
+        <span class="text-slate-500">•</span>
+        <button type="button" class="btn-open-moderator-modal px-2.5 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-[#F5B842] transition font-bold border border-amber-400/40">Painel Moderador</button>
       </div>
     </div>
   </footer>
@@ -629,7 +634,7 @@
         <i data-lucide="calendar" class="w-4 h-4 mb-0.5"></i>
         <span>Programa</span>
       </button>
-      <button type="button" data-tab="gf1" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
+      <button type="button" data-tab="fg1" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="history" class="w-4 h-4 mb-0.5"></i>
         <span>GF1</span>
       </button>
@@ -684,6 +689,18 @@
           <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estado das Fases</div>
           <div id="moderator-step-toggles" class="space-y-2">
             <!-- Toggles individuais renderizados dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Desbloquear até ao Passo X (Opção de Desbloqueio Sequencial) -->
+        <div class="space-y-1.5 pt-2 border-t border-slate-100">
+          <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Desbloquear até ao Passo:</div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button type="button" data-target-step="1" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 1</button>
+            <button type="button" data-target-step="2" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 2</button>
+            <button type="button" data-target-step="3" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 3</button>
+            <button type="button" data-target-step="4" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 4</button>
+            <button type="button" data-target-step="5" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 5</button>
           </div>
         </div>
 
