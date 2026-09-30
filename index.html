@@ -87,9 +87,9 @@
           <p class="text-[11px] text-slate-500 font-medium">06 Outubro 2026 • ESAS - Santarém</p>
         </div>
 
-        <!-- Botão Modal do Moderador (Opção C) -->
-        <button type="button" class="btn-open-moderator-modal inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition" title="Área Reservada do Moderador (PIN)">
-          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+        <!-- Botão Modal do Moderador (Opção C) com ícone de engrenagem -->
+        <button type="button" class="btn-open-moderator-modal inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition" title="Painel do Moderador">
+          <i data-lucide="settings" class="w-4 h-4 text-slate-700"></i>
           <span class="hidden sm:inline">Moderação</span>
         </button>
       </div>
@@ -167,53 +167,97 @@
         </div>
       </div>
 
-      <!-- Grelha de Fases da Sessão ao Vivo -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Grelha de Passos da Sessão ao Vivo (Passos 1 a 5 com Badges de Dispositivos e .locked-section) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <!-- FASE 1: Registo & Diagnóstico Inicial (Desbloqueado por defeito) -->
+        <!-- PASSO 1: Registo & Código de Participante (Desbloqueado por defeito) -->
         <article id="step-card-1" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
           <div class="space-y-4">
-            <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FFCC66] text-[#0F172A] font-extrabold text-sm border border-slate-900">1</span>
-              <div id="step-lock-badge-1"></div>
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
+                  <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Credenciação
+                </span>
+                <div id="step-lock-badge-1"></div>
+              </div>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 1: Diagnóstico Inicial (Baseline)</h3>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 1: Identificação de Participante</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Breve inquérito de entrada para avaliar a experiência prévia com ferramentas digitais e práticas de proteção de culturas.
+                Atribuição do código individual gravado no dispositivo. Este código garante o anonimato e unifica os resultados nos questionários do estudo.
               </p>
             </div>
           </div>
 
           <div id="step-actions-1" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+              <span class="font-medium">Código Ativo:</span>
+              <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview">Configurado no Topo</span>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+              <input type="checkbox" id="step-checkbox-1" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Passo 1 como Concluído</span>
+            </label>
+          </div>
+        </article>
+
+        <!-- PASSO 2: Inquérito Inicial de Diagnóstico (Baseline) -->
+        <article id="step-card-2" class="step-card locked-section bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">2</span>
+              <div class="flex items-center gap-1.5">
+                <!-- Badge Identificativa de Dispositivo / Formulário -->
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Formulário Online
+                </span>
+                <div id="step-lock-badge-2"></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 2: Inquérito Inicial (Baseline)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Diagnóstico de entrada sobre a experiência prévia com tecnologias de proteção de culturas e hábitos digitais no campo.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-actions-2" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
             <a id="btn-form-1" href="#" target="_blank" rel="noopener noreferrer" 
                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
               Abrir Inquérito Inicial (Google Form 1)
             </a>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-1" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Fase 1 como Concluída</span>
+              <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Passo 2 como Concluído</span>
             </label>
           </div>
         </article>
 
-        <!-- FASE 2: Serious Game (Tallentto) -->
-        <article id="step-card-2" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- PASSO 3: Workstation 1 - Serious Game (Tallentto) -->
+        <article id="step-card-3" class="step-card locked-section bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
           <div class="space-y-4">
-            <div class="flex items-center justify-between gap-2">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">2</span>
-              <div id="step-lock-badge-2"></div>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">3</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <!-- Badge Identificativa: Smartphone para Serious Game -->
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                  <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Smartphone / Tablet
+                </span>
+                <div id="step-lock-badge-3"></div>
+              </div>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 2: Serious Game (Tallentto)</h3>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 3: Serious Game (Tallentto)</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Dinâmica de formação gamificada para tomada de decisão em proteção de culturas e calibração de pulverização.
+                Dinâmica de formação lúdica focada em calibração e boas práticas fitossanitárias, seguida de questionário de avaliação.
               </p>
             </div>
           </div>
 
-          <div id="step-actions-2" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+          <div id="step-actions-3" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <a href="https://tallentto.com" target="_blank" rel="noopener noreferrer" 
                  class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
@@ -227,28 +271,34 @@
               </a>
             </div>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Fase 2 como Concluída</span>
+              <input type="checkbox" id="step-checkbox-3" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Passo 3 como Concluído</span>
             </label>
           </div>
         </article>
 
-        <!-- FASE 3: Simulador Virtual (Virmedex) -->
-        <article id="step-card-3" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- PASSO 4: Workstation 2 - Simulador Virtual (Virmedex) -->
+        <article id="step-card-4" class="step-card locked-section bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
           <div class="space-y-4">
-            <div class="flex items-center justify-between gap-2">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">3</span>
-              <div id="step-lock-badge-3"></div>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">4</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <!-- Badge Identificativa: Computador PC para Simulador -->
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                  <i data-lucide="monitor" class="w-3.5 h-3.5"></i> Computador PC / Portátil
+                </span>
+                <div id="step-lock-badge-4"></div>
+              </div>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 3: Simulador Virtual (Virmedex)</h3>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 4: Simulador Virtual (Virmedex)</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Ambiente interativo de simulação 3D para otimização de parâmetros operacionais e redução de deriva e perdas fitossanitárias.
+                Ambiente de simulação 3D para otimização de parâmetros de pulverização, mitigação de deriva e análise de eficácia de campo.
               </p>
             </div>
           </div>
 
-          <div id="step-actions-3" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+          <div id="step-actions-4" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <a href="https://virmedex.com" target="_blank" rel="noopener noreferrer" 
                  class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
@@ -262,35 +312,41 @@
               </a>
             </div>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-3" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Fase 3 como Concluída</span>
+              <input type="checkbox" id="step-checkbox-4" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <span>Marcar Passo 4 como Concluído</span>
             </label>
           </div>
         </article>
 
-        <!-- FASE 4: Encerramento & Feedback Global -->
-        <article id="step-card-4" class="step-card bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- PASSO 5: Encerramento, Síntese & Recursos -->
+        <article id="step-card-5" class="step-card locked-section bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
           <div class="space-y-4">
-            <div class="flex items-center justify-between gap-2">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">4</span>
-              <div id="step-lock-badge-4"></div>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">5</span>
+              <div class="flex items-center gap-1.5">
+                <!-- Badge Identificativa: Formulário de Encerramento -->
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Formulário Final
+                </span>
+                <div id="step-lock-badge-5"></div>
+              </div>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900 mb-1">Fase 4: Avaliação Final & Síntese</h3>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 5: Síntese & Encerramento</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Avaliação global do evento, recomendações para o consórcio e disponibilização dos materiais finais do estudo.
+                Questionário de satisfação global, recomendações para o consórcio e acesso aos materiais técnicos da DATERRA.
               </p>
             </div>
           </div>
 
-          <div id="step-actions-4" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+          <div id="step-actions-5" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
             <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" 
                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
-              Concluir & Aceder a Recursos DATERRA
+              Submeter Avaliação Final & Concluir
             </a>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-4" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
+              <input type="checkbox" id="step-checkbox-5" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
               <span>Marcar Sessão como Totalmente Concluída</span>
             </label>
           </div>
@@ -545,7 +601,7 @@
   <footer class="bg-white border-t border-slate-200 py-6 px-4 text-xs text-slate-500 mt-auto">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
       <div>
-        <p class="font-bold text-slate-800">Projeto RENOVATE - 2ª Sessão do Grupo Focal</p>
+        <p class="font-bold text-slate-800">Projeto RENOVATE - Grant Agreement nº 101134024 | Financiado pela União Europeia</p>
         <p class="text-[11px] text-slate-500">
           Organização: DATERRA • Anfitrião: Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém
         </p>

@@ -367,13 +367,13 @@ function initModeratorModal() {
 
     const state = LiveSession.getState();
 
-    container.innerHTML = [1, 2, 3, 4].map(step => {
+    container.innerHTML = [1, 2, 3, 4, 5].map(step => {
       const isUnlocked = state.unlockedSteps.includes(step);
       return `
         <div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-full bg-slate-900 text-[#FFCC66] text-xs font-bold flex items-center justify-center">${step}</span>
-            <span class="text-sm font-semibold text-slate-800">Fase ${step}</span>
+            <span class="text-sm font-semibold text-slate-800">Passo ${step}</span>
           </div>
           <button type="button" 
                   data-mod-step="${step}" 
@@ -407,18 +407,19 @@ function initModeratorModal() {
     unlockAllBtn.addEventListener("click", () => {
       LiveSession.unlockAllSteps();
       updateModeratorControlList();
-      showToast("Todas as fases foram desbloqueadas!");
+      showToast("Todos os passos foram desbloqueados!");
     });
   }
 
-  // Repor Fases
+  // Repor Passos
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
       LiveSession.lockStep(2);
       LiveSession.lockStep(3);
       LiveSession.lockStep(4);
+      LiveSession.lockStep(5);
       updateModeratorControlList();
-      showToast("Fases repostas ao estado inicial.");
+      showToast("Passos repostos ao estado inicial.");
     });
   }
 }

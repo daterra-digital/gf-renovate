@@ -68,6 +68,21 @@ body {
   border-color: #10B981;
 }
 
+/* Locked Section - Opacidade reduzida e desativação de cliques */
+.locked-section {
+  opacity: 0.55 !important;
+  filter: grayscale(0.25) !important;
+  user-select: none !important;
+  transition: all 0.3s ease-in-out;
+}
+.locked-section a,
+.locked-section button:not(.btn-unlock-trigger),
+.locked-section input:not([type="checkbox"]) {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+
 /* High Contrast & Accessibility */
 a:focus-visible, button:focus-visible, input:focus-visible {
   outline: 3px solid #0F172A;

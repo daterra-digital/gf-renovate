@@ -11,7 +11,7 @@ const LiveSession = (function () {
   };
 
   const MODERATOR_PIN = "2026";
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 5;
 
   // Estado interno
   let state = {
@@ -87,7 +87,7 @@ const LiveSession = (function () {
 
     // Override de Desbloqueio Total (?unlock=all)
     if (urlParams.get("unlock") === "all") {
-      state.unlockedSteps = [1, 2, 3, 4];
+      state.unlockedSteps = [1, 2, 3, 4, 5];
       saveStorageState();
       console.info("⚡ Sessão ao Vivo: Todos os passos desbloqueados via parâmetro URL (?unlock=all)");
     }
@@ -151,7 +151,7 @@ const LiveSession = (function () {
    * Desbloqueia todos os passos em bloco
    */
   function unlockAllSteps() {
-    state.unlockedSteps = [1, 2, 3, 4];
+    state.unlockedSteps = [1, 2, 3, 4, 5];
     saveStorageState();
     renderLiveSessionUI();
   }
@@ -226,10 +226,10 @@ const LiveSession = (function () {
 
       if (card) {
         if (isUnlocked) {
-          card.classList.remove("locked", "opacity-60", "grayscale");
+          card.classList.remove("locked", "locked-section", "opacity-60", "grayscale");
           card.classList.add("active");
         } else {
-          card.classList.add("locked", "opacity-60", "grayscale");
+          card.classList.add("locked", "locked-section");
           card.classList.remove("active");
         }
 
