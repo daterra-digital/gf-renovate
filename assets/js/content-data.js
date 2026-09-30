@@ -22,60 +22,174 @@ const RENOVATE_CONFIG = {
     }
   },
 
-  // Parceiros do Consórcio RENOVATE & Ligações Oficiais
+  // Parceiro Anfitrião em Destaque
+  hostPartner: {
+    name: "Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém",
+    shortName: "ESAS - Santarém",
+    country: "Portugal",
+    role: "Entidade Anfitriã da 2ª Sessão do Grupo Focal",
+    logo: "assets/images/partners/esas.svg",
+    url: "http://www.esa.ipsantarem.pt"
+  },
+
+  // Estatísticas do Consórcio (conforme infografia oficial)
+  consortiumStats: {
+    partnersCount: 16,
+    countriesCount: 8
+  },
+
+  // Os 16 Parceiros Oficiais do Consórcio RENOVATE (8 Países)
   partners: [
     {
       name: "Universitat Politècnica de Catalunya (UPC)",
-      role: "Coordenação do Projeto (Espanha)",
-      url: "https://www.upc.edu"
+      shortName: "UPC",
+      country: "Spain",
+      countryPt: "Espanha",
+      logo: "assets/images/partners/upc.svg",
+      url: "https://www.upc.edu",
+      role: "Coordenação Geral"
     },
     {
-      name: "DATERRA - Lógica de Terra",
-      role: "Organização & Consultoria Agrária (Portugal)",
-      url: "https://daterra.com.pt"
-    },
-    {
-      name: "Tallentto",
-      role: "Desenvolvimento de Serious Games & Gamificação (Espanha)",
-      url: "https://tallentto.com"
-    },
-    {
-      name: "Virmedex",
-      role: "Simulações Virtuais & Realidade Interativa (Espanha)",
-      url: "https://virmedex.com"
-    },
-    {
-      name: "ESAS - Santarém",
-      role: "Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém",
-      url: "http://www.esa.ipsantarem.pt"
-    },
-    {
-      name: "Università degli Studi di Torino (UNITO)",
-      role: "Investigação Agronómica & Tecnológica (Itália)",
-      url: "https://www.unito.it"
+      name: "Università di Torino",
+      shortName: "UNITO",
+      country: "Italy",
+      countryPt: "Itália",
+      logo: "assets/images/partners/unito.svg",
+      url: "https://www.unito.it",
+      role: "Investigação Agronómica"
     },
     {
       name: "INRAE",
-      role: "Institut National de Recherche pour l'Agriculture (França)",
-      url: "https://www.inrae.fr"
+      shortName: "INRAE",
+      country: "France",
+      countryPt: "França",
+      logo: "assets/images/partners/inrae.svg",
+      url: "https://www.inrae.fr",
+      role: "Investigação & Inovação"
+    },
+    {
+      name: "da TERRA - Lógica de Terra",
+      shortName: "da TERRA",
+      country: "Portugal",
+      countryPt: "Portugal",
+      logo: "assets/images/partners/daterra.svg",
+      url: "https://daterra.com.pt",
+      role: "Consultoria Agrária & Organização"
     },
     {
       name: "pcfruit",
-      role: "Investigação Aplicada em Fruticultura (Bélgica)",
-      url: "https://www.pcfruit.be"
+      shortName: "pcfruit",
+      country: "Belgium",
+      countryPt: "Bélgica",
+      logo: "assets/images/partners/pcfruit.svg",
+      url: "https://www.pcfruit.be",
+      role: "Investigação em Fruticultura"
     },
     {
-      name: "Horta s.r.l.",
-      role: "Sistemas de Suporte à Decisão (Itália)",
-      url: "https://www.horta-srl.it"
+      name: "InHort - Instytut Ogrodnictwa",
+      shortName: "InHort",
+      country: "Poland",
+      countryPt: "Polónia",
+      logo: "assets/images/partners/inhort.svg",
+      url: "https://www.inhort.pl",
+      role: "Investigação Hortícola"
+    },
+    {
+      name: "Department of Agriculture",
+      shortName: "Dept. Agriculture Cyprus",
+      country: "Cyprus",
+      countryPt: "Chipre",
+      logo: "assets/images/partners/dep-agri-cyprus.svg",
+      url: "http://www.moa.gov.cy/da",
+      role: "Entidade Governamental"
+    },
+    {
+      name: "Laore Sardegna",
+      shortName: "Laore",
+      country: "Italy",
+      countryPt: "Itália",
+      logo: "assets/images/partners/laore.svg",
+      url: "https://www.agenzialaore.it",
+      role: "Desenvolvimento Agrário"
+    },
+    {
+      name: "Česká společnost rostlinolékařská (ČSR)",
+      shortName: "ČSR",
+      country: "Czech Republic",
+      countryPt: "República Checa",
+      logo: "assets/images/partners/csr.svg",
+      url: "https://www.rostlinolekari.cz",
+      role: "Proteção Fitossanitária"
+    },
+    {
+      name: "PEK - Panagrotikos Farmers Union",
+      shortName: "Π.Ε.Κ.",
+      country: "Cyprus",
+      countryPt: "Chipre",
+      logo: "assets/images/partners/pek.svg",
+      url: "https://pek.org.cy",
+      role: "Associação de Agricultores"
+    },
+    {
+      name: "Cooperatives Agro-alimentàries Comunitat Valenciana",
+      shortName: "Coop. Valenciana",
+      country: "Spain",
+      countryPt: "Espanha",
+      logo: "assets/images/partners/coop-valenciana.svg",
+      url: "https://agroalimentariescv.coop",
+      role: "Cooperativismo Agrário"
+    },
+    {
+      name: "HORT@",
+      shortName: "HORT@",
+      country: "Italy",
+      countryPt: "Itália",
+      logo: "assets/images/partners/horta.svg",
+      url: "https://www.horta-srl.it",
+      role: "Sistemas de Suporte à Decisão"
+    },
+    {
+      name: "tallentto",
+      shortName: "Tallentto",
+      country: "Spain",
+      countryPt: "Espanha",
+      logo: "assets/images/partners/tallentto.svg",
+      url: "https://tallentto.com",
+      role: "Serious Games & Gamificação"
+    },
+    {
+      name: "artica+",
+      shortName: "artica+",
+      country: "Spain",
+      countryPt: "Espanha",
+      logo: "assets/images/partners/artica.svg",
+      url: "https://articaingenieria.com",
+      role: "Engenharia & Inovação"
+    },
+    {
+      name: "virmedex Virtual Experiences",
+      shortName: "Virmedex",
+      country: "Spain",
+      countryPt: "Espanha",
+      logo: "assets/images/partners/virmedex.svg",
+      url: "https://virmedex.com",
+      role: "Simulação Virtual 3D"
+    },
+    {
+      name: "Consiglio Nazionale delle Ricerche - STEMS",
+      shortName: "CNR-STEMS",
+      country: "Italy",
+      countryPt: "Itália",
+      logo: "assets/images/partners/cnr-stems.svg",
+      url: "https://www.stems.cnr.it",
+      role: "Investigação Científica"
     }
   ],
 
   // Links Externos e Formulários da Sessão ao Vivo
   externalLinks: {
-    seriousGameTallentto: "https://tallentto.com", // Substituível pelo link direto da instância do jogo
-    simulatorVirmedex: "https://virmedex.com",     // Substituível pelo link direto do simulador
-    // Modelos de Google Forms com campo configurável para prefill do código de participante
+    seriousGameTallentto: "https://tallentto.com",
+    simulatorVirmedex: "https://virmedex.com",
     googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM1/viewform",
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM2/viewform",
     googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM3/viewform",
@@ -188,13 +302,13 @@ const RENOVATE_CONFIG = {
       {
         id: "video-1",
         title: "Visão Geral do Projeto RENOVATE",
-        youtubeId: "dQw4w9WgXcQ", // ID demonstrativo substituível
+        youtubeId: "dQw4w9WgXcQ",
         description: "Apresentação da estratégia europeia para formação avançada e digitalização agrícola."
       },
       {
         id: "video-2",
         title: "Demonstração do Serious Game (Tallentto)",
-        youtubeId: "dQw4w9WgXcQ", // ID demonstrativo substituível
+        youtubeId: "dQw4w9WgXcQ",
         description: "Vislumbre da dinâmica de jogo aplicada à calibração e segurança no campo."
       }
     ],

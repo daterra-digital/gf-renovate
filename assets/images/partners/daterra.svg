@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+    <g transform="translate(10, 12)">
+      <path d="M18 5 C14 12, 10 16, 4 18 C10 20, 14 24, 18 31 C22 24, 26 20, 32 18 C26 16, 22 12, 18 5 Z" fill="#1B7A43"/>
+      <circle cx="18" cy="18" r="4" fill="#2E9E5B"/>
+    </g>
+    <text x="55" y="27" font-family="Georgia, serif" font-size="14" font-weight="normal" fill="#1B7A43">da</text>
+    <text x="55" y="43" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#1B7A43" letter-spacing="1">TERRA</text>
+  </svg>

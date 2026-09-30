@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60" fill="none">
+    <ellipse cx="25" cy="30" rx="16" ry="7" transform="rotate(-30 25 30)" stroke="#5C9732" stroke-width="2" fill="none"/>
+    <ellipse cx="25" cy="30" rx="16" ry="7" transform="rotate(30 25 30)" stroke="#5C9732" stroke-width="2" fill="none"/>
+    <circle cx="25" cy="30" r="4" fill="#E67E22"/>
+    <text x="48" y="34" font-family="system-ui, sans-serif" font-size="20" font-weight="900" fill="#5C9732">pcfruit</text>
+    <text x="48" y="47" font-family="system-ui, sans-serif" font-size="7" font-weight="700" fill="#5C9732" letter-spacing="0.5">PROEFCENTRUM FRUITTEELT VZW</text>
+  </svg>

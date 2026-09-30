@@ -495,23 +495,47 @@
     <!-- ========================================== -->
     <!-- SECÇÃO DE PARCEIROS & CONSÓRCIO            -->
     <!-- ========================================== -->
-    <section class="mt-12 pt-8 border-t border-slate-200 space-y-4">
-      <div class="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h3 class="text-base font-bold text-slate-900">Consórcio RENOVATE & Parceiros</h3>
-          <p class="text-xs text-slate-500">
-            Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém & Consórcio Internacional
-          </p>
-        </div>
-        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
-           class="text-xs font-bold text-amber-800 hover:text-amber-900 underline flex items-center gap-1">
-          Website Oficial RENOVATE &rarr;
-        </a>
+    <section class="mt-12 pt-8 border-t border-slate-200 space-y-6">
+      
+      <!-- Destaque Especial: Entidade Anfitriã (ESAS) -->
+      <div id="host-partner-container">
+        <!-- Renderizado dinamicamente via app.js -->
       </div>
 
-      <!-- Grelha de Parceiros com Links Oficiais -->
-      <div id="partners-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Renderizado via app.js -->
+      <!-- Infografia do Consórcio: 16 Parceiros, 8 Países (conforme imagem oficial) -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
+        
+        <!-- Indicadores Centrais: 16 Parceiros / 8 Países -->
+        <div class="flex items-center justify-center gap-10 sm:gap-16 pt-2 pb-2">
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
+              <i data-lucide="building-2" class="w-7 h-7 stroke-[1.75]"></i>
+            </div>
+            <span class="text-base sm:text-lg font-extrabold text-emerald-800">16 partners</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
+              <i data-lucide="globe-2" class="w-7 h-7 stroke-[1.75]"></i>
+            </div>
+            <span class="text-base sm:text-lg font-extrabold text-emerald-800">8 countries</span>
+          </div>
+        </div>
+
+        <!-- Grelha dos 16 Parceiros com Logótipo, País e Website (8 colunas em desktop) -->
+        <div id="partners-list-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+          <!-- Renderizado via app.js -->
+        </div>
+
+        <!-- Ligação ao Portal Global RENOVATE -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-xs">
+          <span class="text-slate-500">Consórcio de investigação aplicada para a transição digital e sustentabilidade agrária.</span>
+          <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
+             class="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 hover:underline">
+            <span>Visitar Portal Oficial RENOVATE</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </a>
+        </div>
       </div>
     </section>
 

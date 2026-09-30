@@ -195,26 +195,68 @@ function renderResultsAndMedia() {
 /**
  * Renderização da Lista de Parceiros Oficiais do Consórcio RENOVATE
  */
+/**
+ * Renderização da Secção de Parceiros Oficiais do Consórcio RENOVATE
+ * Alinhada com a infografia oficial (16 parceiros, 8 países) + ESAS Anfitrião
+ */
 function renderPartners() {
   const container = document.getElementById("partners-list-container");
+  const hostContainer = document.getElementById("host-partner-container");
   if (!container || !RENOVATE_CONFIG.partners) return;
 
-  container.innerHTML = RENOVATE_CONFIG.partners.map(p => `
-    <a href="${p.url}" target="_blank" rel="noopener noreferrer" 
-       class="group flex flex-col justify-between p-4 bg-white rounded-xl border border-slate-200 hover:border-amber-400 hover:shadow-md transition">
-      <div>
-        <div class="flex items-center justify-between mb-1.5">
-          <h4 class="font-bold text-slate-900 text-sm group-hover:text-amber-800 transition-colors">${p.name}</h4>
-          <i data-lucide="external-link" class="w-4 h-4 text-slate-400 group-hover:text-slate-800 transition-colors"></i>
+  // 1. Renderizar Parceiro Anfitrião (ESAS) se container existir
+  if (hostContainer && RENOVATE_CONFIG.hostPartner) {
+    const host = RENOVATE_CONFIG.hostPartner;
+    hostContainer.innerHTML = `
+      <div class="bg-gradient-to-r from-emerald-50 via-amber-50 to-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-white rounded-xl border border-emerald-200 p-2 flex items-center justify-center shrink-0 shadow-sm">
+            <img src="${host.logo}" alt="${host.name}" class="h-12 w-auto object-contain">
+          </div>
+          <div>
+            <div class="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+              <i data-lucide="map-pin" class="w-3 h-3 text-emerald-700"></i> ${host.role}
+            </div>
+            <h4 class="text-base font-extrabold text-slate-900 mt-1">${host.name}</h4>
+            <p class="text-xs text-slate-600">Local de realização da 2ª Sessão do Grupo Focal • Santarém, Portugal</p>
+          </div>
         </div>
-        <p class="text-xs text-slate-600 line-clamp-2">${p.role}</p>
+        <a href="${host.url}" target="_blank" rel="noopener noreferrer" 
+           class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shadow-sm">
+          <span>Website ESAS</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
       </div>
-      <span class="mt-3 text-[11px] font-semibold text-amber-700 flex items-center gap-1">
-        Visitar Website &rarr;
-      </span>
-    </a>
+    `;
+  }
+
+  // 2. Renderizar a Grelha dos 16 Parceiros do Consórcio (conforme infografia)
+  container.innerHTML = RENOVATE_CONFIG.partners.map(p => `
+    <div class="group bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:shadow-md transition p-3.5 flex flex-col items-center justify-between text-center min-h-[140px]">
+      <!-- Logótipo Centrado -->
+      <div class="h-14 w-full flex items-center justify-center p-1.5" title="${p.name} (${p.role})">
+        <img src="${p.logo}" alt="${p.name}" class="max-h-12 max-w-[130px] w-auto object-contain transition-transform group-hover:scale-105" loading="lazy">
+      </div>
+
+      <!-- País e Ligação ao Website -->
+      <div class="w-full pt-2 border-t border-slate-100 space-y-1">
+        <div class="flex items-center justify-center gap-1 text-[11px] text-emerald-800 font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span>${p.country}</span>
+        </div>
+        <a href="${p.url}" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:underline transition-colors"
+           title="Abrir website de ${p.name}">
+          <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-emerald-600"></i>
+          <span>Website</span>
+        </a>
+      </div>
+    </div>
   `).join("");
+
+  if (window.lucide) window.lucide.createIcons();
 }
+
 
 /**
  * Gestão do Código de Participante

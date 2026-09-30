@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 60" fill="none">
+    <text x="10" y="36" font-family="system-ui, sans-serif" font-size="24" font-weight="300" fill="#4B3A82" letter-spacing="2">HORT</text>
+    <circle cx="100" cy="28" r="11" stroke="#4B3A82" stroke-width="2.5" fill="none"/>
+    <text x="96" y="33" font-family="system-ui, sans-serif" font-size="13" font-weight="bold" fill="#4B3A82">a</text>
+    <line x1="10" y1="42" x2="114" y2="42" stroke="#4B3A82" stroke-width="1"/>
+    <text x="12" y="50" font-family="system-ui, sans-serif" font-size="6" fill="#666" letter-spacing="0.5">from research to field</text>
+  </svg>
