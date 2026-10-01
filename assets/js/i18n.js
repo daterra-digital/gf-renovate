@@ -137,16 +137,16 @@ window.I18nManager = (function () {
       "results.kpi.susGameBench": "Bom / Acima da Média",
       "results.kpi.susSim": "SUS Simulador 3D",
       "results.kpi.susSimBench": "Excelente",
-      "results.kpi.nps": "Net Promoter Score",
-      "results.kpi.npsZone": "Zona de Excelência (>50)",
+      "results.kpi.nps": "Recomendação RENOVATE (Q29)",
+      "results.kpi.npsZone": "Elevada Intenção de Recomendação",
 
       // Filters
       "results.filter.all": "Visão Global",
-      "results.filter.wordcloud": "Nuvem de Palavras",
+      "results.filter.demographics": "Demografia",
       "results.filter.sus": "Usabilidade SUS",
       "results.filter.pedagogical": "Avaliação Pedagógica",
-      "results.filter.demographics": "Demografia",
       "results.filter.feedback": "Sugestões & Melhorias",
+      "results.filter.wordcloud": "Nuvem de Palavras",
 
       // Word Cloud
       "results.wc.title": "Nuvem de Palavras: A Experiência em 3 Palavras",
@@ -181,7 +181,7 @@ window.I18nManager = (function () {
       "results.demo.title": "Caracterização da Amostra & Literacia Digital",
       "results.demo.desc": "Distribuição dos participantes por perfil profissional (Q1), culturas agrícolas acompanhadas (Q5) e literacia agronómica digital (Q6).",
       "results.demo.profileTitle": "Perfil Profissional (Q1)",
-      "results.demo.cropsTitle": "Culturas com Maior Envolvimento (Q5)",
+      "results.demo.cropsTitle": "Culturas com Maior Representatividade (Q5)",
       "results.demo.digitalTitle": "Literacia Digital Agrícola (Q6)",
       "results.demo.digitalDesc": "Quão confortáveis se sentem os participantes na utilização diária de software de agricultura de precisão antes da formação.",
       "results.demo.digitalLevel": "Nível de Literacia Digital Intermédio-Alto",
@@ -189,10 +189,10 @@ window.I18nManager = (function () {
       "results.demo.conclusionText": "A amostra valida que os simuladores têm adesão intuitiva mesmo entre operadores com conforto digital moderado.",
 
       // NPS & Feedback
-      "results.nps.title": "Recomendação (NPS - Q29)",
-      "results.nps.scale": "Escala 0 a 10",
-      "results.nps.scoreLabel": "Score Global:",
-      "results.nps.zoneText": "(Zona de Excelência)",
+      "results.nps.title": "Recomendação RENOVATE (Q29)",
+      "results.nps.scale": "5 Níveis de Probabilidade",
+      "results.nps.scoreLabel": "Score Médio:",
+      "results.nps.zoneText": "(Muito ou Extremamente provável)",
       "results.feedback.title": "Voz dos Participantes: Sugestões & Bloqueios Identificados",
 
       // Deliverable 1.4 & Media (Entregável 1.4)
@@ -377,16 +377,16 @@ window.I18nManager = (function () {
       "results.kpi.susGameBench": "Good / Above Average",
       "results.kpi.susSim": "SUS 3D Simulator",
       "results.kpi.susSimBench": "Excellent",
-      "results.kpi.nps": "Net Promoter Score",
-      "results.kpi.npsZone": "Excellence Zone (>50)",
+      "results.kpi.nps": "RENOVATE Recommendation (Q29)",
+      "results.kpi.npsZone": "High Recommendation Intent",
 
       // Filters
       "results.filter.all": "Overview",
-      "results.filter.wordcloud": "Word Cloud",
+      "results.filter.demographics": "Demographics",
       "results.filter.sus": "SUS Usability",
       "results.filter.pedagogical": "Pedagogical Evaluation",
-      "results.filter.demographics": "Demographics",
       "results.filter.feedback": "Suggestions & Improvements",
+      "results.filter.wordcloud": "Word Cloud",
 
       // Word Cloud
       "results.wc.title": "Word Cloud: The Experience in 3 Words",
@@ -421,7 +421,7 @@ window.I18nManager = (function () {
       "results.demo.title": "Sample Demographics & Digital Literacy",
       "results.demo.desc": "Distribution of participants by professional profile (Q1), agricultural crops involved (Q5) and digital agronomic literacy (Q6).",
       "results.demo.profileTitle": "Professional Profile (Q1)",
-      "results.demo.cropsTitle": "Crops with Highest Involvement (Q5)",
+      "results.demo.cropsTitle": "Crops with Highest Representation (Q5)",
       "results.demo.digitalTitle": "Agricultural Digital Literacy (Q6)",
       "results.demo.digitalDesc": "Self-reported comfort level in the daily use of precision farming software prior to training.",
       "results.demo.digitalLevel": "Intermediate-High Digital Literacy Level",
@@ -429,10 +429,10 @@ window.I18nManager = (function () {
       "results.demo.conclusionText": "The sample confirms that digital training tools achieve intuitive adoption even among operators with moderate digital experience.",
 
       // NPS & Feedback
-      "results.nps.title": "Recommendation (NPS - Q29)",
-      "results.nps.scale": "0 to 10 Scale",
-      "results.nps.scoreLabel": "Overall Score:",
-      "results.nps.zoneText": "(Excellence Zone)",
+      "results.nps.title": "RENOVATE Recommendation (Q29)",
+      "results.nps.scale": "5 Probability Levels",
+      "results.nps.scoreLabel": "Mean Score:",
+      "results.nps.zoneText": "(Very or Extremely likely)",
       "results.feedback.title": "Participants' Voice: Suggestions & Roadblocks Identified",
 
       // Deliverable 1.4 & Media

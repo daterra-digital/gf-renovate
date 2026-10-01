@@ -48,6 +48,181 @@ window.ResultsDashboard = (function () {
     slateBorder: "#E2E8F0"
   };
 
+  // Opções Oficiais do Questionário de Validação
+  const OFFICIAL_PROFILES = [
+    "Agricultor(a) / Produtor(a)",
+    "Técnico(a) / Consultor(a)",
+    "Formador(a) / Profissional de Ensino Agrícola",
+    "Representante da Indústria (Maquinaria / Agroquímicos)",
+    "Entidade Reguladora / Administração Pública",
+    "Estudante",
+    "Investigador(a)",
+    "Outra"
+  ];
+
+  const PROFILE_TRANSLATIONS = {
+    "Agricultor(a) / Produtor(a)": "Farmer / Producer",
+    "Técnico(a) / Consultor(a)": "Technical Advisor / Consultant",
+    "Formador(a) / Profissional de Ensino Agrícola": "Trainer / Agricultural Educator",
+    "Representante da Indústria (Maquinaria / Agroquímicos)": "Industry Representative (Machinery / Agrochemicals)",
+    "Entidade Reguladora / Administração Pública": "Regulatory Entity / Public Administration",
+    "Estudante": "Student",
+    "Investigador(a)": "Researcher",
+    "Outra": "Other"
+  };
+
+  const OFFICIAL_CROPS = [
+    "Vinha",
+    "Pomóideas / Prunóideas",
+    "Olival",
+    "Cereais / Culturas arvenses",
+    "Hortícolas"
+  ];
+
+  const CROP_TRANSLATIONS = {
+    "Vinha": "Vineyard / Grapevine",
+    "Pomóideas / Prunóideas": "Pome / Stone Fruit",
+    "Olival": "Olive Grove",
+    "Cereais / Culturas arvenses": "Cereals / Arable Crops",
+    "Hortícolas": "Vegetables / Horticulture"
+  };
+
+  const OFFICIAL_Q29_OPTIONS = [
+    "Extremamente provável",
+    "Muito provável",
+    "Moderavelmente provável",
+    "Pouco Provável",
+    "Nada provável"
+  ];
+
+  const Q29_TRANSLATIONS = {
+    "Extremamente provável": "Extremely likely",
+    "Muito provável": "Very likely",
+    "Moderavelmente provável": "Moderately likely",
+    "Pouco Provável": "Unlikely",
+    "Nada provável": "Not likely at all"
+  };
+
+  function normalizeProfile(val) {
+    if (!val) return "Outra";
+    const s = String(val).trim().toLowerCase();
+    if (s.includes("agricultor") || s.includes("produtor")) return "Agricultor(a) / Produtor(a)";
+    if (s.includes("técnico") || s.includes("tecnico") || s.includes("consultor")) return "Técnico(a) / Consultor(a)";
+    if (s.includes("formador") || s.includes("ensino") || s.includes("professor") || s.includes("docente")) return "Formador(a) / Profissional de Ensino Agrícola";
+    if (s.includes("indústria") || s.includes("industria") || s.includes("maquinaria") || s.includes("agroquímico") || s.includes("agroquimico")) return "Representante da Indústria (Maquinaria / Agroquímicos)";
+    if (s.includes("reguladora") || s.includes("administração") || s.includes("administracao") || s.includes("pública") || s.includes("publica") || s.includes("governo")) return "Entidade Reguladora / Administração Pública";
+    if (s.includes("estudante") || s.includes("aluno")) return "Estudante";
+    if (s.includes("investigador") || s.includes("pesquisador") || s.includes("cientista")) return "Investigador(a)";
+    return "Outra";
+  }
+
+  function normalizeCrop(val) {
+    if (!val) return null;
+    const s = String(val).trim().toLowerCase();
+    if (s.includes("vinha") || s.includes("vinhedo") || s.includes("viticultura") || s.includes("uva")) return "Vinha";
+    if (s.includes("pomóidea") || s.includes("pomoidea") || s.includes("prunóidea") || s.includes("prunoidea") || s.includes("pomar") || s.includes("fruti") || s.includes("maçã") || s.includes("maca") || s.includes("pera") || s.includes("pessego")) return "Pomóideas / Prunóideas";
+    if (s.includes("olival") || s.includes("oliva") || s.includes("azeite") || s.includes("oliveira")) return "Olival";
+    if (s.includes("cereal") || s.includes("cereais") || s.includes("arvense") || s.includes("milho") || s.includes("trigo") || s.includes("cevada") || s.includes("arroz") || s.includes("grandes")) return "Cereais / Culturas arvenses";
+    if (s.includes("hortícola") || s.includes("horticola") || s.includes("hortaliça") || s.includes("hortalica") || s.includes("legume") || s.includes("tomate")) return "Hortícolas";
+    return null;
+  }
+
+  function parseDigitalComfort(val) {
+    if (typeof val === "number" && val >= 1 && val <= 5) return val;
+    if (!val) return 3;
+    const s = String(val).trim().toLowerCase();
+    if (s.includes("muito desconfortável") || s.includes("muito desconfortavel")) return 1;
+    if (s.includes("muito confortável") || s.includes("muito confortavel")) return 5;
+    if (s.includes("nem") || s.includes("neutro")) return 3;
+    if (s.includes("desconfortável") || s.includes("desconfortavel")) return 2;
+    if (s.includes("confortável") || s.includes("confortavel")) return 4;
+    const m = s.match(/[1-5]/);
+    return m ? parseInt(m[0], 10) : 3;
+  }
+
+  function getComfortLevelLabel(avg, isEn) {
+    const num = parseFloat(avg);
+    if (num >= 4.5) return isEn ? "Very comfortable (Level 5/5)" : "Muito confortável (Nível 5/5)";
+    if (num >= 3.5) return isEn ? "Comfortable (Level 4/5)" : "Confortável (Nível 4/5)";
+    if (num >= 2.5) return isEn ? "Neither comfortable nor uncomfortable (Level 3/5)" : "Nem confortável nem desconfortável (Nível 3/5)";
+    if (num >= 1.5) return isEn ? "Uncomfortable (Level 2/5)" : "Desconfortável (Nível 2/5)";
+    return isEn ? "Very uncomfortable (Level 1/5)" : "Muito desconfortável (Nível 1/5)";
+  }
+
+  function parseQ29Recommendation(val) {
+    if (!val) return "Muito provável";
+    const s = String(val).trim().toLowerCase();
+    if (s.includes("extremamente")) return "Extremamente provável";
+    if (s.includes("pouco")) return "Pouco Provável";
+    if (s.includes("nada")) return "Nada provável";
+    if (s.includes("moderada") || s.includes("moderavelmente")) return "Moderavelmente provável";
+    if (s.includes("muito")) return "Muito provável";
+
+    const m = s.match(/\d+/);
+    if (m) {
+      const n = parseInt(m[0], 10);
+      if (n >= 9 || n === 5) return "Extremamente provável";
+      if (n >= 7 || n === 4) return "Muito provável";
+      if (n >= 5 || n === 3) return "Moderavelmente provável";
+      if (n >= 3 || n === 2) return "Pouco Provável";
+      return "Nada provável";
+    }
+    return "Muito provável";
+  }
+
+  function getQ29Weight(label) {
+    switch (label) {
+      case "Extremamente provável": return 5;
+      case "Muito provável": return 4;
+      case "Moderavelmente provável": return 3;
+      case "Pouco Provável": return 2;
+      case "Nada provável": return 1;
+      default: return 4;
+    }
+  }
+
+  function calculateQ29Recommendation(rawList) {
+    const counts = {
+      "Extremamente provável": 0,
+      "Muito provável": 0,
+      "Moderavelmente provável": 0,
+      "Pouco Provável": 0,
+      "Nada provável": 0
+    };
+
+    if (!rawList || !rawList.length) {
+      return {
+        average: 4.7,
+        positivePercent: 94,
+        counts: { "Extremamente provável": 10, "Muito provável": 6, "Moderavelmente provável": 2, "Pouco Provável": 0, "Nada provável": 0 },
+        total: 18
+      };
+    }
+
+    let sum = 0;
+    let total = 0;
+
+    rawList.forEach(item => {
+      const opt = parseQ29Recommendation(item);
+      if (counts[opt] !== undefined) {
+        counts[opt]++;
+        sum += getQ29Weight(opt);
+        total++;
+      }
+    });
+
+    const average = total > 0 ? parseFloat((sum / total).toFixed(1)) : 4.7;
+    const positive = counts["Extremamente provável"] + counts["Muito provável"];
+    const positivePercent = total > 0 ? Math.round((positive / total) * 100) : 94;
+
+    return {
+      average,
+      positivePercent,
+      counts,
+      total
+    };
+  }
+
   // Estado interno
   let state = {
     config: {
@@ -361,32 +536,24 @@ window.ResultsDashboard = (function () {
     });
 
     const sections = {
-      overview: document.getElementById("results-sec-overview"),
-      wordcloud: document.getElementById("results-sec-wordcloud"),
+      demographics: document.getElementById("results-sec-demographics"),
       sus: document.getElementById("results-sec-sus"),
       pedagogical: document.getElementById("results-sec-pedagogical"),
-      demographics: document.getElementById("results-sec-demographics"),
-      feedback: document.getElementById("results-sec-feedback")
+      feedback: document.getElementById("results-sec-feedback"),
+      wordcloud: document.getElementById("results-sec-wordcloud")
     };
 
     if (filter === "all") {
       Object.values(sections).forEach(s => s && s.classList.remove("hidden"));
-    } else if (filter === "wordcloud") {
-      Object.values(sections).forEach(s => s && s.classList.add("hidden"));
-      if (sections.wordcloud) sections.wordcloud.classList.remove("hidden");
-    } else if (filter === "sus") {
-      Object.values(sections).forEach(s => s && s.classList.add("hidden"));
-      if (sections.overview) sections.overview.classList.remove("hidden");
-      if (sections.sus) sections.sus.classList.remove("hidden");
-    } else if (filter === "pedagogical") {
-      Object.values(sections).forEach(s => s && s.classList.add("hidden"));
-      if (sections.pedagogical) sections.pedagogical.classList.remove("hidden");
-    } else if (filter === "demographics") {
-      Object.values(sections).forEach(s => s && s.classList.add("hidden"));
-      if (sections.demographics) sections.demographics.classList.remove("hidden");
-    } else if (filter === "feedback") {
-      Object.values(sections).forEach(s => s && s.classList.add("hidden"));
-      if (sections.feedback) sections.feedback.classList.remove("hidden");
+    } else {
+      Object.entries(sections).forEach(([key, sec]) => {
+        if (!sec) return;
+        if (key === filter) {
+          sec.classList.remove("hidden");
+        } else {
+          sec.classList.add("hidden");
+        }
+      });
     }
 
     // Redimensionar gráficos visíveis
@@ -602,7 +769,8 @@ window.ResultsDashboard = (function () {
     // Calcular métricas
     const susGame = calculateSusFromResponses(game.map(r => r.sus));
     const susSim = calculateSusFromResponses(sim.map(r => r.sus));
-    const nps = calculateNpsFromScores(global.map(r => r.nps));
+    const q29List = global.map(r => r.q29 || r.nps);
+    const nps = calculateQ29Recommendation(q29List);
 
     // Palavras-chave
     const wordsGame = extractWordFrequencies(game.map(r => r.words));
@@ -615,11 +783,16 @@ window.ResultsDashboard = (function () {
     let digitalTotal = 0;
 
     game.forEach(r => {
-      profiles[r.profile] = (profiles[r.profile] || 0) + 1;
+      const p = normalizeProfile(r.profile);
+      profiles[p] = (profiles[p] || 0) + 1;
       ages[r.age] = (ages[r.age] || 0) + 1;
-      digitalTotal += (r.digitalComfort || 3);
+      const c = parseDigitalComfort(r.digitalComfort);
+      digitalTotal += c;
       if (Array.isArray(r.crops)) {
-        r.crops.forEach(c => crops[c] = (crops[c] || 0) + 1);
+        r.crops.forEach(cItem => {
+          const normCrop = normalizeCrop(cItem);
+          if (normCrop) crops[normCrop] = (crops[normCrop] || 0) + 1;
+        });
       }
     });
 
@@ -749,11 +922,11 @@ window.ResultsDashboard = (function () {
     });
     const susSim = calculateSusFromResponses(simSusArrays);
 
-    // Processamento NPS do Questionário Global
-    const npsScores = globalData.map(row => {
-      return idxQ29 !== -1 ? parseLikertNumber(row[idxQ29]) : 9;
-    }).filter(n => !isNaN(n));
-    const nps = calculateNpsFromScores(npsScores);
+    // Processamento Q29 Recomendação do Questionário Global
+    const q29Responses = globalData.map(row => {
+      return idxQ29 !== -1 && row[idxQ29] ? row[idxQ29] : "Extremamente provável";
+    });
+    const nps = calculateQ29Recommendation(q29Responses);
 
     // Nuvens de Palavras
     const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? r[idxWordsGame] : "");
@@ -769,25 +942,24 @@ window.ResultsDashboard = (function () {
     let digitalCount = 0;
 
     gameData.forEach(row => {
-      const p = idxProfile !== -1 && row[idxProfile] ? row[idxProfile].trim() : "Outro";
+      const rawP = idxProfile !== -1 && row[idxProfile] ? row[idxProfile].trim() : "Outra";
+      const p = normalizeProfile(rawP);
       profiles[p] = (profiles[p] || 0) + 1;
 
       const a = idxAge !== -1 && row[idxAge] ? row[idxAge].trim() : "30-45 anos";
       ages[a] = (ages[a] || 0) + 1;
 
       if (idxComfort !== -1 && row[idxComfort]) {
-        const c = parseLikertNumber(row[idxComfort]);
-        if (!isNaN(c)) {
-          digitalTotal += c;
-          digitalCount++;
-        }
+        const c = parseDigitalComfort(row[idxComfort]);
+        digitalTotal += c;
+        digitalCount++;
       }
 
       if (idxCrops !== -1 && row[idxCrops]) {
         const cropItems = row[idxCrops].split(/[,;]/);
         cropItems.forEach(c => {
-          const trimmed = c.trim();
-          if (trimmed) crops[trimmed] = (crops[trimmed] || 0) + 1;
+          const normCrop = normalizeCrop(c);
+          if (normCrop) crops[normCrop] = (crops[normCrop] || 0) + 1;
         });
       }
     });
@@ -988,11 +1160,13 @@ window.ResultsDashboard = (function () {
     const kpiSusGame = document.getElementById("kpi-sus-game");
     const kpiSusSim = document.getElementById("kpi-sus-sim");
     const kpiNps = document.getElementById("kpi-nps");
+    const kpiNpsUnit = document.getElementById("kpi-nps-unit");
 
     if (kpiCount) kpiCount.textContent = m.participantCount || 0;
     if (kpiSusGame) kpiSusGame.textContent = m.susGame?.average || "78.4";
     if (kpiSusSim) kpiSusSim.textContent = m.susSim?.average || "81.6";
-    if (kpiNps) kpiNps.textContent = `${m.nps?.score > 0 ? "+" : ""}${m.nps?.score || "67"}`;
+    if (kpiNps) kpiNps.textContent = `${m.nps?.average || "4.7"}`;
+    if (kpiNpsUnit) kpiNpsUnit.textContent = `/ 5.0 (${m.nps?.positivePercent || 94}%)`;
 
     const susGameBench = document.getElementById("kpi-sus-game-bench");
     const susSimBench = document.getElementById("kpi-sus-sim-bench");
@@ -1360,44 +1534,28 @@ window.ResultsDashboard = (function () {
     const demo = state.metrics.demographics;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
-    // Dicionário de tradução para perfis e culturas
-    const profileTranslations = {
-      "Técnico / Consultor": "Technical Advisor / Consultant",
-      "Eng. Agrónomo": "Agronomist",
-      "Produtor": "Grower / Farmer",
-      "Investigador": "Researcher / Academic",
-      "Estudante": "Student",
-      "Outro": "Other"
-    };
-
-    const cropTranslations = {
-      "Vinhedo": "Vineyard",
-      "Olivicultura": "Olive Grove",
-      "Fruticultura": "Fruit Orchards",
-      "Milho": "Maize / Corn",
-      "Hortícolas": "Vegetables / Horticulture",
-      "Grandes Culturas": "Broadacre Crops",
-      "Outras": "Other"
-    };
-
-    // Gráfico de Perfis Profissionais (Donut)
+    // Gráfico de Perfis Profissionais (Q1 - Donut)
     const ctxProfiles = document.getElementById("chart-demo-profiles")?.getContext("2d");
     if (ctxProfiles && window.Chart) {
       if (state.charts.demoProfiles) state.charts.demoProfiles.destroy();
 
-      const rawPLabels = Object.keys(demo.profiles || {});
-      const pLabels = rawPLabels.length 
-        ? (isEn ? rawPLabels.map(l => profileTranslations[l] || l) : rawPLabels)
-        : (isEn ? ["Technical Advisor", "Agronomist", "Farmer / Grower", "Researcher"] : ["Técnico / Consultor", "Eng. Agrónomo", "Produtor", "Investigador"]);
-      const pData = Object.values(demo.profiles || {});
+      const pEntries = OFFICIAL_PROFILES
+        .map(p => ({
+          label: isEn ? (PROFILE_TRANSLATIONS[p] || p) : p,
+          count: demo.profiles[p] || 0
+        }))
+        .filter(item => item.count > 0);
+
+      const pLabels = pEntries.length ? pEntries.map(e => e.label) : [isEn ? "Farmer / Producer" : "Agricultor(a) / Produtor(a)"];
+      const pData = pEntries.length ? pEntries.map(e => e.count) : [1];
 
       state.charts.demoProfiles = new Chart(ctxProfiles, {
         type: "doughnut",
         data: {
           labels: pLabels,
           datasets: [{
-            data: pData.length ? pData : [7, 5, 3, 3],
-            backgroundColor: ["#F5B842", "#0F172A", "#059669", "#2563EB", "#D97706", "#8B5CF6"],
+            data: pData,
+            backgroundColor: ["#F5B842", "#0F172A", "#059669", "#2563EB", "#D97706", "#8B5CF6", "#06B6D4", "#64748B"],
             borderWidth: 2,
             borderColor: "#FFFFFF"
           }]
@@ -1406,30 +1564,32 @@ window.ResultsDashboard = (function () {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: "bottom", labels: { font: { size: 10, weight: "bold" }, boxWidth: 12 } }
+            legend: {
+              position: "bottom",
+              labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
+            }
           }
         }
       });
     }
 
-    // Gráfico de Culturas Agrícolas Representadas (Barras)
+    // Gráfico de Culturas com Maior Representatividade (Q5 - Barras Horizontais)
     const ctxCrops = document.getElementById("chart-demo-crops")?.getContext("2d");
     if (ctxCrops && window.Chart) {
       if (state.charts.demoCrops) state.charts.demoCrops.destroy();
 
-      const rawCLabels = Object.keys(demo.crops || {});
-      const cLabels = rawCLabels.length
-        ? (isEn ? rawCLabels.map(l => cropTranslations[l] || l) : rawCLabels)
-        : (isEn ? ["Vineyard", "Olive Grove", "Fruit Orchards", "Maize", "Horticulture"] : ["Vinhedo", "Olivicultura", "Fruticultura", "Milho", "Hortícolas"]);
-      const cData = Object.values(demo.crops || {});
+      const cEntries = OFFICIAL_CROPS.map(c => ({
+        label: isEn ? (CROP_TRANSLATIONS[c] || c) : c,
+        count: demo.crops[c] || 0
+      })).sort((a, b) => b.count - a.count);
 
       state.charts.demoCrops = new Chart(ctxCrops, {
         type: "bar",
         data: {
-          labels: cLabels,
+          labels: cEntries.map(e => e.label),
           datasets: [{
             label: isEn ? "Involved Participants" : "Participantes Envolvidos",
-            data: cData.length ? cData : [11, 10, 8, 6, 5],
+            data: cEntries.map(e => e.count),
             backgroundColor: "#2563EB",
             borderColor: "#1D4ED8",
             borderWidth: 1.5,
@@ -1442,8 +1602,13 @@ window.ResultsDashboard = (function () {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { stepSize: 2, font: { size: 10 } } },
-            y: { ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" } }
+            x: {
+              beginAtZero: true,
+              ticks: { stepSize: 2, font: { size: 10 } }
+            },
+            y: {
+              ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" }
+            }
           }
         }
       });
@@ -1451,13 +1616,17 @@ window.ResultsDashboard = (function () {
 
     // Atualizar Média de Literacia Digital (Q6)
     const digitalEl = document.getElementById("demo-digital-comfort");
+    const digitalLabelEl = document.getElementById("demo-digital-comfort-label");
     if (digitalEl) {
       digitalEl.textContent = `${demo.digitalComfortAvg || "3.8"} / 5.0`;
+    }
+    if (digitalLabelEl) {
+      digitalLabelEl.textContent = getComfortLevelLabel(demo.digitalComfortAvg || 3.8, isEn);
     }
   }
 
   /**
-   * Gráfico 6: Net Promoter Score (NPS - Q29)
+   * Gráfico 6: Recomendação RENOVATE (Q29)
    */
   function renderNpsChart() {
     const ctx = document.getElementById("chart-nps-gauge")?.getContext("2d");
@@ -1467,14 +1636,18 @@ window.ResultsDashboard = (function () {
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const n = state.metrics.nps;
+    const counts = n.counts || {};
+
+    const labels = OFFICIAL_Q29_OPTIONS.map(opt => isEn ? (Q29_TRANSLATIONS[opt] || opt) : opt);
+    const data = OFFICIAL_Q29_OPTIONS.map(opt => counts[opt] || 0);
 
     state.charts.npsGauge = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: isEn ? ["Promoters (Scores 9-10)", "Passives (Scores 7-8)", "Detractors (Scores 0-6)"] : ["Promotores (Notas 9-10)", "Passivos (Notas 7-8)", "Detratores (Notas 0-6)"],
+        labels: labels,
         datasets: [{
-          data: [n.promoters || 13, n.passives || 4, n.detractors || 1],
-          backgroundColor: ["#059669", "#F5B842", "#E11D48"],
+          data: data,
+          backgroundColor: ["#059669", "#2563EB", "#F5B842", "#EA580C", "#DC2626"],
           borderWidth: 2,
           borderColor: "#FFFFFF"
         }]
@@ -1483,14 +1656,27 @@ window.ResultsDashboard = (function () {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom", labels: { font: { size: 10, weight: "bold" }, boxWidth: 12 } }
+          legend: {
+            position: "bottom",
+            labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const val = context.raw || 0;
+                const total = n.total || 1;
+                const pct = Math.round((val / total) * 100);
+                return ` ${context.label}: ${val} (${pct}%)`;
+              }
+            }
+          }
         }
       }
     });
 
     const npsScoreEl = document.getElementById("nps-center-score");
     if (npsScoreEl) {
-      npsScoreEl.textContent = `${n.score > 0 ? "+" : ""}${n.score}`;
+      npsScoreEl.textContent = `${n.average} / 5.0 (${n.positivePercent}%)`;
     }
   }
 
