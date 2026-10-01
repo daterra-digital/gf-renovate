@@ -428,14 +428,48 @@
           </a>
         </div>
 
-        <!-- Player 16:9 Responsivo -->
-        <div class="aspect-16-9 bg-slate-950 rounded-xl overflow-hidden shadow-inner">
-          <iframe 
-            src="https://www.youtube-nocookie.com/embed/1_jQYkNluhY" 
-            title="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen>
-          </iframe>
+        <!-- Player 16:9 Responsivo em Alta Resolução (HD Facade Interativo) -->
+        <div id="gf1-video-player-container" class="aspect-16-9 bg-slate-950 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200">
+          <!-- Thumbnail Nativa HD (1280x720) sem perda de qualidade / pixelização -->
+          <img 
+            src="assets/images/gf1/gf1-video-thumb.jpg" 
+            onerror="this.src='https://img.youtube.com/vi/1_jQYkNluhY/maxresdefault.jpg'"
+            alt="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            loading="lazy"
+          />
+          
+          <!-- Overlay de gradiente suave -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 group-hover:from-black/60 transition-colors"></div>
+
+          <!-- Botão Play Central Estilo YouTube Oficial -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <button type="button" aria-label="Reproduzir vídeo em alta resolução" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-600/95 text-white flex items-center justify-center shadow-2xl group-hover:bg-red-600 group-hover:scale-110 transition-all duration-300 ring-4 ring-white/30 backdrop-blur-xs">
+              <svg class="w-8 h-8 sm:w-10 sm:h-10 translate-x-0.5 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Badges Informativos no Topo e Fundo do Player -->
+          <div class="absolute top-3 left-3 flex items-center gap-2">
+            <span class="bg-red-600 text-white text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
+              YouTube HD
+            </span>
+            <span class="bg-slate-900/80 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md hidden sm:inline-block">
+              1ª Sessão Lisboa • DATERRA & Consórcio RENOVATE
+            </span>
+          </div>
+
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
+            <span class="bg-slate-900/85 backdrop-blur-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shadow">
+              <i data-lucide="play-circle" class="w-4 h-4 text-red-400"></i>
+              Clique para reproduzir em alta resolução
+            </span>
+            <span class="bg-black/75 px-2.5 py-1 rounded-md font-mono text-[11px] font-bold">
+              HD 1080p
+            </span>
+          </div>
         </div>
         <p class="text-[11px] text-slate-500 italic">
           O primeiro Grupo Focal em Portugal juntou especialistas, consultores e produtores para definir os requisitos das ferramentas pedagógicas digitais.

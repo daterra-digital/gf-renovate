@@ -105,7 +105,11 @@ function initTabNavigation() {
       switchTab("program");
       const slot2Details = document.getElementById("slot-2-details");
       if (slot2Details) {
+        document.querySelectorAll(".schedule-accordion").forEach(d => {
+          if (d !== slot2Details) d.open = false;
+        });
         slot2Details.open = true;
+        localStorage.setItem("renovate_last_open_slot", "slot-2");
         setTimeout(() => {
           slot2Details.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 150);
@@ -140,6 +144,9 @@ function initTabNavigation() {
 function renderSchedule() {
   const container = document.getElementById("schedule-container");
   if (!container || !RENOVATE_CONFIG.schedule) return;
+
+  // Recuperar o último acordeão aberto (por defeito: slot-1 "Sessão de Abertura")
+  const savedOpenSlot = localStorage.getItem("renovate_last_open_slot") || "slot-1";
 
   container.innerHTML = RENOVATE_CONFIG.schedule.map((item, index) => {
     // Conteúdo embutido de acordo com o tipo da fase
@@ -348,7 +355,7 @@ function renderSchedule() {
       `;
     }
 
-    const isOpen = item.id === "slot-2" ? "open" : "";
+    const isOpen = item.id === savedOpenSlot ? "open" : "";
 
     return `
       <details id="${item.id}-details" class="schedule-accordion accordion-step-${item.step || ''} group bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm hover:border-[#F5B842] transition-all" ${isOpen}>
@@ -391,20 +398,45 @@ function renderSchedule() {
   }).join("");
 
   // Botões de controlo global de expansão
+  let isBulkToggle = false;
   const expandBtn = document.getElementById("btn-expand-all-schedule");
   const collapseBtn = document.getElementById("btn-collapse-all-schedule");
 
   if (expandBtn) {
     expandBtn.onclick = () => {
+      isBulkToggle = true;
       document.querySelectorAll(".schedule-accordion").forEach(d => d.open = true);
+      setTimeout(() => { isBulkToggle = false; }, 100);
     };
   }
 
   if (collapseBtn) {
     collapseBtn.onclick = () => {
+      isBulkToggle = true;
       document.querySelectorAll(".schedule-accordion").forEach(d => d.open = false);
+      setTimeout(() => { isBulkToggle = false; }, 100);
     };
   }
+
+  // Gestão e memorização do último acordeão aberto (comportamento de foco único)
+  const accordions = document.querySelectorAll(".schedule-accordion");
+  accordions.forEach(detailsEl => {
+    detailsEl.addEventListener("toggle", () => {
+      if (isBulkToggle) return;
+      if (detailsEl.open) {
+        const slotId = detailsEl.id.replace("-details", "");
+        // Memorizar no localStorage para que os utilizadores reencontrem onde estavam
+        localStorage.setItem("renovate_last_open_slot", slotId);
+
+        // Fechar os restantes acordeões para manter o foco limpo na etapa atual
+        accordions.forEach(other => {
+          if (other !== detailsEl && other.open) {
+            other.open = false;
+          }
+        });
+      }
+    });
+  });
 
   // Atualizar ícones e sincronizar com o estado da sessão ao vivo
   if (window.lucide) window.lucide.createIcons();
@@ -465,6 +497,24 @@ function renderGF1() {
         </div>
       </div>
     `).join("");
+  }
+
+  // Inicialização do Player de Vídeo HD do GF1 (elimina pixelização do embed padrão)
+  const gf1PlayerContainer = document.getElementById("gf1-video-player-container");
+  if (gf1PlayerContainer && !gf1PlayerContainer.dataset.initialized) {
+    gf1PlayerContainer.dataset.initialized = "true";
+    gf1PlayerContainer.addEventListener("click", () => {
+      gf1PlayerContainer.innerHTML = `
+        <iframe 
+          src="https://www.youtube-nocookie.com/embed/1_jQYkNluhY?autoplay=1&rel=0&modestbranding=1" 
+          title="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen
+          class="w-full h-full border-0">
+        </iframe>
+      `;
+      gf1PlayerContainer.classList.remove("cursor-pointer", "group");
+    });
   }
 
   if (window.lucide) window.lucide.createIcons();
