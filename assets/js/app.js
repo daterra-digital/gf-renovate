@@ -172,7 +172,19 @@ function renderSchedule() {
   const savedOpenSlot = localStorage.getItem("renovate_last_open_slot") || "slot-1";
 
   container.innerHTML = RENOVATE_CONFIG.schedule.map((item, index) => {
-    const itemTitle = (isEn && item.titleEn) ? item.titleEn : item.title;
+    const rawTitle = (isEn && item.titleEn) ? item.titleEn : item.title;
+    let itemTitle = rawTitle;
+    if (rawTitle.includes("(oferecido pela DATERRA)")) {
+      itemTitle = rawTitle.replace(
+        "(oferecido pela DATERRA)",
+        `<span class="text-xs sm:text-sm font-medium text-slate-500 ml-1">(oferecido pela DATERRA)</span>`
+      );
+    } else if (rawTitle.includes("(Hosted by DATERRA)")) {
+      itemTitle = rawTitle.replace(
+        "(Hosted by DATERRA)",
+        `<span class="text-xs sm:text-sm font-medium text-slate-500 ml-1">(Hosted by DATERRA)</span>`
+      );
+    }
     const itemSpeaker = (isEn && item.speakerEn) ? item.speakerEn : item.speaker;
     const itemBadge = (isEn && item.badgeEn) ? item.badgeEn : item.badge;
     const itemDesc = (isEn && item.descriptionEn) ? item.descriptionEn : item.description;
@@ -343,7 +355,7 @@ function renderSchedule() {
           <div class="w-9 h-9 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
             <i data-lucide="coffee" class="w-5 h-5"></i>
           </div>
-          <p>${isEn ? "Coffee break, rest, and informal networking between trainers, agricultural advisors, and researchers in the ESAS reception area." : "Momento de pausa técnica e convívio informal entre formadores, consultores e investigadores agrícolas na área de receção da ESAS."}</p>
+          <p>${isEn ? "Coffee break, rest, and informal networking hosted by DATERRA for all invited participants in the ESAS reception area." : "Momento de pausa técnica, café e convívio informal oferecido pela DATERRA a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
         </div>
       `;
     } else if (item.type === "lunch") {
