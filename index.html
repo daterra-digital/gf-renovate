@@ -75,7 +75,7 @@
         <div class="h-5 sm:h-7 w-[1px] bg-slate-200"></div>
 
         <!-- Logótipo ESAS (Escola Superior Agrária de Santarém) -->
-        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
+        <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
           <img src="logo-esas.png" alt="Logótipo ESAS" class="h-7 sm:h-9 md:h-11 w-auto max-w-[110px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.src='assets/images/logos/esas.png';">
         </a>
@@ -600,26 +600,89 @@
 
   </main>
 
-  <!-- Rodapé Institucional com Alto Contraste & Estilo Oficial RENOVATE -->
-  <footer class="bg-[#2A1F1B] border-t-4 border-[#F5B842] py-8 px-4 text-xs text-slate-300 mt-auto">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-      <div class="space-y-1">
-        <div class="flex items-center justify-center md:justify-start gap-2 flex-wrap">
-          <span class="inline-block px-2 py-0.5 rounded bg-[#F5B842] text-[#2A1F1B] font-extrabold text-[10px] uppercase tracking-wider">União Europeia</span>
-          <p class="font-extrabold text-white text-xs sm:text-sm">Projeto RENOVATE - Grant Agreement nº 101134024 | Financiado pela União Europeia</p>
+  <!-- ========================================== -->
+  <!-- RODAPÉ INSTITUCIONAL (DESIGN OFICIAL RENOVATE) -->
+  <!-- ========================================== -->
+  <footer class="mt-auto">
+    <!-- Secção Superior: Castanho Marca (#543632) com Logótipo Amarelo, Redes Sociais, Links e Newsletter -->
+    <div class="bg-[#543632] text-white py-10 sm:py-12 px-4 sm:px-6">
+      <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
+        
+        <!-- Coluna 1: Logótipo RENOVATE Dourado/Amarelo e Redes Sociais -->
+        <div class="md:col-span-4 space-y-4">
+          <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Projeto RENOVATE" class="inline-block">
+            <img src="assets/images/logos/renovate-yellow.png" alt="RENOVATE" class="h-20 sm:h-24 w-auto object-contain" onerror="this.src='renovate-yellow.png';">
+          </a>
+          <!-- Ícones Redes Sociais em círculos coloridos idênticos à referência -->
+          <div class="flex items-center gap-3 pt-1">
+            <!-- Instagram (Círculo Escuro) -->
+            <a href="https://www.instagram.com/RenovateprojectEU" target="_blank" rel="noopener noreferrer" title="Instagram" 
+               class="w-8 h-8 rounded-full bg-[#181818] hover:bg-slate-900 text-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
+              <i data-lucide="instagram" class="w-4 h-4"></i>
+            </a>
+            <!-- Facebook (Círculo Azul) -->
+            <a href="https://www.facebook.com/RenovateprojectEU" target="_blank" rel="noopener noreferrer" title="Facebook" 
+               class="w-8 h-8 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
+              <i data-lucide="facebook" class="w-4 h-4"></i>
+            </a>
+            <!-- YouTube (Círculo Vermelho) -->
+            <a href="https://www.youtube.com/@RenovateProjectEU" target="_blank" rel="noopener noreferrer" title="YouTube" 
+               class="w-8 h-8 rounded-full bg-[#FF0000] hover:bg-[#e60000] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
+              <i data-lucide="youtube" class="w-4 h-4"></i>
+            </a>
+            <!-- LinkedIn (Círculo Azul) -->
+            <a href="https://www.linkedin.com/company/renovateproject" target="_blank" rel="noopener noreferrer" title="LinkedIn" 
+               class="w-8 h-8 rounded-full bg-[#0A66C2] hover:bg-[#095196] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
+              <i data-lucide="linkedin" class="w-4 h-4"></i>
+            </a>
+          </div>
         </div>
-        <p class="text-[11px] text-amber-100/70">
-          Organização: DATERRA • Anfitrião: Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém
-        </p>
+
+        <!-- Coluna 2: Links Institucionais (2 Subcolunas, texto ligeiramente mais pequeno) -->
+        <div class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm font-medium">
+          <div class="space-y-2.5">
+            <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
+              Projeto RENOVATE
+            </a>
+            <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
+              DATERRA
+            </a>
+          </div>
+          <div class="space-y-2.5">
+            <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
+              EuroTech Day
+            </a>
+            <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
+              ESAS
+            </a>
+          </div>
+        </div>
+
+        <!-- Coluna 3: Newsletter Subscribe -->
+        <div class="md:col-span-4 space-y-3">
+          <h4 class="text-xs sm:text-sm font-semibold text-white">Subscribe to our newsletter</h4>
+          <form action="https://renovateproject.eu/" method="get" target="_blank" class="space-y-2 max-w-sm">
+            <input type="email" placeholder="Email address" required 
+                   class="w-full px-3.5 py-2 rounded bg-white text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#F5B842]">
+            <button type="submit" 
+                    class="w-full py-2 px-4 rounded bg-[#F5B842] hover:bg-[#FBBF24] text-slate-900 font-bold text-xs sm:text-sm tracking-wide transition shadow-sm">
+              Subscribe
+            </button>
+          </form>
+        </div>
+
       </div>
-      <div class="flex items-center justify-center gap-3 sm:gap-4 text-xs font-semibold flex-wrap">
-        <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">Projeto RENOVATE</a>
-        <span class="text-slate-500">•</span>
-        <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">DATERRA</a>
-        <span class="text-slate-500">•</span>
-        <a href="http://www.esa.ipsantarem.pt" target="_blank" rel="noopener noreferrer" class="text-[#F5B842] hover:text-white transition">ESAS</a>
-        <span class="text-slate-500">•</span>
-        <button type="button" class="btn-open-moderator-modal px-2.5 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-[#F5B842] transition font-bold border border-amber-400/40">Painel Moderador</button>
+    </div>
+
+    <!-- Secção Inferior: Fundo Branco com Logótipo UE (eu.png) e Menção Legal de Financiamento -->
+    <div class="bg-white border-t border-slate-200 py-5 px-4 sm:px-6">
+      <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-slate-700">
+        <!-- Logótipo da União Europeia (eu.png) -->
+        <img src="assets/images/logos/eu.png" alt="Funded by the European Union" class="h-9 sm:h-10 w-auto object-contain shrink-0" onerror="this.src='eu.png';">
+        <!-- Texto Legal -->
+        <p class="text-[11px] sm:text-xs leading-relaxed text-slate-600 text-center sm:text-left">
+          Funded by the European Union under Grant Agreement 101134024. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Executive Agency (REA). Neither the European Union nor the REA can be held responsible for them.
+        </p>
       </div>
     </div>
   </footer>

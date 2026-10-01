@@ -14,11 +14,11 @@ const RENOVATE_CONFIG = {
     host: "DATERRA - Lógica de Terra, Lda.",
     website: "https://renovateproject.eu",
     daterraWebsite: "https://daterra.com.pt",
-    esasWebsite: "http://www.esa.ipsantarem.pt",
+    esasWebsite: "https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/",
     sideNote: {
       title: "EuroTech Day",
       description: "Esta sessão integra a iniciativa temática de disseminação colaborativa EuroTech Day, ligando a inovação tecnológica agrária à formação especializada.",
-      link: "https://daterra.com.pt"
+      link: "https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/"
     }
   },
 
@@ -29,7 +29,7 @@ const RENOVATE_CONFIG = {
     country: "Portugal",
     role: "Entidade Anfitriã da 2ª Sessão do Grupo Focal",
     logo: "assets/images/logos/esas.png",
-    url: "http://www.esa.ipsantarem.pt"
+    url: "https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/"
   },
 
   // Estatísticas do Consórcio (conforme infografia oficial)
@@ -46,7 +46,7 @@ const RENOVATE_CONFIG = {
       country: "Spain",
       countryPt: "Espanha",
       logo: "assets/images/logos/upc.png",
-      url: "https://www.upc.edu",
+      url: "https://uma.deab.upc.edu/en",
       role: "Coordenação Geral"
     },
     {
@@ -109,7 +109,7 @@ const RENOVATE_CONFIG = {
       country: "Italy",
       countryPt: "Itália",
       logo: "assets/images/logos/laore.png",
-      url: "https://www.agenzialaore.it",
+      url: "https://www.sardegnaagricoltura.it/",
       role: "Desenvolvimento Agrário"
     },
     {
@@ -127,7 +127,7 @@ const RENOVATE_CONFIG = {
       country: "Cyprus",
       countryPt: "Chipre",
       logo: "assets/images/logos/pek.png",
-      url: "https://pek.org.cy",
+      url: "https://www.facebook.com/people/%CE%A0%CE%B1%CE%BD%CE%B1%CE%B3%CF%81%CE%BF%CF%84%CE%B9%CE%BA%CE%AE-%CE%88%CE%BD%CF%89%CF%83%CE%B7-%CE%9A%CF%8D%CF%80%CF%81%CE%BF%CF%85-%CE%A0%CE%95%CE%9A-Pancyprian-Farmers-Union/100064453069332/",
       role: "Associação de Agricultores"
     },
     {
@@ -136,7 +136,7 @@ const RENOVATE_CONFIG = {
       country: "Spain",
       countryPt: "Espanha",
       logo: "assets/images/logos/coop-valenciana.png",
-      url: "https://agroalimentariescv.coop",
+      url: "https://cooperativesagroalimentariescv.com/",
       role: "Cooperativismo Agrário"
     },
     {
@@ -158,12 +158,12 @@ const RENOVATE_CONFIG = {
       role: "Serious Games & Gamificação"
     },
     {
-      name: "artica+",
-      shortName: "artica+",
+      name: "ARTICAi",
+      shortName: "ARTICAi",
       country: "Spain",
       countryPt: "Espanha",
       logo: "assets/images/logos/artica.png",
-      url: "https://articaingenieria.com",
+      url: "https://www.articai.es/",
       role: "Engenharia & Inovação"
     },
     {
