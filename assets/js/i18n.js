@@ -105,7 +105,7 @@ window.I18nManager = (function () {
       "fg1.highlightsTitle": "Principais Conclusões & Diretrizes Extraídas",
       "fg1.galleryTitle": "Galeria Fotográfica do Grupo Focal 1",
       "fg1.galleryDesc": "Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.",
-      "fg1.galleryFolder": "Pasta: assets/images/gf1/",
+      "lightbox.close": "Fechar",
 
       // Results & Media (Tab 4)
       "results.loading": "A carregar resultados...",
@@ -338,7 +338,7 @@ window.I18nManager = (function () {
       "fg1.highlightsTitle": "Key Conclusions & Extracted Guidelines",
       "fg1.galleryTitle": "Photo Gallery - Focus Group 1",
       "fg1.galleryDesc": "Photographic record of teamwork and workshops in Lisbon.",
-      "fg1.galleryFolder": "Folder: assets/images/gf1/",
+      "lightbox.close": "Close",
 
       // Results & Media (Tab 4)
       "results.loading": "Loading results...",

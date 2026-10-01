@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 5. Inicializar Modais e Event Listeners
   initModeratorModal();
   initParticipantCodeEvents();
+  initGF1LightboxEvents();
 
   // 6. Inicializar Ícones Lucide
   if (window.lucide) {
@@ -506,27 +507,73 @@ function renderGF1() {
     `).join("");
   }
 
-  if (galleryContainer && gf1.gallery) {
-    galleryContainer.innerHTML = gf1.gallery.map((img, idx) => `
-      <div class="group bg-white rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm hover:border-[#F5B842] hover:shadow-md transition-all flex flex-col justify-between">
-        <!-- Contentor de Imagem com Fallback Visual Amigável -->
-        <div class="h-44 sm:h-48 bg-slate-100 overflow-hidden relative flex items-center justify-center border-b border-slate-100">
-          <img src="${img.src}" alt="${img.alt}" 
-               class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-               onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'flex flex-col items-center justify-center p-4 text-center h-full w-full bg-gradient-to-br from-amber-50 to-orange-50\\'><div class=\\'w-10 h-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center mb-1.5 shadow-sm\\'><i data-lucide=\\'camera\\' class=\\'w-5 h-5\\'></i></div><span class=\\'text-xs font-extrabold text-slate-900\\'>Foto ${idx + 1}</span><span class=\\'text-[10px] text-slate-600 font-mono mt-1 px-2 py-0.5 bg-white rounded border border-amber-300 shadow-2xs\\'>${img.filename}</span><span class=\\'text-[10px] font-semibold text-amber-800 mt-1\\'>Colar em assets/images/gf1/</span></div>'; if (window.lucide) lucide.createIcons();">
-        </div>
-        <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
-          <div>
-            <h4 class="font-bold text-slate-900 text-sm leading-snug">${(isEn && img.titleEn) ? img.titleEn : img.title}</h4>
-            <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">${(isEn && img.captionEn) ? img.captionEn : img.caption}</p>
+  if (galleryContainer && (gf1.galleryAlbums || gf1.gallery)) {
+    const albums = gf1.galleryAlbums || [];
+    galleryContainer.className = "grid grid-cols-1 lg:grid-cols-3 gap-6";
+
+    galleryContainer.innerHTML = albums.map((album) => {
+      const albumTitle = (isEn && album.titleEn) ? album.titleEn : album.title;
+      const albumBadge = (isEn && album.badgeEn) ? album.badgeEn : album.badge;
+      const albumDesc = (isEn && album.descriptionEn) ? album.descriptionEn : album.description;
+      const firstImg = album.images && album.images.length > 0 ? album.images[0] : {};
+      const firstTitle = (isEn && firstImg.titleEn) ? firstImg.titleEn : (firstImg.title || "");
+
+      return `
+        <div class="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm hover:border-[#F5B842] hover:shadow-md transition-all flex flex-col justify-between p-4 sm:p-5 space-y-4">
+          <!-- Cabeçalho do Cartão da Fase -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-xs">
+                <i data-lucide="${album.icon || 'camera'}" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="font-extrabold text-slate-900 text-base leading-snug">${albumTitle}</h4>
+                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">${albumDesc}</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+              <i data-lucide="image" class="w-3 h-3 text-amber-600"></i>
+              ${albumBadge}
+            </span>
           </div>
-          <div class="pt-2 text-[10px] text-slate-400 font-mono flex items-center gap-1 border-t border-slate-100 mt-3">
-            <i data-lucide="folder" class="w-3 h-3 text-amber-500"></i>
-            <span>assets/images/gf1/${img.filename}</span>
+
+          <!-- Imagem de Destaque Interativa do Cartão (Clique para Abrir Lightbox) -->
+          <div id="featured-container-${album.id}"
+               class="relative rounded-xl overflow-hidden bg-slate-900 border border-slate-200 group/img cursor-pointer aspect-16-9"
+               onclick="window.openGf1Lightbox('${album.id}', 0)">
+            <img id="featured-img-${album.id}" src="${firstImg.src}" alt="${firstImg.alt}" 
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" loading="lazy">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-3.5">
+              <span id="featured-title-${album.id}" class="text-white text-xs font-bold drop-shadow-md truncate pr-2">
+                ${firstTitle}
+              </span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-white/95 text-slate-900 shadow-md backdrop-blur-xs shrink-0">
+                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                ${isEn ? "Expand" : "Ampliar"}
+              </span>
+            </div>
+          </div>
+
+          <!-- Grelha de Miniaturas da Fase -->
+          <div class="space-y-2 pt-1 border-t border-slate-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+              <span>${isEn ? "Photographs" : "Fotografias"}:</span>
+              <span class="text-amber-800 font-medium text-[11px]">${isEn ? "Select to preview or expand" : "Selecione para ver ou ampliar"}</span>
+            </div>
+            <div class="grid grid-cols-6 sm:grid-cols-6 gap-1.5 sm:gap-2">
+              ${album.images.map((img, i) => `
+                <button type="button" 
+                        class="thumb-btn-${album.id} rounded-lg overflow-hidden border-2 transition-all aspect-square relative group/thumb ${i === 0 ? 'border-[#F5B842] ring-2 ring-amber-300' : 'border-slate-200 hover:border-amber-400 opacity-80 hover:opacity-100'}"
+                        onclick="window.selectFeaturedImage('${album.id}', ${i})"
+                        title="${(isEn && img.titleEn) ? img.titleEn : img.title}">
+                  <img src="${img.src}" alt="${img.alt}" class="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200" loading="lazy">
+                </button>
+              `).join("")}
+            </div>
           </div>
         </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
   // Inicialização do Player de Vídeo HD do GF1 (elimina pixelização do embed padrão)
@@ -881,6 +928,148 @@ function showToast(message) {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// ==========================================
+// GESTÃO DA GALERIA & LIGHTBOX DO GF1
+// ==========================================
+let currentLightboxState = {
+  albumId: null,
+  index: 0
+};
+
+function selectFeaturedImage(albumId, index) {
+  const gf1 = RENOVATE_CONFIG.gf1;
+  if (!gf1 || !gf1.galleryAlbums) return;
+  const album = gf1.galleryAlbums.find(a => a.id === albumId);
+  if (!album || !album.images || !album.images[index]) return;
+
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
+  const img = album.images[index];
+  const featuredImg = document.getElementById(`featured-img-${albumId}`);
+  const featuredTitle = document.getElementById(`featured-title-${albumId}`);
+  const featuredContainer = document.getElementById(`featured-container-${albumId}`);
+
+  if (featuredImg) {
+    featuredImg.src = img.src;
+    featuredImg.alt = img.alt;
+  }
+  if (featuredTitle) {
+    featuredTitle.textContent = (isEn && img.titleEn) ? img.titleEn : (img.title || "");
+  }
+  if (featuredContainer) {
+    featuredContainer.onclick = () => openGf1Lightbox(albumId, index);
+  }
+
+  // Atualizar visual das miniaturas
+  document.querySelectorAll(`.thumb-btn-${albumId}`).forEach((btn, i) => {
+    if (i === index) {
+      btn.className = `thumb-btn-${albumId} rounded-lg overflow-hidden border-2 transition-all aspect-square relative group/thumb border-[#F5B842] ring-2 ring-amber-300 opacity-100`;
+    } else {
+      btn.className = `thumb-btn-${albumId} rounded-lg overflow-hidden border-2 transition-all aspect-square relative group/thumb border-slate-200 hover:border-amber-400 opacity-80 hover:opacity-100`;
+    }
+  });
+}
+
+function openGf1Lightbox(albumId, index) {
+  const gf1 = RENOVATE_CONFIG.gf1;
+  if (!gf1 || !gf1.galleryAlbums) return;
+  const album = gf1.galleryAlbums.find(a => a.id === albumId);
+  if (!album) return;
+
+  currentLightboxState.albumId = albumId;
+  currentLightboxState.index = index;
+
+  updateLightboxContent();
+
+  const modal = document.getElementById("gf1-lightbox-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+function closeGf1Lightbox() {
+  const modal = document.getElementById("gf1-lightbox-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+}
+
+function navigateGf1Lightbox(direction) {
+  const gf1 = RENOVATE_CONFIG.gf1;
+  if (!gf1 || !gf1.galleryAlbums || !currentLightboxState.albumId) return;
+  const album = gf1.galleryAlbums.find(a => a.id === currentLightboxState.albumId);
+  if (!album || !album.images || album.images.length === 0) return;
+
+  let newIndex = currentLightboxState.index + direction;
+  if (newIndex < 0) newIndex = album.images.length - 1;
+  if (newIndex >= album.images.length) newIndex = 0;
+
+  currentLightboxState.index = newIndex;
+  updateLightboxContent();
+}
+
+function updateLightboxContent() {
+  const gf1 = RENOVATE_CONFIG.gf1;
+  if (!gf1 || !gf1.galleryAlbums || !currentLightboxState.albumId) return;
+  const album = gf1.galleryAlbums.find(a => a.id === currentLightboxState.albumId);
+  if (!album || !album.images) return;
+
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
+  const img = album.images[currentLightboxState.index];
+  if (!img) return;
+
+  const imgEl = document.getElementById("gf1-lightbox-img");
+  const albumEl = document.getElementById("gf1-lightbox-album");
+  const titleEl = document.getElementById("gf1-lightbox-title");
+  const counterEl = document.getElementById("gf1-lightbox-counter");
+
+  if (imgEl) {
+    imgEl.src = img.src;
+    imgEl.alt = img.alt;
+  }
+  if (albumEl) {
+    albumEl.textContent = (isEn && album.titleEn) ? album.titleEn : album.title;
+  }
+  if (titleEl) {
+    titleEl.textContent = (isEn && img.titleEn) ? img.titleEn : (img.title || img.filename);
+  }
+  if (counterEl) {
+    counterEl.textContent = `${currentLightboxState.index + 1} / ${album.images.length}`;
+  }
+}
+
+function initGF1LightboxEvents() {
+  const closeBtn = document.getElementById("btn-close-gf1-lightbox");
+  const prevBtn = document.getElementById("btn-prev-gf1-lightbox");
+  const nextBtn = document.getElementById("btn-next-gf1-lightbox");
+  const modal = document.getElementById("gf1-lightbox-modal");
+
+  if (closeBtn) closeBtn.onclick = closeGf1Lightbox;
+  if (prevBtn) prevBtn.onclick = () => navigateGf1Lightbox(-1);
+  if (nextBtn) nextBtn.onclick = () => navigateGf1Lightbox(1);
+
+  if (modal) {
+    modal.onclick = (e) => {
+      if (e.target === modal) closeGf1Lightbox();
+    };
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (modal && !modal.classList.contains("hidden")) {
+      if (e.key === "Escape") closeGf1Lightbox();
+      if (e.key === "ArrowLeft") navigateGf1Lightbox(-1);
+      if (e.key === "ArrowRight") navigateGf1Lightbox(1);
+    }
+  });
+}
+
+window.selectFeaturedImage = selectFeaturedImage;
+window.openGf1Lightbox = openGf1Lightbox;
+window.closeGf1Lightbox = closeGf1Lightbox;
+window.navigateGf1Lightbox = navigateGf1Lightbox;
 
 // Exposição explícita para o I18nManager
 window.renderSchedule = renderSchedule;

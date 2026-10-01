@@ -408,6 +408,7 @@ const RENOVATE_CONFIG = {
     video: {
       url: "https://youtu.be/1_jQYkNluhY?si=BJvw2ftMW5WyCqki",
       embedUrl: "https://www.youtube-nocookie.com/embed/1_jQYkNluhY",
+      thumbnail: "assets/images/gf1/gf1-2.jpg",
       title: "Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)",
       description: "Reportagem em vídeo da sessão realizada em Lisboa, reunindo testemunhos de formadores, agricultores e especialistas do consórcio."
     },
@@ -441,42 +442,62 @@ const RENOVATE_CONFIG = {
       "Need for direct linkages between simulations and real-world cost and savings calculations.",
       "Consensus on the importance of creating mobile-accessible resources."
     ],
-    gallery: [
+    galleryAlbums: [
       {
-        filename: "gf1-foto-1.jpg",
-        src: "assets/images/gf1/gf1-foto-1.jpg",
-        alt: "Abertura e Enquadramento - GF1 Lisboa",
+        id: "abertura",
         title: "Abertura & Apresentação",
         titleEn: "Opening & Presentation",
-        caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa.",
-        captionEn: "Auditorium with agricultural experts and researchers at Focus Group 1 in Lisbon."
+        badge: "6 Fotografias",
+        badgeEn: "6 Photographs",
+        icon: "presentation",
+        description: "Acolhimento institucional, enquadramento dos trabalhos e diagnóstico inicial dos peritos agrários.",
+        descriptionEn: "Institutional welcome, framework of proceedings, and initial diagnostics with agricultural experts.",
+        images: [
+          { filename: "gf1-1.jpg", src: "assets/images/gf1/gf1-1.jpg", alt: "Abertura & Apresentação - Foto 1", title: "Abertura dos Trabalhos", titleEn: "Opening of Proceedings" },
+          { filename: "gf1-2.jpg", src: "assets/images/gf1/gf1-2.jpg", alt: "Abertura & Apresentação - Foto 2", title: "Apresentação e Enquadramento", titleEn: "Presentation & Framework" },
+          { filename: "gf1-3.jpg", src: "assets/images/gf1/gf1-3.jpg", alt: "Abertura & Apresentação - Foto 3", title: "Auditório com Peritos", titleEn: "Auditorium with Experts" },
+          { filename: "gf1-4.jpg", src: "assets/images/gf1/gf1-4.jpg", alt: "Abertura & Apresentação - Foto 4", title: "Sessão Plenária Inicial", titleEn: "Initial Plenary Session" },
+          { filename: "gf1-5.jpg", src: "assets/images/gf1/gf1-5.jpg", alt: "Abertura & Apresentação - Foto 5", title: "Intervenção Institucional", titleEn: "Institutional Address" },
+          { filename: "gf1-6.jpg", src: "assets/images/gf1/gf1-6.jpg", alt: "Abertura & Apresentação - Foto 6", title: "Apresentação do Consórcio", titleEn: "Consortium Presentation" }
+        ]
       },
       {
-        filename: "gf1-foto-2.jpg",
-        src: "assets/images/gf1/gf1-foto-2.jpg",
-        alt: "Debate Participativo - GF1 Lisboa",
-        title: "Mesa Redonda & Debate",
-        titleEn: "Round Table & Debate",
-        caption: "Discussão participativa sobre barreiras na adoção de tecnologias agrícolas sustentáveis.",
-        captionEn: "Participatory discussion on barriers to the adoption of sustainable farming technologies."
-      },
-      {
-        filename: "gf1-foto-3.jpg",
-        src: "assets/images/gf1/gf1-foto-3.jpg",
-        alt: "Dinâmica de Co-Criação - GF1 Lisboa",
-        title: "Dinâmica de Co-Criação",
+        id: "cocriacao",
+        title: "Dinâmica de Co-criação",
         titleEn: "Co-Creation Dynamics",
-        caption: "Mapeamento das necessidades de formação contínua em proteção fitossanitária.",
-        captionEn: "Mapping continuous training needs in sustainable crop protection."
+        badge: "6 Fotografias",
+        badgeEn: "6 Photographs",
+        icon: "users",
+        description: "Mesas redondas participativas, identificação de necessidades formativas e debate prático em grupo.",
+        descriptionEn: "Participatory roundtables, training needs identification, and practical group debates.",
+        images: [
+          { filename: "gf1-7.jpg", src: "assets/images/gf1/gf1-7.jpg", alt: "Dinâmica de Co-criação - Foto 1", title: "Mesa Redonda Participativa", titleEn: "Participatory Roundtable" },
+          { filename: "gf1-8.jpg", src: "assets/images/gf1/gf1-8.jpg", alt: "Dinâmica de Co-criação - Foto 2", title: "Trabalho em Grupo e Co-criação", titleEn: "Group Work & Co-Creation" },
+          { filename: "gf1-9.jpg", src: "assets/images/gf1/gf1-9.jpg", alt: "Dinâmica de Co-criação - Foto 3", title: "Debate sobre Formação Prática", titleEn: "Practical Training Debate" },
+          { filename: "gf1-10.jpg", src: "assets/images/gf1/gf1-10.jpg", alt: "Dinâmica de Co-criação - Foto 4", title: "Discussão de Barreiras no Campo", titleEn: "Discussion of Field Barriers" },
+          { filename: "gf1-11.jpg", src: "assets/images/gf1/gf1-11.jpg", alt: "Dinâmica de Co-criação - Foto 5", title: "Mapeamento de Competências", titleEn: "Competence Mapping" },
+          { filename: "gf1-12.jpg", src: "assets/images/gf1/gf1-12.jpg", alt: "Dinâmica de Co-criação - Foto 6", title: "Interação e Partilha Ativa", titleEn: "Active Interaction & Sharing" }
+        ]
       },
       {
-        filename: "gf1-foto-4.jpg",
-        src: "assets/images/gf1/gf1-foto-4.jpg",
-        alt: "Síntese dos Trabalhos - GF1 Lisboa",
+        id: "sintese",
         title: "Síntese dos Resultados",
         titleEn: "Synthesis of Results",
-        caption: "Registo e consolidação das diretrizes que alimentaram as ferramentas digitais.",
-        captionEn: "Recording and consolidating the core guidelines that informed the digital tools."
+        badge: "8 Fotografias",
+        badgeEn: "8 Photographs",
+        icon: "clipboard-check",
+        description: "Partilha em plenário, consolidação das conclusões e registo das diretrizes pedagógicas para as ferramentas.",
+        descriptionEn: "Plenary sharing, consolidation of group findings, and recording pedagogical guidelines for the digital tools.",
+        images: [
+          { filename: "gf1-13.jpg", src: "assets/images/gf1/gf1-13.jpg", alt: "Síntese dos Resultados - Foto 1", title: "Apresentação dos Resultados", titleEn: "Results Presentation" },
+          { filename: "gf1-14.jpg", src: "assets/images/gf1/gf1-14.jpg", alt: "Síntese dos Resultados - Foto 2", title: "Registo dos Pontos-Chave", titleEn: "Key Points Recording" },
+          { filename: "gf1-15.jpg", src: "assets/images/gf1/gf1-15.jpg", alt: "Síntese dos Resultados - Foto 3", title: "Debate Final em Auditório", titleEn: "Final Auditorium Debate" },
+          { filename: "gf1-16.jpg", src: "assets/images/gf1/gf1-16.jpg", alt: "Síntese dos Resultados - Foto 4", title: "Sistematização de Conclusões", titleEn: "Systematisation of Conclusions" },
+          { filename: "gf1-17.jpg", src: "assets/images/gf1/gf1-17.jpg", alt: "Síntese dos Resultados - Foto 5", title: "Recomendações para Ferramentas", titleEn: "Recommendations for Tools" },
+          { filename: "gf1-18.jpg", src: "assets/images/gf1/gf1-18.jpg", alt: "Síntese dos Resultados - Foto 6", title: "Alinhamento das Diretrizes", titleEn: "Guidelines Alignment" },
+          { filename: "gf1-19.jpg", src: "assets/images/gf1/gf1-19.jpg", alt: "Síntese dos Resultados - Foto 7", title: "Sessão Plenária de Encerramento", titleEn: "Closing Plenary Session" },
+          { filename: "gf1-20.jpg", src: "assets/images/gf1/gf1-20.jpg", alt: "Síntese dos Resultados - Foto 8", title: "Conclusão do Grupo Focal 1", titleEn: "Conclusion of Focus Group 1" }
+        ]
       }
     ]
   },

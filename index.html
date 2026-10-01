@@ -448,9 +448,9 @@
 
         <!-- Player 16:9 Responsivo em Alta Resolução (HD Facade Interativo) -->
         <div id="gf1-video-player-container" class="aspect-16-9 bg-slate-950 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200">
-          <!-- Thumbnail Nativa HD (1280x720) sem perda de qualidade / pixelização -->
+          <!-- Thumbnail Nativa HD (assets/images/gf1/gf1-2.jpg) -->
           <img 
-            src="assets/images/gf1/gf1-video-thumb.jpg" 
+            src="assets/images/gf1/gf1-2.jpg" 
             onerror="this.src='https://img.youtube.com/vi/1_jQYkNluhY/maxresdefault.jpg'"
             alt="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)" 
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -565,12 +565,9 @@
             </h3>
             <p data-i18n="fg1.galleryDesc" class="text-xs text-slate-500">Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.</p>
           </div>
-          <div data-i18n="fg1.galleryFolder" class="text-[11px] font-mono text-slate-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
-            Pasta: assets/images/gf1/
-          </div>
         </div>
 
-        <div id="gf1-gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div id="gf1-gallery-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Renderizado dinamicamente via app.js -->
         </div>
       </div>
@@ -1335,6 +1332,46 @@
             <span data-i18n="mod.qrDesc">Pode projetar ou partilhar com os participantes um QR code com o parâmetro:</span>
             <code class="bg-white px-1.5 py-0.5 rounded border border-amber-300 font-mono font-bold text-slate-900">?unlock=all</code>
           </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL LIGHTBOX PARA FOTOGRAFIAS DO GF1     -->
+  <!-- ========================================== -->
+  <div id="gf1-lightbox-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-md hidden transition-opacity">
+    <div class="relative max-w-5xl w-full max-h-[94vh] flex flex-col items-center">
+      
+      <!-- Botão Fechar -->
+      <button type="button" id="btn-close-gf1-lightbox" class="absolute -top-10 sm:-top-12 right-0 text-white hover:text-[#FFCC66] transition p-2 flex items-center gap-1.5 text-xs font-bold" aria-label="Fechar Galeria">
+        <span data-i18n="lightbox.close">Fechar</span>
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Imagem Principal -->
+      <div class="relative w-full max-h-[75vh] flex items-center justify-center overflow-hidden rounded-2xl bg-black/50 shadow-2xl border border-white/10">
+        <img id="gf1-lightbox-img" src="" alt="" class="max-h-[75vh] max-w-full w-auto h-auto object-contain transition-all duration-200">
+        
+        <!-- Botão Anterior -->
+        <button type="button" id="btn-prev-gf1-lightbox" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#FFCC66] text-white hover:text-slate-950 border border-white/20 flex items-center justify-center transition shadow-lg" aria-label="Foto Anterior">
+          <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Botão Seguinte -->
+        <button type="button" id="btn-next-gf1-lightbox" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#FFCC66] text-white hover:text-slate-950 border border-white/20 flex items-center justify-center transition shadow-lg" aria-label="Próxima Foto">
+          <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Barra Inferior de Informação e Legenda -->
+      <div class="w-full mt-3 flex items-center justify-between text-white text-xs sm:text-sm px-2">
+        <div class="pr-4">
+          <span id="gf1-lightbox-album" class="font-extrabold text-[#FFCC66] uppercase text-[11px] tracking-wider block"></span>
+          <span id="gf1-lightbox-title" class="font-semibold text-slate-200"></span>
+        </div>
+        <div id="gf1-lightbox-counter" class="font-mono text-xs text-slate-300 bg-white/10 px-3 py-1 rounded-full border border-white/10 shrink-0">
         </div>
       </div>
 
