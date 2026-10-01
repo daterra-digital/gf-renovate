@@ -257,7 +257,7 @@ window.I18nManager = (function () {
       "mod.upto5": "Até 5",
       "mod.unlockAll": "Desbloquear Tudo",
       "mod.reset": "Repor Padrão",
-      "mod.gotoResults": "Ver Dashboard de Resultados & Conectar Sheets",
+      "mod.gotoResults": "Ver Dashboard de Resultados",
       "mod.qrShortcut": "Atalho de Desbloqueio via URL:",
       "mod.qrDesc": "Pode projetar ou partilhar com os participantes um QR code com o parâmetro:"
     },
@@ -506,7 +506,7 @@ window.I18nManager = (function () {
       "mod.upto5": "Up to 5",
       "mod.unlockAll": "Unlock All",
       "mod.reset": "Reset to Default",
-      "mod.gotoResults": "View Results Dashboard & Connect Sheets",
+      "mod.gotoResults": "View Results Dashboard",
       "mod.qrShortcut": "URL Unlock Shortcut:",
       "mod.qrDesc": "You can project or share with participants a QR code with parameter:"
     }
