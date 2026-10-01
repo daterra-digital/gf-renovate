@@ -189,7 +189,7 @@ const RENOVATE_CONFIG = {
   // Links Externos e Formulários da Sessão ao Vivo
   // Links Externos e Formulários da Sessão ao Vivo
   externalLinks: {
-    seriousGameTallentto: "https://tallentto.com",
+    seriousGameTallentto: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
     simulatorVirmedex: "https://virmedex.com",
     googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
