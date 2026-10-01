@@ -622,10 +622,12 @@ function renderResultsAndMedia() {
   }
 
   delivContainer.innerHTML = delivList.map(h => `
-    <li class="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
-      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-      <div>${h}</div>
-    </li>
+    <div class="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center gap-3.5 transition-all hover:border-[#F5B842] hover:shadow-xs">
+      <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+        <i data-lucide="check" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+      </div>
+      <span class="text-xs sm:text-sm font-medium text-slate-800 leading-snug">${h}</span>
+    </div>
   `).join("");
 
   galleryContainer.innerHTML = results.gallery.map(album => {
