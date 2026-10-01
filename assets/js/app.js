@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4. Inicializar Modais e Event Listeners
   initModeratorModal();
   initParticipantCodeEvents();
-  initSideNoteBanner();
 
   // 5. Inicializar Ícones Lucide
   if (window.lucide) {
@@ -89,6 +88,30 @@ function initTabNavigation() {
     });
   });
 
+  // Botão Home no logótipo RENOVATE do Header
+  const homeLogo = document.getElementById("nav-logo-home");
+  if (homeLogo) {
+    homeLogo.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab("live");
+    });
+  }
+
+  // Botão "Ver Slides no Programa" no Cartão do Passo 2 (Tab 1)
+  const gotoSlidesBtn = document.getElementById("btn-goto-slides");
+  if (gotoSlidesBtn) {
+    gotoSlidesBtn.addEventListener("click", () => {
+      switchTab("program");
+      const slot2Details = document.getElementById("slot-2-details");
+      if (slot2Details) {
+        slot2Details.open = true;
+        setTimeout(() => {
+          slot2Details.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 150);
+      }
+    });
+  }
+
   // Ler hash inicial ou usar ?tab=X
   const urlParams = new URLSearchParams(window.location.search);
   const tabParam = urlParams.get("tab");
@@ -111,34 +134,282 @@ function initTabNavigation() {
 }
 
 /**
- * Renderização da Tabela do Programa Oficial
+ * Renderização da Tabela do Programa Oficial em Acordeões Interativos (11 Etapas)
  */
 function renderSchedule() {
   const container = document.getElementById("schedule-container");
   if (!container || !RENOVATE_CONFIG.schedule) return;
 
-  container.innerHTML = RENOVATE_CONFIG.schedule.map((item, index) => `
-    <div class="relative pl-8 pb-8 border-l-2 border-amber-300 last:border-l-0 last:pb-0">
-      <div class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-[#FFCC66] border-2 border-slate-900 flex items-center justify-center text-slate-900 shadow-sm">
-        <i data-lucide="${item.icon || 'clock'}" class="w-4 h-4"></i>
-      </div>
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700">
-            <i data-lucide="clock" class="w-3.5 h-3.5 mr-1 text-slate-500"></i> ${item.time}
-          </span>
-          <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-            ${item.badge}
-          </span>
+  container.innerHTML = RENOVATE_CONFIG.schedule.map((item, index) => {
+    // Conteúdo embutido de acordo com o tipo da fase
+    let embeddedContent = "";
+
+    if (item.type === "slides") {
+      embeddedContent = `
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="presentation" class="w-4 h-4 text-amber-600"></i>
+              Apresentação Oficial da Sessão
+            </span>
+            <a href="${RENOVATE_CONFIG.externalLinks.googleSlidesFullscreen || 'https://docs.google.com/presentation'}" 
+               target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+              <span>Ecrã Inteiro / Abrir Slides</span>
+            </a>
+          </div>
+
+          <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-inner">
+            <iframe 
+              src="${RENOVATE_CONFIG.externalLinks.googleSlidesUrl}" 
+              title="Apresentação Google Slides - RENOVATE FG2"
+              allowfullscreen="true" 
+              mozallowfullscreen="true" 
+              webkitallowfullscreen="true">
+            </iframe>
+          </div>
+          <p class="text-[11px] text-slate-500 italic">
+            Os diapositivos acompanham a recapitulação do GF1 e o enquadramento prático das ferramentas digitais.
+          </p>
         </div>
-        <h3 class="text-lg font-bold text-slate-900 mb-1">${item.title}</h3>
-        <p class="text-xs font-medium text-amber-800 mb-2 flex items-center gap-1">
-          <i data-lucide="user" class="w-3.5 h-3.5"></i> ${item.speaker}
-        </p>
-        <p class="text-sm text-slate-600 leading-relaxed">${item.description}</p>
-      </div>
-    </div>
-  `).join("");
+      `;
+    } else if (item.type === "game") {
+      embeddedContent = `
+        <div class="accordion-actions-3 p-4 bg-purple-50/60 rounded-xl border border-purple-200 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-purple-900">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+              <span>Dispositivo Recomendado: Smartphone ou Tablet</span>
+            </div>
+            <div class="accordion-lock-badge-3"></div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Aceda à plataforma de jogo e conclua os módulos interativos de calibração fitossanitária no seu próprio ritmo.
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <a href="${RENOVATE_CONFIG.externalLinks.seriousGameTallentto}" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
+              <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+              <span>Jogar Tallentto</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (item.type === "form-game") {
+      embeddedContent = `
+        <div class="accordion-actions-3 p-4 bg-blue-50/60 rounded-xl border border-blue-200 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-blue-900">
+              <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+              <span>Questionário de Avaliação Pedagógica</span>
+            </div>
+            <div class="accordion-lock-badge-3"></div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Registe as suas respostas sobre a jogabilidade, clareza e utilidade formativa. O seu código de participante será associado automaticamente.
+          </p>
+          <div class="pt-1">
+            <a href="${RENOVATE_CONFIG.externalLinks.googleFormGameTallentto}" target="_blank" rel="noopener noreferrer" 
+               class="form-link-game inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
+              <span>Abrir Avaliação Serious Game (Form 2)</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (item.type === "simulator") {
+      embeddedContent = `
+        <div class="accordion-actions-4 p-4 bg-sky-50/60 rounded-xl border border-sky-200 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-sky-900">
+              <i data-lucide="monitor" class="w-4 h-4"></i>
+              <span>Dispositivo Recomendado: Computador PC ou Portátil</span>
+            </div>
+            <div class="accordion-lock-badge-4"></div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Explore o ambiente de simulação 3D para testar variações de bicos de pulverização, velocidade e condições meteorológicas.
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <a href="${RENOVATE_CONFIG.externalLinks.simulatorVirmedex}" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
+              <i data-lucide="laptop" class="w-4 h-4"></i>
+              <span>Abrir Simulador Virmedex</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (item.type === "form-simulator") {
+      embeddedContent = `
+        <div class="accordion-actions-4 p-4 bg-blue-50/60 rounded-xl border border-blue-200 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-blue-900">
+              <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+              <span>Questionário de Avaliação Técnica</span>
+            </div>
+            <div class="accordion-lock-badge-4"></div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Validação da fidelidade agronómica, curva de aprendizagem e aplicabilidade no apoio à decisão no campo.
+          </p>
+          <div class="pt-1">
+            <a href="${RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex}" target="_blank" rel="noopener noreferrer" 
+               class="form-link-sim inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
+              <span>Abrir Avaliação Simulador (Form 3)</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (item.type === "form-global") {
+      embeddedContent = `
+        <div class="accordion-actions-5 p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Inquérito de Síntese & Satisfação Geral</span>
+            </div>
+            <div class="accordion-lock-badge-5"></div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Classificação global do impacto pedagógico, viabilidade de certificação de operadores agrários e prioridades para o projeto RENOVATE.
+          </p>
+          <div class="pt-1">
+            <a href="${RENOVATE_CONFIG.externalLinks.googleFormGlobal}" target="_blank" rel="noopener noreferrer" 
+               class="form-link-global inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
+              <span>Submeter Avaliação Global</span>
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (item.type === "opening") {
+      embeddedContent = `
+        <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-4 h-4 text-emerald-700"></i>
+              Escola Superior Agrária de Santarém (Auditório)
+            </span>
+            <p class="text-xs text-slate-600">Acolhimento da direção da ESAS, verificação das credenciais e introdução da agenda de trabalho.</p>
+          </div>
+          <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" 
+             class="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:underline">
+            <span>Portal ESAS</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      `;
+    } else if (item.type === "break") {
+      embeddedContent = `
+        <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-200 flex items-center gap-3 text-xs text-amber-900">
+          <div class="w-9 h-9 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
+            <i data-lucide="coffee" class="w-5 h-5"></i>
+          </div>
+          <p>Momento de pausa técnica e convívio informal entre formadores, consultores e investigadores agrícolas na área de receção da ESAS.</p>
+        </div>
+      `;
+    } else if (item.type === "lunch") {
+      embeddedContent = `
+        <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 flex items-center gap-3 text-xs text-emerald-900">
+          <div class="w-9 h-9 rounded-full bg-emerald-200 text-emerald-900 flex items-center justify-center shrink-0">
+            <i data-lucide="utensils" class="w-5 h-5"></i>
+          </div>
+          <p>Almoço volante de networking oferecido pela organização a todos os participantes convidados da 2ª sessão do Grupo Focal.</p>
+        </div>
+      `;
+    } else if (item.type === "discussion") {
+      embeddedContent = `
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="line-chart" class="w-4 h-4 text-amber-600"></i>
+            Tópicos de Debate em Auditório
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1 list-disc list-inside">
+            <li>Projeção e reflexão sobre as respostas submetidas nos questionários.</li>
+            <li>Barreiras identificadas na utilização das ferramentas em contexto real de exploração.</li>
+            <li>Sugestões práticas de melhoria para o consórcio internacional RENOVATE.</li>
+          </ul>
+        </div>
+      `;
+    } else if (item.type === "closing") {
+      embeddedContent = `
+        <div class="p-4 bg-amber-50/60 rounded-xl border border-amber-200 space-y-2">
+          <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="award" class="w-4 h-4 text-amber-700"></i>
+            Encerramento dos Trabalhos & Acesso a Relatórios
+          </div>
+          <p class="text-xs text-slate-600">
+            Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Deliverable 1.4 do projeto.
+          </p>
+        </div>
+      `;
+    }
+
+    const isOpen = item.id === "slot-2" ? "open" : "";
+
+    return `
+      <details id="${item.id}-details" class="schedule-accordion accordion-step-${item.step || ''} group bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm hover:border-[#F5B842] transition-all" ${isOpen}>
+        <summary class="flex items-center justify-between gap-3 p-4 sm:p-5 select-none bg-white hover:bg-slate-50 transition-colors">
+          <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            <span class="inline-flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 shrink-0">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>
+              ${item.time}
+            </span>
+            <span class="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-amber-900 transition-colors">
+              ${item.title}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span class="hidden md:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
+              <i data-lucide="${item.icon || 'circle'}" class="w-3 h-3"></i>
+              ${item.badge}
+            </span>
+            ${item.step ? `<div class="accordion-lock-badge-${item.step} hidden sm:block"></div>` : ''}
+            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0"></i>
+          </div>
+        </summary>
+
+        <div class="px-4 sm:px-6 pb-5 pt-3 border-t border-slate-100 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
+            <span class="font-medium text-amber-800 flex items-center gap-1.5">
+              <i data-lucide="user" class="w-3.5 h-3.5"></i>
+              <strong>Intervenientes:</strong> ${item.speaker}
+            </span>
+            ${item.step ? `<div class="accordion-lock-badge-${item.step} sm:hidden"></div>` : ''}
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            ${item.description}
+          </p>
+          ${embeddedContent}
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  // Botões de controlo global de expansão
+  const expandBtn = document.getElementById("btn-expand-all-schedule");
+  const collapseBtn = document.getElementById("btn-collapse-all-schedule");
+
+  if (expandBtn) {
+    expandBtn.onclick = () => {
+      document.querySelectorAll(".schedule-accordion").forEach(d => d.open = true);
+    };
+  }
+
+  if (collapseBtn) {
+    collapseBtn.onclick = () => {
+      document.querySelectorAll(".schedule-accordion").forEach(d => d.open = false);
+    };
+  }
+
+  // Atualizar ícones e sincronizar com o estado da sessão ao vivo
+  if (window.lucide) window.lucide.createIcons();
+  if (window.LiveSession) {
+    window.LiveSession.render();
+  }
 }
 
 /**
@@ -293,8 +564,8 @@ function initParticipantCodeEvents() {
     });
   }
 
-  // Checkboxes de progresso da Sessão ao Vivo
-  for (let i = 1; i <= 4; i++) {
+  // Checkboxes de progresso da Sessão ao Vivo (Passos 1 a 5)
+  for (let i = 1; i <= 5; i++) {
     const chk = document.getElementById(`step-checkbox-${i}`);
     if (chk) {
       chk.addEventListener("change", () => {
@@ -377,13 +648,21 @@ function initModeratorModal() {
 
     const state = LiveSession.getState();
 
+    const stepNames = {
+      1: "Passo 1: Abertura & Identificação",
+      2: "Passo 2: Apresentação (Slides)",
+      3: "Passo 3: Serious Game & Form 2",
+      4: "Passo 4: Simulador PC & Form 3",
+      5: "Passo 5: Avaliação Global & Encerramento"
+    };
+
     container.innerHTML = [1, 2, 3, 4, 5].map(step => {
       const isUnlocked = state.unlockedSteps.includes(step);
       return `
         <div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white">
           <div class="flex items-center gap-2">
             <span class="w-6 h-6 rounded-full bg-slate-900 text-[#FFCC66] text-xs font-bold flex items-center justify-center">${step}</span>
-            <span class="text-sm font-semibold text-slate-800">Passo ${step}</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-800">${stepNames[step] || `Passo ${step}`}</span>
           </div>
           <button type="button" 
                   data-mod-step="${step}" 
@@ -442,19 +721,6 @@ function initModeratorModal() {
       showToast(`Passos desbloqueados até ao Passo ${targetStep}!`);
     });
   });
-}
-
-/**
- * Side Note Banner (EuroTech Day)
- */
-function initSideNoteBanner() {
-  const dismissBtn = document.getElementById("btn-dismiss-sidenote");
-  const banner = document.getElementById("eurotech-sidenote-banner");
-  if (dismissBtn && banner) {
-    dismissBtn.addEventListener("click", () => {
-      banner.style.display = "none";
-    });
-  }
 }
 
 /**

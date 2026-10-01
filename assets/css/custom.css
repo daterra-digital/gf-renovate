@@ -145,6 +145,23 @@ body {
   cursor: not-allowed !important;
 }
 
+/* Schedule Accordion Styling */
+details.schedule-accordion summary::-webkit-details-marker {
+  display: none;
+}
+details.schedule-accordion summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+details.schedule-accordion[open] {
+  border-color: #F5B842;
+  box-shadow: 0 4px 16px -2px rgba(245, 184, 66, 0.25);
+}
+details.schedule-accordion summary:focus-visible {
+  outline: 2px solid #0F172A;
+  outline-offset: -2px;
+}
 
 /* High Contrast & Accessibility */
 a:focus-visible, button:focus-visible, input:focus-visible {

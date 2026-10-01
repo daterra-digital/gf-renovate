@@ -117,25 +117,30 @@ const LiveSession = (function () {
   }
 
   /**
-   * Atualiza as URLs dos 3 Google Forms anexando o parâmetro ?entry.code=${code}
+   * Atualiza as URLs dos Google Forms anexando o parâmetro ?entry.code=${code}
    */
   function updateFormLinks(code) {
     const activeCode = (code !== undefined ? code : state.participantCode) || "";
     const formBtns = [
-      { id: "btn-form-1", url: RENOVATE_CONFIG.externalLinks.googleFormPreSession },
-      { id: "btn-form-2", url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto },
-      { id: "btn-form-3", url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex }
+      { id: "btn-form-1", url: RENOVATE_CONFIG.externalLinks.googleFormPreSession, selector: ".form-link-pre" },
+      { id: "btn-form-2", url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto, selector: ".form-link-game" },
+      { id: "btn-form-3", url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex, selector: ".form-link-sim" },
+      { id: "btn-form-global", url: RENOVATE_CONFIG.externalLinks.googleFormGlobal, selector: ".form-link-global" }
     ];
 
     formBtns.forEach(item => {
+      if (!item.url) return;
+      const fullUrl = !activeCode 
+        ? item.url 
+        : `${item.url}${item.url.includes("?") ? "&" : "?"}entry.code=${encodeURIComponent(activeCode)}`;
+
       const btn = document.getElementById(item.id);
-      if (btn && item.url) {
-        if (!activeCode) {
-          btn.href = item.url;
-        } else {
-          const sep = item.url.includes("?") ? "&" : "?";
-          btn.href = `${item.url}${sep}entry.code=${encodeURIComponent(activeCode)}`;
-        }
+      if (btn) btn.href = fullUrl;
+
+      if (item.selector) {
+        document.querySelectorAll(item.selector).forEach(el => {
+          el.href = fullUrl;
+        });
       }
     });
   }
@@ -291,6 +296,36 @@ const LiveSession = (function () {
         completeCheckbox.checked = isCompleted;
         completeCheckbox.disabled = !isUnlocked;
       }
+
+      // Sincronizar também com os acordeões do Programa (Tab 2)
+      document.querySelectorAll(`.accordion-step-${step}`).forEach(acc => {
+        if (isUnlocked) {
+          acc.classList.remove("opacity-60", "grayscale");
+        } else {
+          acc.classList.add("opacity-60");
+        }
+      });
+
+      document.querySelectorAll(`.accordion-lock-badge-${step}`).forEach(badge => {
+        if (isUnlocked) {
+          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3 h-3"></i> Desbloqueado</span>`;
+        } else {
+          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3 h-3"></i> Aguarda Moderador</span>`;
+        }
+      });
+
+      document.querySelectorAll(`.accordion-actions-${step}`).forEach(container => {
+        const links = container.querySelectorAll("a, button:not(.btn-unlock-trigger)");
+        links.forEach(el => {
+          if (isUnlocked) {
+            el.removeAttribute("disabled");
+            el.classList.remove("pointer-events-none", "opacity-50");
+          } else {
+            el.setAttribute("disabled", "true");
+            el.classList.add("pointer-events-none", "opacity-50");
+          }
+        });
+      });
     }
 
     // 3. Atualizar botões com link para Google Forms (injetando ?entry.code=${code})

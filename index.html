@@ -36,30 +36,14 @@
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
-  <!-- Side Note Discreta: EuroTech Day (Não compete com o foco da sessão) -->
-  <aside id="eurotech-sidenote-banner" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs py-1.5 px-3 sm:px-4">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2 truncate">
-        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
-        <span class="truncate">
-          <strong class="text-slate-800">Nota Colaborativa:</strong> Ação articulada no âmbito das iniciativas de disseminação do 
-          <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900 font-medium">EuroTech Day</a>.
-        </span>
-      </div>
-      <button id="btn-dismiss-sidenote" class="text-slate-400 hover:text-slate-700 p-0.5" title="Fechar nota">
-        <i data-lucide="x" class="w-3.5 h-3.5"></i>
-      </button>
-    </div>
-  </aside>
-
   <!-- Header Principal com Logótipos e Acesso de Moderação -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
     <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
       
       <!-- Bloco de Logótipos Institucionais na Raiz (Responsivos para todos os ecrãs) -->
       <div class="flex items-center gap-2 sm:gap-4 md:gap-5">
-        <!-- Logótipo RENOVATE -->
-        <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Website do Projeto RENOVATE" class="shrink-0 flex items-center">
+        <!-- Logótipo RENOVATE (Botão Página Inicial / Home) -->
+        <a href="#live" id="nav-logo-home" title="Página Inicial - Sessão ao Vivo" class="shrink-0 flex items-center cursor-pointer transition hover:opacity-90">
           <img src="logo-renovate.png" alt="Logótipo RENOVATE" class="h-7 sm:h-9 md:h-11 w-auto max-w-[95px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-0.5 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-xs sm:text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
         </a>
@@ -205,33 +189,33 @@
           </div>
         </article>
 
-        <!-- PASSO 2: Inquérito Inicial de Diagnóstico (Baseline) -->
+        <!-- PASSO 2: Apresentação "Disseram, e nós fizemos" -->
         <article id="step-card-2" class="step-card locked-section bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">2</span>
               <div class="flex items-center gap-1.5">
-                <!-- Badge Identificativa de Dispositivo / Formulário -->
-                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                  <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Formulário Online
+                <!-- Badge Identificativa: Apresentação -->
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                  <i data-lucide="presentation" class="w-3.5 h-3.5"></i> Apresentação Oficial
                 </span>
                 <div id="step-lock-badge-2"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 2: Inquérito Inicial (Baseline)</h3>
+              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 2: "Disseram, e nós fizemos"</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Diagnóstico de entrada sobre a experiência prévia com tecnologias de proteção de culturas e hábitos digitais no campo.
+                Breve recapitulação do GF1 e apresentação oficial dos diapositivos integrando o feedback dos participantes nas novas ferramentas.
               </p>
             </div>
           </div>
 
           <div id="step-actions-2" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
-            <a id="btn-form-1" href="#" target="_blank" rel="noopener noreferrer" 
-               class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
-              <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
-              Abrir Inquérito Inicial (Google Form 1)
-            </a>
+            <button type="button" id="btn-goto-slides" 
+                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+              <i data-lucide="presentation" class="w-4 h-4 text-[#FFCC66]"></i>
+              Ver Slides no Programa (10:10)
+            </button>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
               <span>Marcar Passo 2 como Concluído</span>
@@ -343,10 +327,10 @@
           </div>
 
           <div id="step-actions-5" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
-            <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" 
+            <a id="btn-form-global" href="#" target="_blank" rel="noopener noreferrer" 
                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
-              Submeter Avaliação Final & Concluir
+              Submeter Avaliação Global & Concluir
             </a>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-5" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
@@ -363,50 +347,38 @@
     <!-- ========================================== -->
     <section id="content-program" class="tab-pane hidden space-y-8">
       
-      <!-- Apresentação em Google Slides (Embed 16:9) -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <i data-lucide="presentation" class="w-5 h-5 text-amber-600"></i>
-            <h2 class="text-lg font-bold text-slate-900">Apresentação Oficial da Sessão</h2>
-          </div>
-          <a href="https://docs.google.com/presentation" target="_blank" rel="noopener noreferrer" 
-             class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition">
-            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
-            Ecrã Inteiro / Abrir Slides
-          </a>
-        </div>
-
-        <!-- Contentor 16:9 Responsivo -->
-        <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-inner">
-          <iframe 
-            src="https://docs.google.com/presentation/d/e/2PACX-1vT-PLACEHOLDER/embed?start=false&loop=false&delayms=3000" 
-            title="Apresentação Google Slides - RENOVATE FG2"
-            allowfullscreen="true" 
-            mozallowfullscreen="true" 
-            webkitallowfullscreen="true">
-          </iframe>
-        </div>
-        <p class="text-[11px] text-slate-500 italic">
-          Os diapositivos acompanham o desenrolar das dinâmicas em auditório. Atualize para sincronizar alterações em tempo real.
-        </p>
-      </div>
-
-      <!-- Tabela do Programa Oficial -->
+      <!-- Tabela do Programa Oficial em Acordeões Interativos -->
       <div class="space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Programa Oficial dos Trabalhos</h2>
-            <p class="text-xs text-slate-500 font-medium">06 de outubro de 2026 • Auditório ESAS - Santarém</p>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFCC66] text-[#0F172A] text-xs font-bold mb-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              Cronograma Oficial da Sessão
+            </div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Programa Oficial dos Trabalhos</h2>
+            <p class="text-xs text-slate-500 font-medium">06 de outubro de 2026 • Auditório ESAS - Santarém • Clique em cada fase para expandir</p>
           </div>
-          <button type="button" onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm">
-            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-            Imprimir Programa
-          </button>
+          <div class="flex items-center gap-2 flex-wrap no-print">
+            <button type="button" id="btn-expand-all-schedule" 
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
+              <i data-lucide="chevrons-down-up" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Expandir Todos</span>
+            </button>
+            <button type="button" id="btn-collapse-all-schedule" 
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
+              <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-500"></i>
+              <span>Recolher</span>
+            </button>
+            <button type="button" onclick="window.print()" 
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Imprimir</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Lista em Timeline -->
-        <div id="schedule-container" class="space-y-4 pt-2">
+        <!-- Lista em Acordeões (11 Etapas com Slides no Passo 2 e Workstations Embedadas) -->
+        <div id="schedule-container" class="space-y-3 pt-2">
           <!-- Renderizado via app.js -->
         </div>
       </div>
@@ -604,12 +576,12 @@
   <!-- RODAPÉ INSTITUCIONAL (DESIGN OFICIAL RENOVATE) -->
   <!-- ========================================== -->
   <footer class="mt-auto">
-    <!-- Secção Superior: Castanho Marca (#543632) com Logótipo Amarelo, Redes Sociais, Links e Newsletter -->
+    <!-- Secção Superior: Castanho Marca (#543632) com Logótipo Amarelo, Redes Sociais e Links Institucionais -->
     <div class="bg-[#543632] text-white py-10 sm:py-12 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8 lg:gap-12">
         
         <!-- Coluna 1: Logótipo RENOVATE Dourado/Amarelo e Redes Sociais -->
-        <div class="md:col-span-4 space-y-4">
+        <div class="space-y-4 shrink-0">
           <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Projeto RENOVATE" class="inline-block">
             <img src="assets/images/logos/renovate-yellow.png" alt="RENOVATE" class="h-20 sm:h-24 w-auto object-contain" onerror="this.src='renovate-yellow.png';">
           </a>
@@ -638,37 +610,53 @@
           </div>
         </div>
 
-        <!-- Coluna 2: Links Institucionais (2 Subcolunas, texto ligeiramente mais pequeno) -->
-        <div class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm font-medium">
-          <div class="space-y-2.5">
-            <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
-              Projeto RENOVATE
-            </a>
-            <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
-              DATERRA
-            </a>
+        <!-- Coluna 2: Links Institucionais em Grelha Clara e de Fácil Leitura -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-12 text-xs sm:text-sm">
+          <div class="space-y-3">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
+              <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+              Projeto & Coordenação
+            </span>
+            <ul class="space-y-2.5 font-medium">
+              <li>
+                <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span>Projeto RENOVATE</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
+              </li>
+              <li>
+                <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span>DATERRA</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
+              </li>
+            </ul>
           </div>
-          <div class="space-y-2.5">
-            <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
-              EuroTech Day
-            </a>
-            <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" class="block text-slate-100 hover:text-[#F5B842] transition-colors">
-              ESAS
-            </a>
-          </div>
-        </div>
 
-        <!-- Coluna 3: Newsletter Subscribe -->
-        <div class="md:col-span-4 space-y-3">
-          <h4 class="text-xs sm:text-sm font-semibold text-white">Subscribe to our newsletter</h4>
-          <form action="https://renovateproject.eu/" method="get" target="_blank" class="space-y-2 max-w-sm">
-            <input type="email" placeholder="Email address" required 
-                   class="w-full px-3.5 py-2 rounded bg-white text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#F5B842]">
-            <button type="submit" 
-                    class="w-full py-2 px-4 rounded bg-[#F5B842] hover:bg-[#FBBF24] text-slate-900 font-bold text-xs sm:text-sm tracking-wide transition shadow-sm">
-              Subscribe
-            </button>
-          </form>
+          <div class="space-y-3">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
+              <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+              Iniciativas & Anfitrião
+            </span>
+            <ul class="space-y-2.5 font-medium">
+              <li>
+                <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span>EuroTech Day</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span>ESAS - Santarém</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
       </div>

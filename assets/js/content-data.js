@@ -187,81 +187,152 @@ const RENOVATE_CONFIG = {
   ],
 
   // Links Externos e Formulários da Sessão ao Vivo
+  // Links Externos e Formulários da Sessão ao Vivo
   externalLinks: {
     seriousGameTallentto: "https://tallentto.com",
     simulatorVirmedex: "https://virmedex.com",
     googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM1/viewform",
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM2/viewform",
     googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM3/viewform",
+    googleFormGlobal: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-GLOBAL/viewform",
     googleSlidesUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT-PLACEHOLDER/embed?start=false&loop=false&delayms=3000",
+    googleSlidesFullscreen: "https://docs.google.com/presentation",
     gf1DaterraArticle: "https://daterra.com.pt"
   },
 
-  // Programa Oficial da 2ª Sessão do Grupo Focal
+  // Programa Oficial da 2ª Sessão do Grupo Focal (11 Etapas com Accordion e Embeds)
   schedule: [
     {
-      time: "09:00 - 09:30",
-      title: "Boas-Vindas & Registo de Participantes",
-      speaker: "Equipa DATERRA & Direção ESAS",
-      description: "Receção, verificação de credenciais e configuração do Código de Participante na aplicação.",
-      icon: "user-check",
-      badge: "Credenciação"
+      id: "slot-1",
+      step: 1,
+      time: "10:00 - 10:10",
+      title: "Sessão de Abertura",
+      speaker: "Diretor da ESAS (Universidade Politécnica de Santarém) & DATERRA",
+      badge: "Boas-Vindas",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+      icon: "landmark",
+      description: "Intervenção de boas-vindas pelo Diretor da Escola Superior Agrária (ESAS - Universidade Politécnica de Santarém), acolhimento institucional dos participantes e enquadramento dos trabalhos.",
+      type: "opening"
     },
     {
-      time: "09:30 - 10:00",
-      title: "Abertura Oficial & Apresentação do Projeto RENOVATE",
-      speaker: "DATERRA & Parceiros do Consórcio",
-      description: "Contextualização dos objetivos europeus, apresentação das metas de sustentabilidade e resumo das aprendizagens do GF1 Lisboa.",
+      id: "slot-2",
+      step: 2,
+      time: "10:10 - 10:20",
+      title: '"Disseram, e nós fizemos"',
+      speaker: "DATERRA & Consórcio RENOVATE",
+      badge: "Apresentação Oficial",
+      badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
       icon: "presentation",
-      badge: "Plenário"
+      description: "Breve recapitulação dos resultados do GF1. Apresentação mostrando como o feedback dos participantes foi integrado no desenvolvimento das ferramentas digitais e pedagógicas.",
+      type: "slides"
     },
     {
-      time: "10:00 - 10:15",
-      title: "Inquérito Inicial (Baseline)",
-      speaker: "Dinâmica Individual",
-      description: "Preenchimento do Questionário 1 (diagnóstico de práticas e perceção de ferramentas digitais).",
-      icon: "clipboard-list",
-      badge: "Formulário 1"
-    },
-    {
-      time: "10:15 - 11:15",
-      title: "Workstation 1: Serious Game (Tallentto)",
+      id: "slot-3",
+      step: 3,
+      time: "10:20 - 11:35",
+      title: "Teste Prático 1: Serious Game",
       speaker: "Facilitação Tallentto & DATERRA",
-      description: "Sessão prática imersiva de formação interativa através de gamificação focada em boas práticas de proteção fitossanitária.",
+      badge: "Smartphone / Tablet",
+      badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
       icon: "gamepad-2",
-      badge: "Hands-on"
+      description: "Teste prático individual do Serious Game. Dinâmica lúdica interativa focada em calibração, diagnóstico e boas práticas de proteção fitossanitária.",
+      type: "game"
     },
     {
-      time: "11:15 - 11:45",
-      title: "Pausa para Café & Networking Técnico",
-      speaker: "Área de Convívio ESAS",
-      description: "Momento de partilha informal e troca de experiências entre técnicos, formadores e agricultores.",
+      id: "slot-4",
+      step: 3,
+      time: "11:35 - 11:45",
+      title: "Avaliação 1: Serious Game",
+      speaker: "Participantes & Equipa de Investigação",
+      badge: "Formulário Online",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
+      icon: "clipboard-list",
+      description: "Preenchimento de um questionário sobre a experiência com o Serious Game. Avaliação de usabilidade, aplicabilidade pedagógica e clareza instrucional.",
+      type: "form-game"
+    },
+    {
+      id: "slot-5",
+      step: null,
+      time: "11:45 - 12:00",
+      title: "Pausa curta (coffee break)",
+      speaker: "Espaço de Convívio ESAS",
+      badge: "Coffee Break",
+      badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
       icon: "coffee",
-      badge: "Pausa"
+      description: "Pausa para café, descanso e networking informal entre os participantes, técnicos agrários e a equipa do consórcio.",
+      type: "break"
     },
     {
-      time: "11:45 - 12:45",
-      title: "Workstation 2: Simulador Virtual (Virmedex)",
+      id: "slot-6",
+      step: 4,
+      time: "12:00 - 13:10",
+      title: "Teste Prático 2: Simulador",
       speaker: "Facilitação Virmedex & DATERRA",
-      description: "Teste do ambiente simulado de tomada de decisão para redução de impacto ambiental e otimização de dosagens.",
-      icon: "laptop",
-      badge: "Hands-on"
+      badge: "Computador PC / Portátil",
+      badgeColor: "bg-sky-100 text-sky-800 border-sky-300",
+      icon: "monitor",
+      description: "Teste prático individual do Simulador do RENOVATE no PC. Ambiente 3D interativo para otimização de parâmetros de pulverização, mitigação de deriva e análise de eficácia de campo.",
+      type: "simulator"
     },
     {
-      time: "12:45 - 13:15",
-      title: "Mesa Redonda: Validação de Usabilidade & Barreiras de Adoção",
-      speaker: "Moderação DATERRA",
-      description: "Discussão plenária aberta sobre adequação pedagógica, viabilidade de campo e necessidades de ajuste.",
-      icon: "users",
-      badge: "Debate"
+      id: "slot-7",
+      step: 4,
+      time: "13:10 - 13:20",
+      title: "Avaliação 2: Simulador",
+      speaker: "Participantes & Equipa de Investigação",
+      badge: "Formulário Online",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
+      icon: "clipboard-list",
+      description: "Preenchimento de um questionário sobre o teste prático com o Simulador. Recolha de opiniões sobre fidelidade agronómica, interface e potencial de integração no terreno.",
+      type: "form-simulator"
     },
     {
-      time: "13:15 - 13:30",
-      title: "Avaliação Final, Agradecimentos & Próximos Passos",
-      speaker: "DATERRA & ESAS",
-      description: "Preenchimento do inquérito de avaliação global e partilha dos canais de acompanhamento dos resultados.",
-      icon: "check-circle",
-      badge: "Encerramento"
+      id: "slot-8",
+      step: null,
+      time: "13:20 - 14:40",
+      title: "Almoço (oferecido pela organização)",
+      speaker: "Organização RENOVATE / DATERRA & ESAS",
+      badge: "Almoço & Convívio",
+      badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      icon: "utensils",
+      description: "Pausa alargada para networking e discussão informal sobre a experiência da manhã. Almoço volante oferecido pelo projeto a todos os participantes convidados.",
+      type: "lunch"
+    },
+    {
+      id: "slot-9",
+      step: 5,
+      time: "14:40 - 14:50",
+      title: "Avaliação Global",
+      speaker: "Participantes & DATERRA",
+      badge: "Formulário Final",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+      icon: "check-circle-2",
+      description: "Preenchimento de um questionário sobre a perceção geral da plataforma RENOVATE, impacto conjunto das ferramentas e recomendações para formação profissional agrícola.",
+      type: "form-global"
+    },
+    {
+      id: "slot-10",
+      step: 5,
+      time: "14:50 - 15:40",
+      title: "Discussão Plenária",
+      speaker: "Moderação DATERRA & Painel de Peritos",
+      badge: "Debate Plenário",
+      badgeColor: "bg-slate-100 text-slate-800 border-slate-300",
+      icon: "messages-square",
+      description: "Debate aberto projetando os resultados dos questionários. Foco no que funcionou, o que falhou e possíveis melhorias para a transição digital na agricultura.",
+      type: "discussion"
+    },
+    {
+      id: "slot-11",
+      step: 5,
+      time: "15:40 - 15:50",
+      title: "Sessão de Encerramento",
+      speaker: "Direção ESAS & DATERRA",
+      badge: "Conclusão",
+      badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
+      icon: "flag",
+      description: "Próximos passos e conclusão da sessão. Agradecimentos institucionais, partilha das vias de acesso aos relatórios do projeto e encerramento oficial dos trabalhos.",
+      type: "closing"
     }
   ],
 
