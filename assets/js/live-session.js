@@ -158,6 +158,13 @@ const LiveSession = (function () {
         });
       }
     });
+
+    // Garantir que todos os botões do Serious Game apontam para o link oficial da Tallentto
+    const gameUrl = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) 
+      || "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt";
+    document.querySelectorAll(".game-link-tallentto, #btn-game-tallentto, #btn-schedule-tallentto").forEach(el => {
+      el.href = gameUrl;
+    });
   }
 
   /**
@@ -332,12 +339,11 @@ const LiveSession = (function () {
       document.querySelectorAll(`.accordion-actions-${step}`).forEach(container => {
         const links = container.querySelectorAll("a, button:not(.btn-unlock-trigger)");
         links.forEach(el => {
+          // No Programa & Slides, manter os links sempre clicáveis para permitir teste das ferramentas
+          el.removeAttribute("disabled");
+          el.classList.remove("pointer-events-none");
           if (isUnlocked) {
-            el.removeAttribute("disabled");
-            el.classList.remove("pointer-events-none", "opacity-50");
-          } else {
-            el.setAttribute("disabled", "true");
-            el.classList.add("pointer-events-none", "opacity-50");
+            el.classList.remove("opacity-60");
           }
         });
       });

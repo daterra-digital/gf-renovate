@@ -235,6 +235,7 @@ const RENOVATE_CONFIG = {
       badge: "Smartphone / Tablet",
       badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
       icon: "gamepad-2",
+      url: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
       description: "Teste prático individual do Serious Game. Dinâmica lúdica interativa focada em calibração, diagnóstico e boas práticas de proteção fitossanitária.",
       type: "game"
     },
