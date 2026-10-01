@@ -195,8 +195,8 @@ const RENOVATE_CONFIG = {
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM2/viewform",
     googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM3/viewform",
     googleFormGlobal: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-GLOBAL/viewform",
-    googleSlidesUrl: "https://docs.google.com/presentation/d/e/2PACX-1vT-PLACEHOLDER/embed?start=false&loop=false&delayms=3000",
-    googleSlidesFullscreen: "https://docs.google.com/presentation",
+    googleSlidesUrl: "https://docs.google.com/presentation/d/e/2PACX-1vRHnC6-5ki_78jMjLvzzpQA-8jX_uso_NRWE63z0xf5Lf2bXjU51iaXKthzZTdWjhk9iPA9WxsiivGU/embed?start=false&loop=false",
+    googleSlidesFullscreen: "https://docs.google.com/presentation/d/e/2PACX-1vRHnC6-5ki_78jMjLvzzpQA-8jX_uso_NRWE63z0xf5Lf2bXjU51iaXKthzZTdWjhk9iPA9WxsiivGU/pub?start=false&loop=false",
     gf1DaterraArticle: "https://daterra.com.pt"
   },
 
