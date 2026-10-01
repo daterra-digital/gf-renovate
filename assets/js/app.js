@@ -15,11 +15,16 @@ document.addEventListener("DOMContentLoaded", () => {
   renderResultsAndMedia();
   renderPartners();
 
-  // 4. Inicializar Modais e Event Listeners
+  // 4. Inicializar Dashboard de Resultados (Google Sheets, Chart.js & WordCloud)
+  if (window.ResultsDashboard) {
+    ResultsDashboard.init();
+  }
+
+  // 5. Inicializar Modais e Event Listeners
   initModeratorModal();
   initParticipantCodeEvents();
 
-  // 5. Inicializar Ícones Lucide
+  // 6. Inicializar Ícones Lucide
   if (window.lucide) {
     window.lucide.createIcons();
   }
@@ -68,6 +73,11 @@ function initTabNavigation() {
         pane.classList.remove("animate-fadeIn");
       }
     });
+
+    // Redimensionar e atualizar gráficos se a tab selecionada for 'results'
+    if (targetTab === "results" && window.ResultsDashboard) {
+      ResultsDashboard.onTabShown();
+    }
 
     // Atualizar Hash sem scroll forçado
     if (window.location.hash !== `#${targetTab}`) {
@@ -802,6 +812,23 @@ function initModeratorModal() {
       showToast(`Passos desbloqueados até ao Passo ${targetStep}!`);
     });
   });
+
+  // Atalho para Configuração de Resultados & Google Sheets a partir da Modal
+  const btnModResults = document.getElementById("btn-mod-goto-results");
+  if (btnModResults) {
+    btnModResults.addEventListener("click", () => {
+      closeModal();
+      const resultsBtn = document.querySelector('[data-tab="results"]');
+      if (resultsBtn) resultsBtn.click();
+      const drawer = document.getElementById("results-config-drawer");
+      if (drawer) {
+        drawer.classList.remove("hidden");
+        setTimeout(() => {
+          drawer.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 200);
+      }
+    });
+  }
 }
 
 /**

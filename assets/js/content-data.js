@@ -459,5 +459,87 @@ const RENOVATE_CONFIG = {
         placeholderColor: "from-blue-200 to-blue-400"
       }
     ]
+  },
+
+  // Configuração do Dashboard de Resultados (Google Sheets com Múltiplos Separadores)
+  resultsDashboard: {
+    // ID da Folha de Cálculo Google Sheets partilhada (ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)
+    spreadsheetId: "", 
+    // GID de cada separador (extraído da URL: #gid=...)
+    tabGids: {
+      game: "0",        // Separador 1: Serious Game (Tallentto) + Dados Demográficos
+      sim: "",          // Separador 2: Simulador RENOVATE (Virmedex)
+      global: ""        // Separador 3: Avaliação Global (NPS + Síntese)
+    },
+    autoRefreshSeconds: 45,
+
+    // Conjunto de dados de demonstração representativo de 18 peritos agrícolas na ESAS
+    // Exibido automaticamente antes de serem inseridos os IDs ou quando a folha tem 0 respostas
+    demoData: {
+      isDemo: true,
+      participantCount: 18,
+      lastUpdated: "Hoje, 15:30",
+      gameResponses: [
+        { code: "P01", profile: "Técnico / Consultor Agrícola", age: "30-45 anos", gender: "Masculino", crops: ["Vinhedo", "Olivicultura"], digitalComfort: 4, q7: 5, q8: 4, q9: 5, q10: 5, q11: 4, q12: 5, sus: [4, 2, 5, 1, 4, 2, 5, 1, 4, 2], words: "Prático, Intuitivo, Rápido" },
+        { code: "P02", profile: "Engenheiro Agrónomo", age: "30-45 anos", gender: "Feminino", crops: ["Fruticultura / Pomóideas", "Hortícolas"], digitalComfort: 5, q7: 4, q8: 4, q9: 4, q10: 5, q11: 5, q12: 4, sus: [5, 1, 4, 2, 5, 1, 4, 1, 5, 2], words: "Inovador, Educativo, Dinâmico" },
+        { code: "P03", profile: "Produtor Agrícola", age: "46-60 anos", gender: "Masculino", crops: ["Olivicultura", "Milho / Grandes Culturas"], digitalComfort: 3, q7: 4, q8: 3, q9: 5, q10: 4, q11: 4, q12: 4, sus: [4, 2, 4, 2, 4, 2, 4, 2, 4, 2], words: "Desafiante, Útil, Claro" },
+        { code: "P04", profile: "Técnico / Consultor Agrícola", age: "30-45 anos", gender: "Masculino", crops: ["Vinhedo", "Fruticultura / Pomóideas"], digitalComfort: 4, q7: 5, q8: 4, q9: 4, q10: 5, q11: 5, q12: 5, sus: [4, 1, 5, 2, 5, 1, 5, 2, 4, 1], words: "Interessante, Visual, Prático" },
+        { code: "P05", profile: "Investigador / Docente", age: "46-60 anos", gender: "Feminino", crops: ["Hortícolas", "Vinhedo"], digitalComfort: 5, q7: 5, q8: 4, q9: 5, q10: 5, q11: 4, q12: 5, sus: [5, 2, 5, 1, 4, 1, 5, 1, 5, 2], words: "Didático, Eficaz, Intuitivo" },
+        { code: "P06", profile: "Engenheiro Agrónomo", age: "<30 anos", gender: "Masculino", crops: ["Milho / Grandes Culturas", "Arroz"], digitalComfort: 5, q7: 4, q8: 4, q9: 4, q10: 4, q11: 5, q12: 4, sus: [4, 2, 4, 2, 5, 1, 4, 2, 4, 2], words: "Rápido, Esclarecedor, Motivador" },
+        { code: "P07", profile: "Produtor Agrícola", age: "46-60 anos", gender: "Masculino", crops: ["Olivicultura", "Vinhedo"], digitalComfort: 3, q7: 4, q8: 3, q9: 4, q10: 5, q11: 4, q12: 4, sus: [4, 2, 4, 3, 3, 2, 4, 2, 4, 2], words: "Estimulante, Realista, Prático" },
+        { code: "P08", profile: "Técnico / Consultor Agrícola", age: "<30 anos", gender: "Feminino", crops: ["Fruticultura / Pomóideas", "Hortícolas"], digitalComfort: 4, q7: 5, q8: 4, q9: 5, q10: 5, q11: 5, q12: 5, sus: [5, 1, 5, 1, 4, 2, 5, 1, 5, 1], words: "Dinâmico, Acessível, Interativo" },
+        { code: "P09", profile: "Engenheiro Agrónomo", age: "30-45 anos", gender: "Masculino", crops: ["Vinhedo", "Olivicultura"], digitalComfort: 4, q7: 4, q8: 4, q9: 4, q10: 4, q11: 4, q12: 4, sus: [4, 2, 4, 2, 4, 2, 4, 2, 4, 2], words: "Útil, Rigoroso, Envolvente" },
+        { code: "P10", profile: "Técnico / Consultor Agrícola", age: "30-45 anos", gender: "Masculino", crops: ["Fruticultura / Pomóideas"], digitalComfort: 4, q7: 5, q8: 4, q9: 5, q10: 5, q11: 5, q12: 4, sus: [4, 1, 5, 2, 5, 1, 4, 2, 4, 1], words: "Moderno, Aplicável, Simples" },
+        { code: "P11", profile: "Investigador / Docente", age: "30-45 anos", gender: "Feminino", crops: ["Olivicultura", "Fruticultura / Pomóideas"], digitalComfort: 4, q7: 5, q8: 5, q9: 5, q10: 5, q11: 4, q12: 5, sus: [5, 2, 5, 1, 4, 1, 5, 1, 5, 2], words: "Inovador, Pedagógico, Claro" },
+        { code: "P12", profile: "Produtor Agrícola", age: ">60 anos", gender: "Masculino", crops: ["Vinhedo", "Milho / Grandes Culturas"], digitalComfort: 2, q7: 4, q8: 3, q9: 4, q10: 4, q11: 3, q12: 4, sus: [3, 3, 4, 3, 3, 2, 3, 2, 4, 3], words: "Prático, Formativo, Interessante" },
+        { code: "P13", profile: "Engenheiro Agrónomo", age: "<30 anos", gender: "Feminino", crops: ["Hortícolas", "Fruticultura / Pomóideas"], digitalComfort: 5, q7: 5, q8: 4, q9: 4, q10: 5, q11: 5, q12: 5, sus: [5, 1, 5, 1, 5, 1, 5, 1, 4, 1], words: "Desafiante, Intuitivo, Essencial" },
+        { code: "P14", profile: "Técnico / Consultor Agrícola", age: "30-45 anos", gender: "Masculino", crops: ["Vinhedo", "Olivicultura"], digitalComfort: 4, q7: 4, q8: 4, q9: 5, q10: 5, q11: 4, q12: 4, sus: [4, 2, 4, 1, 4, 2, 4, 1, 4, 2], words: "Rápido, Lúdico, Completo" },
+        { code: "P15", profile: "Estudante / Futuro Técnico", age: "<30 anos", gender: "Masculino", crops: ["Hortícolas", "Grandes Culturas"], digitalComfort: 5, q7: 5, q8: 4, q9: 4, q10: 4, q11: 5, q12: 5, sus: [4, 1, 5, 1, 4, 2, 5, 1, 5, 1], words: "Esclarecedor, Eficiente, Positivo" },
+        { code: "P16", profile: "Técnico / Consultor Agrícola", age: "46-60 anos", gender: "Masculino", crops: ["Olivicultura", "Fruticultura / Pomóideas"], digitalComfort: 3, q7: 4, q8: 4, q9: 4, q10: 4, q11: 4, q12: 4, sus: [4, 2, 4, 2, 4, 2, 4, 2, 4, 2], words: "Visual, Direto, Relevante" },
+        { code: "P17", profile: "Engenheiro Agrónomo", age: "30-45 anos", gender: "Feminino", crops: ["Vinhedo", "Fruticultura / Pomóideas"], digitalComfort: 4, q7: 5, q8: 4, q9: 5, q10: 5, q11: 5, q12: 5, sus: [5, 1, 5, 1, 4, 1, 5, 2, 4, 1], words: "Muito prático, Educativo, Inovador" },
+        { code: "P18", profile: "Técnico / Consultor Agrícola", age: "30-45 anos", gender: "Masculino", crops: ["Olivicultura", "Hortícolas"], digitalComfort: 4, q7: 4, q8: 4, q9: 4, q10: 5, q11: 4, q12: 4, sus: [4, 2, 4, 2, 4, 1, 4, 1, 4, 2], words: "Dinâmico, Fácil, Envolvente" }
+      ],
+      simulatorResponses: [
+        { code: "P01", q15: 4, q16: 4, q17: 5, q18: 5, q19: 4, q20: 5, q21: 4, q22: 5, q23: 5, sus: [5, 2, 5, 1, 4, 1, 4, 2, 5, 2], q25: "Excelente realismo nos parâmetros ambientais.", words: "Imersivo, Realista, Preciso" },
+        { code: "P02", q15: 5, q16: 5, q17: 5, q18: 5, q19: 4, q20: 5, q21: 5, q22: 4, q23: 5, sus: [5, 1, 5, 1, 5, 1, 5, 1, 4, 1], q25: "Adicionar mais variedade de bicos antideriva.", words: "Inovador, Formativo, Detalhado" },
+        { code: "P03", q15: 3, q16: 4, q17: 4, q18: 5, q19: 3, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 3, 4, 2, 4, 2, 4, 2], q25: "Ajustar sensibilidade do rato ao rodar a máquina.", words: "Interativo, Técnico, Exigente" },
+        { code: "P04", q15: 4, q16: 4, q17: 5, q18: 5, q19: 4, q20: 5, q21: 4, q22: 5, q23: 5, sus: [4, 2, 5, 1, 5, 1, 4, 2, 4, 1], q25: "A sequência de calibração está impecável.", words: "Prático, Visual, Completo" },
+        { code: "P05", q15: 4, q16: 5, q17: 5, q18: 5, q19: 5, q20: 5, q21: 5, q22: 5, q23: 5, sus: [5, 1, 5, 1, 4, 1, 5, 1, 5, 1], q25: "Fantástica correspondência aos procedimentos de laboratório.", words: "Realista, Abrangente, Rigoroso" },
+        { code: "P06", q15: 5, q16: 4, q17: 4, q18: 4, q19: 4, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 2, 4, 1, 5, 1, 4, 2], q25: "Fluidez gráfica muito boa em PC.", words: "Imersivo, Excelente, Intuitivo" },
+        { code: "P07", q15: 3, q16: 4, q17: 4, q18: 4, q19: 3, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 3, 3, 3, 4, 2, 3, 2, 4, 2], q25: "Mais ajudas visuais para quem tem menos prática com computadores.", words: "Muito realista, Detalhado, Útil" },
+        { code: "P08", q15: 5, q16: 5, q17: 5, q18: 5, q19: 4, q20: 5, q21: 5, q22: 5, q23: 5, sus: [5, 1, 5, 1, 5, 1, 5, 1, 5, 1], q25: "Passo a passo muito claro.", words: "Formativo, Moderno, Completo" },
+        { code: "P09", q15: 4, q16: 4, q17: 4, q18: 4, q19: 4, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 2, 4, 2, 4, 2, 4, 2], q25: "Cálculos matemáticos bem explicados.", words: "Inovador, Preciso, Desafiante" },
+        { code: "P10", q15: 4, q16: 4, q17: 5, q18: 5, q19: 4, q20: 4, q21: 4, q22: 5, q23: 4, sus: [4, 1, 4, 2, 4, 1, 4, 2, 4, 1], q25: "Gostei da leitura do rótulo.", words: "Interativo, Esclarecedor, Prático" },
+        { code: "P11", q15: 4, q16: 5, q17: 5, q18: 5, q19: 5, q20: 5, q21: 5, q22: 5, q23: 5, sus: [5, 1, 5, 1, 5, 1, 5, 1, 5, 1], q25: "Potencial pedagógico altíssimo para aulas e formações.", words: "Realista, Eficaz, Imersivo" },
+        { code: "P12", q15: 3, q16: 3, q17: 4, q18: 4, q19: 3, q20: 4, q21: 3, q22: 4, q23: 4, sus: [3, 3, 4, 3, 3, 2, 3, 2, 4, 3], q25: "Requer acompanhamento inicial mas depois torna-se lógico.", words: "Técnico, Visual, Aplicável" },
+        { code: "P13", q15: 5, q16: 5, q17: 5, q18: 5, q19: 4, q20: 5, q21: 5, q22: 5, q23: 5, sus: [5, 1, 5, 1, 4, 1, 5, 1, 5, 1], q25: "Gráficos de alta qualidade.", words: "Completo, Rigoroso, Avançado" },
+        { code: "P14", q15: 4, q16: 4, q17: 4, q18: 5, q19: 4, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 2, 4, 1, 4, 1, 4, 2], q25: "Ajuda a fixar a fórmula de cálculo de débito.", words: "Excelente, Intuitivo, Real" },
+        { code: "P15", q15: 5, q16: 4, q17: 4, q18: 4, q19: 4, q20: 4, q21: 4, q22: 4, q23: 5, sus: [5, 1, 4, 2, 4, 1, 4, 2, 4, 1], q25: "Ambiente muito apelativo.", words: "Imersivo, Prático, Relevante" },
+        { code: "P16", q15: 4, q16: 4, q17: 4, q18: 4, q19: 4, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 2, 4, 2, 4, 2, 4, 2], q25: "Muito representativo do pulverizador real.", words: "Formativo, Detalhado, Positivo" },
+        { code: "P17", q15: 5, q16: 4, q17: 5, q18: 5, q19: 5, q20: 5, q21: 5, q22: 5, q23: 5, sus: [5, 1, 5, 1, 5, 1, 4, 1, 5, 1], q25: "Permite errar sem estragar produto nem gastar água.", words: "Inovador, Exigente, Completo" },
+        { code: "P18", q15: 4, q16: 4, q17: 4, q18: 5, q19: 4, q20: 4, q21: 4, q22: 4, q23: 4, sus: [4, 2, 4, 2, 4, 1, 4, 2, 4, 1], q25: "Ótima ferramenta de treino para operadores.", words: "Realista, Interativo, Valioso" }
+      ],
+      globalResponses: [
+        { code: "P01", q26: 5, q27: 4, q28: 5, nps: 10, q30: "Excelente iniciativa de ligar a tecnologia à prática de campo." },
+        { code: "P02", q26: 5, q27: 5, q28: 5, nps: 10, q30: "A integração dos dois ambientes (jogo e simulador) é muito complementar." },
+        { code: "P03", q26: 4, q27: 3, q28: 4, nps: 8, q30: "Mais tempo para explorar cada exercício nas sessões práticas." },
+        { code: "P04", q26: 5, q27: 4, q28: 5, nps: 9, q30: "Disponibilizar versão para telemóvel do simulador seria excelente." },
+        { code: "P05", q26: 5, q27: 5, q28: 5, nps: 10, q30: "Recomendo vivamente a integração em módulos curriculares agrários." },
+        { code: "P06", q26: 4, q27: 4, q28: 4, nps: 9, q30: "Parabéns pela qualidade gráfica do simulador e dinamismo do jogo." },
+        { code: "P07", q26: 4, q27: 4, q28: 4, nps: 8, q30: "Facilitar ainda mais os menus para agricultores mais velhos." },
+        { code: "P08", q26: 5, q27: 5, q28: 5, nps: 10, q30: "Plataforma muito intuitiva e envolvente." },
+        { code: "P09", q26: 4, q27: 4, q28: 4, nps: 8, q30: "Boa dinâmica de grupo e organização." },
+        { code: "P10", q26: 5, q27: 4, q28: 5, nps: 9, q30: "A calibração do pulverizador fica muito mais fácil de memorizar." },
+        { code: "P11", q26: 5, q27: 5, q28: 5, nps: 10, q30: "O consórcio RENOVATE está a fazer um trabalho fundamental para o setor." },
+        { code: "P12", q26: 4, q27: 3, q28: 4, nps: 7, q30: "Manual de apoio em papel ou PDF impresso para levar para a exploração." },
+        { code: "P13", q26: 5, q27: 5, q28: 5, nps: 10, q30: "Simulação realista e feedback imediato são os pontos fortes." },
+        { code: "P14", q26: 4, q27: 4, q28: 4, nps: 9, q30: "Muito útil para formação de novos funcionários agrícolas." },
+        { code: "P15", q26: 5, q27: 4, q28: 5, nps: 9, q30: "Didático, moderno e estimulante." },
+        { code: "P16", q26: 4, q27: 4, q28: 4, nps: 8, q30: "Representa bem a realidade de quem calibra no terreno." },
+        { code: "P17", q26: 5, q27: 5, q28: 5, nps: 10, q30: "Parabéns à DATERRA e à ESAS pelo excelente acolhimento e organização." },
+        { code: "P18", q26: 4, q27: 4, q28: 4, nps: 9, q30: "Desejo sucesso na versão final do projeto RENOVATE." }
+      ]
+    }
   }
 };
+
