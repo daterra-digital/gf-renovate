@@ -202,12 +202,19 @@ window.I18nManager = (function () {
       "results.deliv.title": "Relatório de Requisitos e Validação de Ferramentas Digitais para Formação em Proteção de Culturas",
       "results.deliv.abstract": "Este entregável técnico sintetiza a metodologia de validação de ferramentas pedagógicas digitais (Serious Games e Simuladores 3D), incorporando o feedback direto recolhido nas sessões práticas de campo.",
       "results.deliv.highlightsTitle": "Pontos Fundamentais do Relatório:",
-      "results.videos.title": "Vídeos & Demonstrações Técnicas",
-      "results.videos.v1Title": "Visão Geral do Projeto RENOVATE",
-      "results.videos.v1Desc": "Apresentação da estratégia europeia para formação e sustentabilidade fitossanitária.",
-      "results.videos.v2Title": "Demonstração: Serious Game (Tallentto)",
-      "results.videos.v2Desc": "Mecânica de simulação de decisões em ambiente lúdico interativo.",
-      "results.gallery.title": "Galeria Fotográfica",
+      // Vídeo Oficial do Grupo Focal 2 (Santarém)
+      "results.gf2video.title": "Vídeo Oficial do Grupo Focal 2 (Santarém)",
+      "results.gf2video.desc": "Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.",
+      "results.gf2video.badge": "Em Produção • Brevemente",
+      "results.gf2video.boxTitle": "Vídeo do Grupo Focal 2 em Fase de Captação e Edição",
+      "results.gf2video.boxText": "A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.",
+      "results.gf2video.boxBadge": "Disponível após 06 de Outubro de 2026",
+      "results.gf2video.footer": "Reportagem Audiovisual DATERRA & RENOVATE",
+      "results.gf2video.caption": "A cobertura audiovisual integra o Deliverable 1.4 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.",
+
+      // Galeria Fotográfica do Grupo Focal 2 (Etapas do Programa)
+      "results.gallery.title": "Galeria Fotográfica do Grupo Focal 2 (Santarém)",
+      "results.gallery.desc": "Registo fotográfico organizado pelas etapas do programa oficial da sessão na ESAS.",
 
       // Consortium & Partners
       "consortium.partnersCount": "16 parceiros",
@@ -434,13 +441,19 @@ window.I18nManager = (function () {
       "results.deliv.link": "View Deliverables on RENOVATE Website →",
       "results.deliv.title": "Requirements and Validation Report on Digital Tools for Crop Protection Training",
       "results.deliv.abstract": "This technical deliverable synthesises the validation methodology for digital pedagogical tools (Serious Games and 3D Simulators), incorporating direct feedback collected during hands-on field sessions.",
-      "results.deliv.highlightsTitle": "Key Report Highlights:",
-      "results.videos.title": "Videos & Technical Demonstrations",
-      "results.videos.v1Title": "RENOVATE Project Overview",
-      "results.videos.v1Desc": "Presentation of the European strategy for advanced training and plant health sustainability.",
-      "results.videos.v2Title": "Demonstration: Serious Game (Tallentto)",
-      "results.videos.v2Desc": "Decision-making simulation mechanics in an interactive gamified environment.",
-      "results.gallery.title": "Photo Gallery",
+      // Official Focus Group 2 Video (Santarém)
+      "results.gf2video.title": "Official Video: Focus Group 2 (Santarém)",
+      "results.gf2video.desc": "Audiovisual coverage, hands-on training dynamics and participant testimonials at ESAS.",
+      "results.gf2video.badge": "In Production • Coming Soon",
+      "results.gf2video.boxTitle": "Focus Group 2 Video in Recording & Editing Phase",
+      "results.gf2video.boxText": "The official audiovisual report featuring Serious Game trials, 3D Simulator demonstrations, and participant interviews will be published here after the session concludes.",
+      "results.gf2video.boxBadge": "Available after 06 October 2026",
+      "results.gf2video.footer": "Audiovisual Coverage DATERRA & RENOVATE",
+      "results.gf2video.caption": "The audiovisual coverage is part of Deliverable 1.4 of the RENOVATE project and supports the European dissemination of digital tools.",
+
+      // Photo Gallery Focus Group 2
+      "results.gallery.title": "Photo Gallery: Focus Group 2 (Santarém)",
+      "results.gallery.desc": "Photographic record organised by the official agenda phases of the ESAS session.",
 
       // Consortium & Partners
       "consortium.partnersCount": "16 partners",

@@ -622,20 +622,77 @@ function renderResultsAndMedia() {
     </li>
   `).join("");
 
-  galleryContainer.innerHTML = results.gallery.map(img => `
-    <div class="group relative bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition">
-      <div class="h-44 bg-gradient-to-tr ${img.placeholderColor} flex items-center justify-center text-slate-800 p-4 text-center">
-        <div class="space-y-1">
-          <i data-lucide="image" class="w-8 h-8 mx-auto opacity-70"></i>
-          <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white/80 text-slate-900">${img.tag}</span>
+  galleryContainer.innerHTML = results.gallery.map(album => {
+    const title = (isEn && album.titleEn) ? album.titleEn : album.title;
+    const caption = (isEn && album.captionEn) ? album.captionEn : album.caption;
+    const tag = (isEn && album.tagEn) ? album.tagEn : album.tag;
+    const phase = (isEn && album.phaseEn) ? album.phaseEn : album.phase;
+    const photoBadge = isEn ? "Official Album" : "Álbum Oficial";
+    const statusText = isEn ? "Recording in progress" : "Captação no evento";
+
+    return `
+      <div class="group relative bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col">
+        <!-- Visual Header com Visor Fotográfico Cinematográfico (Sem bloco amarelo plano) -->
+        <div class="h-44 bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/60 relative overflow-hidden flex flex-col justify-between p-3.5 border-b border-slate-100">
+          <!-- Textura subtil de mira fotográfica -->
+          <div class="absolute inset-0 opacity-10 pointer-events-none"
+               style="background-image: radial-gradient(rgba(255, 204, 102, 0.6) 1px, transparent 1px); background-size: 16px 16px;"></div>
+
+          <!-- Topo do Visor: Fase & Badge de Álbum -->
+          <div class="flex items-center justify-between gap-1.5 relative z-10">
+            <span class="bg-black/60 backdrop-blur-xs text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border border-white/10 tracking-wider">
+              ${phase}
+            </span>
+            <span class="inline-flex items-center gap-1 bg-[#F5B842] text-slate-900 text-[10px] font-black px-2 py-0.5 rounded shadow-sm">
+              <i data-lucide="camera" class="w-3 h-3"></i>
+              ${photoBadge}
+            </span>
+          </div>
+
+          <!-- Centro do Visor: Ícone da Etapa com Anel translúcido -->
+          <div class="flex items-center justify-center my-auto relative z-10">
+            <div class="w-13 h-13 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 backdrop-blur-xs">
+              <i data-lucide="${album.icon}" class="w-7 h-7"></i>
+            </div>
+          </div>
+
+          <!-- Base do Visor: Horário da Agenda -->
+          <div class="flex items-center justify-between text-[11px] text-slate-300 relative z-10">
+            <span class="font-mono font-bold bg-black/50 px-2 py-0.5 rounded text-[10px] text-amber-300">
+              ${album.time}
+            </span>
+            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">
+              ${tag}
+            </span>
+          </div>
+        </div>
+
+        <!-- Conteúdo do Cartão: Título, Descrição e Estado -->
+        <div class="p-4 flex flex-col flex-grow justify-between space-y-3">
+          <div class="space-y-1.5">
+            <h4 class="font-extrabold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-amber-800 transition-colors">
+              ${title}
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              ${caption}
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+            <span class="inline-flex items-center gap-1">
+              <i data-lucide="image" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span class="text-[11px]">${isEn ? "Event Photographs" : "Fotografias da Sessão"}</span>
+            </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">
+              ${statusText}
+            </span>
+          </div>
         </div>
       </div>
-      <div class="p-4">
-        <h4 class="font-bold text-slate-900 text-sm mb-1">${img.title}</h4>
-        <p class="text-xs text-slate-600">${img.caption}</p>
-      </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 /**

@@ -526,44 +526,93 @@ const RENOVATE_CONFIG = {
         "Technical recommendations for telemetry integration in simulators."
       ]
     },
-    videos: [
-      {
-        id: "video-1",
-        title: "Visão Geral do Projeto RENOVATE",
-        youtubeId: "dQw4w9WgXcQ",
-        description: "Apresentação da estratégia europeia para formação avançada e digitalização agrícola."
-      },
-      {
-        id: "video-2",
-        title: "Demonstração do Serious Game (Tallentto)",
-        youtubeId: "dQw4w9WgXcQ",
-        description: "Vislumbre da dinâmica de jogo aplicada à calibração e segurança no campo."
-      }
-    ],
+    gf2Video: {
+      status: "Em Produção",
+      sessionDate: "06 Outubro 2026",
+      location: "ESAS - Santarém",
+      title: "Vídeo Oficial: 2ª Sessão do Grupo Focal RENOVATE (Santarém)",
+      titleEn: "Official Video: 2nd RENOVATE Focus Group Session (Santarém)",
+      description: "Reportagem audiovisual com a dinâmica prática dos participantes, ensaios no Serious Game, testes no Simulador 3D e entrevistas.",
+      descriptionEn: "Audiovisual coverage featuring hands-on dynamics, Serious Game trials, 3D Simulator evaluations, and participant interviews."
+    },
     gallery: [
       {
-        title: "Grupo Focal 1 - Lisboa",
-        caption: "Discussão plenária com técnicos e consultores agrícolas.",
-        tag: "GF1 Lisboa",
-        placeholderColor: "from-amber-200 to-amber-400"
+        id: "gf2-opening",
+        title: "Sessão de Abertura",
+        titleEn: "Opening Session",
+        time: "10:00 - 10:10",
+        phase: "Fase 1",
+        phaseEn: "Phase 1",
+        tag: "Acolhimento & Enquadramento",
+        tagEn: "Welcome & Framework",
+        icon: "landmark",
+        caption: "Acolhimento institucional pelo Diretor da ESAS (Politécnico de Santarém) e enquadramento dos trabalhos pelo consórcio RENOVATE.",
+        captionEn: "Institutional welcome by the Director of ESAS (Polytechnic University of Santarém) and framework of proceedings by the RENOVATE consortium."
       },
       {
-        title: "Dinâmica de Co-Criação",
-        caption: "Mapeamento de desafios na adoção de tecnologias de pulverização.",
-        tag: "Metodologia",
-        placeholderColor: "from-slate-200 to-slate-400"
+        id: "gf2-delivered",
+        title: '"Disseram, e nós fizemos"',
+        titleEn: '"You said, and we delivered"',
+        time: "10:10 - 10:20",
+        phase: "Fase 2",
+        phaseEn: "Phase 2",
+        tag: "Evolução das Ferramentas",
+        tagEn: "Tools Evolution",
+        icon: "presentation",
+        caption: "Apresentação oficial da evolução das ferramentas digitais integrando as recomendações e melhorias sugeridas no GF1 de Lisboa.",
+        captionEn: "Official presentation of digital tool developments integrating the feedback and recommendations collected during FG1 in Lisbon."
       },
       {
-        title: "Auditório da ESAS - Santarém",
-        caption: "Local anfitrião da 2ª Sessão do Grupo Focal RENOVATE.",
-        tag: "ESAS 2026",
-        placeholderColor: "from-amber-100 to-amber-300"
+        id: "gf2-serious-game",
+        title: "Teste Prático: Serious Game",
+        titleEn: "Practical Test: Serious Game",
+        time: "10:20 - 11:35",
+        phase: "Fase 3",
+        phaseEn: "Phase 3",
+        tag: "Experimentação Mobile",
+        tagEn: "Mobile Hands-on",
+        icon: "gamepad-2",
+        caption: "Registo fotográfico dos participantes a testar o Serious Game de calibração em smartphones e tablets em ambiente de formação.",
+        captionEn: "Photographic record of participants testing the calibration Serious Game on smartphones and tablets in a training environment."
       },
       {
-        title: "Testes de Usabilidade",
-        caption: "Validação da interação homem-máquina em ambiente simulado.",
-        tag: "Simulação",
-        placeholderColor: "from-blue-200 to-blue-400"
+        id: "gf2-simulator",
+        title: "Teste Prático: Simulador",
+        titleEn: "Practical Test: 3D Simulator",
+        time: "12:00 - 13:10",
+        phase: "Fase 4",
+        phaseEn: "Phase 4",
+        tag: "Postos Informáticos PC",
+        tagEn: "PC Workstations",
+        icon: "monitor",
+        caption: "Captação da interação dos peritos e técnicos com o simulador 3D nos computadores: definição de velocidade, bicos e deriva.",
+        captionEn: "Capturing experts and advisors interacting with the 3D simulator on PCs: setting speed, nozzles, and drift mitigation."
+      },
+      {
+        id: "gf2-evaluations",
+        title: "Avaliação Questionários",
+        titleEn: "Questionnaires Evaluation",
+        time: "11:35 • 13:10 • 14:40",
+        phase: "Fase 5",
+        phaseEn: "Phase 5",
+        tag: "Métricas & Escala SUS",
+        tagEn: "Metrics & SUS Scale",
+        icon: "clipboard-check",
+        caption: "Preenchimento dos questionários de avaliação da usabilidade (SUS), eficácia agronómica e satisfação global da plataforma.",
+        captionEn: "Completion of evaluation questionnaires assessing usability (SUS), agronomic efficacy, and overall platform satisfaction."
+      },
+      {
+        id: "gf2-plenary",
+        title: "Discussão Plenária",
+        titleEn: "Plenary Discussion",
+        time: "14:50 - 15:40",
+        phase: "Fase 6",
+        phaseEn: "Phase 6",
+        tag: "Debate & Conclusões",
+        tagEn: "Debate & Conclusions",
+        icon: "messages-square",
+        caption: "Debate coletivo com projeção das respostas dos participantes, desafios práticos da digitalização agrícola e encerramento.",
+        captionEn: "Collective debate projecting live participant responses, practical agricultural digitalisation challenges, and closing session."
       }
     ]
   },

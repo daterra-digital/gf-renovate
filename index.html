@@ -43,7 +43,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1745">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1800">
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
@@ -1019,50 +1019,100 @@
         </div>
       </div>
 
-      <!-- Hub de Vídeos (YouTube Embeds) -->
+      <!-- Secção de Vídeo Oficial do Grupo Focal 2 (Santarém) -->
       <div class="space-y-4">
-        <h3 data-i18n="results.videos.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
-          Vídeos & Demonstrações Técnicas
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-3 p-4">
-            <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden">
-              <iframe 
-                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" 
-                title="Visão Geral do Projeto RENOVATE"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            </div>
-            <h4 data-i18n="results.videos.v1Title" class="font-bold text-slate-900 text-sm">Visão Geral do Projeto RENOVATE</h4>
-            <p data-i18n="results.videos.v1Desc" class="text-xs text-slate-600">Apresentação da estratégia europeia para formação e sustentabilidade fitossanitária.</p>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 data-i18n="results.gf2video.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
+              Vídeo Oficial do Grupo Focal 2 (Santarém)
+            </h3>
+            <p data-i18n="results.gf2video.desc" class="text-xs text-slate-500">
+              Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.
+            </p>
           </div>
-
-          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-3 p-4">
-            <div class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden">
-              <iframe 
-                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" 
-                title="Demonstração do Serious Game (Tallentto)"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            </div>
-            <h4 data-i18n="results.videos.v2Title" class="font-bold text-slate-900 text-sm">Demonstração: Serious Game (Tallentto)</h4>
-            <p data-i18n="results.videos.v2Desc" class="text-xs text-slate-600">Mecânica de simulação de decisões em ambiente lúdico interativo.</p>
-          </div>
-
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300 shadow-2xs">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span data-i18n="results.gf2video.badge">Em Produção • Brevemente</span>
+          </span>
         </div>
+
+        <!-- Leitor 16:9 Estilizado para o Vídeo GF2 (Design Cinematográfico em Alta Resolução) -->
+        <div id="gf2-video-player-container" class="aspect-16-9 bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-200 relative group">
+          <!-- Fundo Gradiente Cinematográfico Escuro -->
+          <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-amber-950/70"></div>
+          
+          <!-- Malha Tecnológica Subtil Audiovisual -->
+          <div class="absolute inset-0 opacity-15 pointer-events-none" 
+               style="background-image: radial-gradient(rgba(255, 204, 102, 0.4) 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+          <!-- Badges Informativos no Topo -->
+          <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2 z-10">
+            <span class="inline-flex items-center gap-1.5 bg-red-600/90 text-white text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
+              <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
+              YouTube HD • GF2
+            </span>
+            <span class="bg-slate-900/85 backdrop-blur-sm text-slate-200 text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 hidden sm:inline-block">
+              2ª Sessão Santarém • ESAS & Consórcio RENOVATE
+            </span>
+          </div>
+
+          <!-- Conteúdo Central: Em Produção / Brevemente -->
+          <div class="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 text-center z-10 space-y-3">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-2xl ring-4 ring-amber-400/30 group-hover:scale-105 transition-transform duration-300">
+              <i data-lucide="video" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+            </div>
+
+            <div class="max-w-lg space-y-1.5 px-2">
+              <h4 data-i18n="results.gf2video.boxTitle" class="text-white text-base sm:text-lg font-extrabold tracking-tight drop-shadow-sm">
+                Vídeo do Grupo Focal 2 em Fase de Captação e Edição
+              </h4>
+              <p data-i18n="results.gf2video.boxText" class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
+                A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.
+              </p>
+            </div>
+
+            <div class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm px-3.5 py-1.5 rounded-lg border border-white/15 text-white text-xs font-semibold transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span data-i18n="results.gf2video.boxBadge">Disponível após 06 de Outubro de 2026</span>
+            </div>
+          </div>
+
+          <!-- Badges de Rodapé do Player -->
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs z-10">
+            <span class="bg-slate-900/85 backdrop-blur-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 border border-white/10 shadow text-[11px] sm:text-xs">
+              <i data-lucide="film" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span data-i18n="results.gf2video.footer">Reportagem Audiovisual DATERRA & RENOVATE</span>
+            </span>
+            <span class="bg-black/75 px-2.5 py-1 rounded-md font-mono text-[11px] font-bold">
+              Full HD 1080p
+            </span>
+          </div>
+        </div>
+
+        <p data-i18n="results.gf2video.caption" class="text-[11px] text-slate-500 italic">
+          A cobertura audiovisual integra o Deliverable 1.4 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.
+        </p>
       </div>
 
-      <!-- Galeria de Imagens do Evento -->
+      <!-- Galeria Fotográfica do Grupo Focal 2 (Etapas do Programa) -->
       <div class="space-y-4">
-        <h3 data-i18n="results.gallery.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="image" class="w-5 h-5 text-amber-600"></i>
-          Galeria Fotográfica
-        </h3>
-        <div id="media-gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 data-i18n="results.gallery.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="images" class="w-5 h-5 text-amber-600"></i>
+              Galeria Fotográfica do Grupo Focal 2
+            </h3>
+            <p data-i18n="results.gallery.desc" class="text-xs text-slate-500">
+              Registo fotográfico organizado pelas etapas do programa oficial da sessão na ESAS Santarém.
+            </p>
+          </div>
+          <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            6 Etapas da Sessão
+          </span>
+        </div>
+
+        <div id="media-gallery-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Renderizado via app.js -->
         </div>
       </div>
@@ -1388,11 +1438,11 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261001-1745"></script>
-  <script src="assets/js/content-data.js?v=20261001-1745"></script>
-  <script src="assets/js/live-session.js?v=20261001-1745"></script>
-  <script src="assets/js/results-dashboard.js?v=20261001-1745"></script>
-  <script src="assets/js/app.js?v=20261001-1745"></script>
+  <script src="assets/js/i18n.js?v=20261001-1800"></script>
+  <script src="assets/js/content-data.js?v=20261001-1800"></script>
+  <script src="assets/js/live-session.js?v=20261001-1800"></script>
+  <script src="assets/js/results-dashboard.js?v=20261001-1800"></script>
+  <script src="assets/js/app.js?v=20261001-1800"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
