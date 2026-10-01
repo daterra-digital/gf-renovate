@@ -7,7 +7,9 @@ const LiveSession = (function () {
   const STORAGE_KEYS = {
     PARTICIPANT_CODE: "renovate_participant_code",
     UNLOCKED_STEPS: "renovate_unlocked_steps",
-    COMPLETED_STEPS: "renovate_completed_steps"
+    COMPLETED_STEPS: "renovate_completed_steps",
+    SERIOUS_GAME_CODE: "renovate_serious_game_code",
+    SIM_SELECTED_STATION: "renovate_sim_selected_station"
   };
 
   const MODERATOR_PIN = "2026";
@@ -17,7 +19,10 @@ const LiveSession = (function () {
   let state = {
     participantCode: "",
     unlockedSteps: [1], // Passo 1 sempre desbloqueado por defeito
-    completedSteps: []
+    completedSteps: [],
+    seriousGamePersonalCode: "",
+    selectedSimStation: "P01",
+    isSimPassVisible: false
   };
 
   /**
@@ -33,6 +38,7 @@ const LiveSession = (function () {
     }
     renderLiveSessionUI();
     bindAutomaticStepTriggers();
+    bindCredentialEvents();
   }
 
   /**
@@ -57,6 +63,16 @@ const LiveSession = (function () {
       if (savedCompleted) {
         state.completedSteps = JSON.parse(savedCompleted) || [];
       }
+
+      const savedGameCode = localStorage.getItem(STORAGE_KEYS.SERIOUS_GAME_CODE);
+      if (savedGameCode) {
+        state.seriousGamePersonalCode = savedGameCode.trim();
+      }
+
+      const savedSimStation = localStorage.getItem(STORAGE_KEYS.SIM_SELECTED_STATION);
+      if (savedSimStation) {
+        state.selectedSimStation = savedSimStation.trim();
+      }
     } catch (e) {
       console.warn("Aviso ao carregar localStorage:", e);
     }
@@ -70,6 +86,8 @@ const LiveSession = (function () {
       localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, state.participantCode);
       localStorage.setItem(STORAGE_KEYS.UNLOCKED_STEPS, JSON.stringify(state.unlockedSteps));
       localStorage.setItem(STORAGE_KEYS.COMPLETED_STEPS, JSON.stringify(state.completedSteps));
+      localStorage.setItem(STORAGE_KEYS.SERIOUS_GAME_CODE, state.seriousGamePersonalCode || "");
+      localStorage.setItem(STORAGE_KEYS.SIM_SELECTED_STATION, state.selectedSimStation || "P01");
     } catch (e) {
       console.error("Erro ao gravar no localStorage:", e);
     }
@@ -88,6 +106,10 @@ const LiveSession = (function () {
     const codeParam = urlParams.get("code") || urlParams.get("id");
     if (codeParam) {
       state.participantCode = codeParam.trim().toUpperCase();
+      const simUsers = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.simulatorUsers) || {};
+      if (simUsers[state.participantCode]) {
+        state.selectedSimStation = state.participantCode;
+      }
       saveStorageState();
     }
 
@@ -117,6 +139,10 @@ const LiveSession = (function () {
       return false;
     }
     state.participantCode = newCode.trim().toUpperCase();
+    const simUsers = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.simulatorUsers) || {};
+    if (simUsers[state.participantCode]) {
+      state.selectedSimStation = state.participantCode;
+    }
     if (!state.completedSteps.includes(1)) {
       state.completedSteps.push(1);
     }
@@ -525,10 +551,320 @@ const LiveSession = (function () {
     // 3. Atualizar botões com link para Google Forms (injetando ?entry.code=${code})
     updateFormLinks(state.participantCode);
 
-    // 4. Re-inicializar ícones Lucide nos badges e caixas alteradas
+    // 4. Renderizar Acesso ao Serious Game e Credenciais do Simulador
+    renderSeriousGameUI();
+    renderSimulatorUI();
+    renderModeratorCredentialsUI();
+
+    // 5. Re-inicializar ícones Lucide nos badges e caixas alteradas
     if (window.lucide) {
       window.lucide.createIcons();
     }
+  }
+
+  /**
+   * Cópia para a área de transferência universal (com suporte a fallback e feedback visual)
+   */
+  async function copyToClipboard(text, btnElement, labelElement, defaultText, successText) {
+    if (!text) return;
+    let copied = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    } catch (err) {
+      console.warn("Clipboard API falhou, a tentar fallback:", err);
+    }
+
+    if (!copied) {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        copied = document.execCommand("copy");
+        document.body.removeChild(textArea);
+      } catch (e) {
+        console.error("Fallback execCommand falhou:", e);
+      }
+    }
+
+    if (btnElement) {
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
+      const confirmedText = successText || (window.I18nManager ? window.I18nManager.t("live.copied") : (isEn ? "Copied!" : "✓ Copiado!"));
+      const targetLabel = labelElement || btnElement.querySelector("span");
+      const prevText = targetLabel ? targetLabel.textContent : "";
+      
+      const prevClasses = btnElement.className;
+      btnElement.classList.remove("bg-purple-700", "bg-sky-700", "bg-slate-800", "hover:bg-purple-800", "hover:bg-sky-800", "hover:bg-slate-900");
+      btnElement.classList.add("bg-emerald-600", "text-white", "hover:bg-emerald-700");
+      if (targetLabel) targetLabel.textContent = confirmedText;
+
+      setTimeout(() => {
+        btnElement.className = prevClasses;
+        if (targetLabel) targetLabel.textContent = defaultText || prevText;
+      }, 2200);
+    }
+
+    if (window.showToast || typeof showToast === "function") {
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
+      const toastFn = window.showToast || showToast;
+      toastFn(isEn ? `Copied to clipboard: "${text}"` : `Copiado para a área de transferência: "${text}"`);
+    }
+  }
+
+  /**
+   * Renderiza os dados do Serious Game (Chave do Piloto e Código Pessoal)
+   */
+  function renderSeriousGameUI() {
+    const creds = window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.seriousGame;
+    const pilotKey = (creds && creds.pilotKey) || "calibration-pilot";
+    
+    const keyDisplay = document.getElementById("serious-game-pilot-key-display");
+    if (keyDisplay) keyDisplay.textContent = pilotKey;
+
+    const inputPersonal = document.getElementById("input-personal-game-code");
+    if (inputPersonal && !inputPersonal.matches(':focus')) {
+      inputPersonal.value = state.seriousGamePersonalCode || "";
+    }
+  }
+
+  /**
+   * Renderiza os dados do Simulador (Estação Ativa, Email e Palavra-passe)
+   */
+  function renderSimulatorUI() {
+    const simUsers = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.simulatorUsers) || {};
+    const stationSelect = document.getElementById("sim-station-select");
+    
+    if (stationSelect && stationSelect.options.length === 0) {
+      const keys = Object.keys(simUsers);
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
+      const stationPrefix = isEn ? "Station" : "Estação";
+      keys.forEach(k => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = `${k} (${stationPrefix} ${k.replace('P', '')})`;
+        stationSelect.appendChild(opt);
+      });
+    }
+
+    // Definir estação ativa: preferir o código do participante se existir na lista
+    let activeStation = "P01";
+    if (state.participantCode && simUsers[state.participantCode]) {
+      activeStation = state.participantCode;
+    } else if (state.selectedSimStation && simUsers[state.selectedSimStation]) {
+      activeStation = state.selectedSimStation;
+    }
+
+    if (stationSelect && stationSelect.value !== activeStation) {
+      stationSelect.value = activeStation;
+    }
+
+    const currentCred = simUsers[activeStation] || { email: "participante01@renovate.eu", pass: "Renovate2026!P01" };
+    const emailDisplay = document.getElementById("sim-email-display");
+    const passDisplay = document.getElementById("sim-pass-display");
+    const passIcon = document.getElementById("icon-sim-pass-toggle");
+
+    if (emailDisplay) emailDisplay.textContent = currentCred.email;
+    if (passDisplay) {
+      passDisplay.textContent = state.isSimPassVisible ? currentCred.pass : "••••••••";
+    }
+    if (passIcon) {
+      passIcon.setAttribute("data-lucide", state.isSimPassVisible ? "eye-off" : "eye");
+    }
+  }
+
+  /**
+   * Renderiza a lista de apoio para o Moderador
+   */
+  function renderModeratorCredentialsUI() {
+    const creds = window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials;
+    if (!creds) return;
+
+    const gameKeyVal = document.getElementById("mod-game-key-val");
+    if (gameKeyVal && creds.seriousGame) {
+      gameKeyVal.textContent = creds.seriousGame.pilotKey || "calibration-pilot";
+    }
+
+    const listContainer = document.getElementById("mod-simulator-accounts-list");
+    if (listContainer && listContainer.children.length === 0 && creds.simulatorUsers) {
+      listContainer.innerHTML = Object.entries(creds.simulatorUsers).map(([code, user]) => `
+        <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="inline-flex items-center justify-center w-8 h-6 rounded bg-sky-100 text-sky-800 font-bold text-xs shrink-0">${code}</span>
+            <div class="truncate text-[11px] leading-tight">
+              <span class="font-bold text-slate-800 block truncate">${user.email}</span>
+              <span class="text-slate-500 font-mono text-[10px]">${user.pass}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" class="btn-mod-copy-user-email px-2 py-1 rounded bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-800 text-[10px] font-bold transition flex items-center gap-0.5 active:scale-95" data-email="${user.email}" title="Copiar E-mail">
+              <i data-lucide="copy" class="w-3 h-3"></i> Email
+            </button>
+            <button type="button" class="btn-mod-copy-user-pass px-2 py-1 rounded bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-800 text-[10px] font-bold transition flex items-center gap-0.5 active:scale-95" data-pass="${user.pass}" title="Copiar Senha">
+              <i data-lucide="key" class="w-3 h-3"></i> Senha
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+  }
+
+  /**
+   * Liga os eventos de cópia e interação de credenciais
+   */
+  function bindCredentialEvents() {
+    if (window._renovateCredentialEventsBound) return;
+    window._renovateCredentialEventsBound = true;
+
+    // 1. Passo 3 - Copiar Chave do Piloto Serious Game
+    const btnCopyGameKey = document.getElementById("btn-copy-game-key");
+    if (btnCopyGameKey) {
+      btnCopyGameKey.addEventListener("click", () => {
+        const creds = window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.seriousGame;
+        const pilotKey = (creds && creds.pilotKey) || "calibration-pilot";
+        const label = document.getElementById("btn-copy-game-key-text");
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        copyToClipboard(pilotKey, btnCopyGameKey, label, isEn ? "Copy Key" : "Copiar Chave", isEn ? "Copied!" : "✓ Copiado!");
+      });
+    }
+
+    // 2. Passo 3 - Guardar Código Pessoal de 6 letras
+    const btnSaveGameCode = document.getElementById("btn-save-personal-game-code");
+    const inputGameCode = document.getElementById("input-personal-game-code");
+    if (btnSaveGameCode && inputGameCode) {
+      btnSaveGameCode.addEventListener("click", () => {
+        const val = inputGameCode.value.trim().toUpperCase();
+        if (val) {
+          state.seriousGamePersonalCode = val;
+          saveStorageState();
+          const isEn = window.I18nManager && window.I18nManager.isEnglish();
+          const label = document.getElementById("btn-save-personal-game-code-text");
+          if (label) label.textContent = isEn ? "Saved!" : "✓ Guardado!";
+          setTimeout(() => {
+            if (label) label.textContent = isEn ? "Save" : "Guardar";
+          }, 2000);
+          if (window.showToast || typeof showToast === "function") {
+            const toastFn = window.showToast || showToast;
+            toastFn(isEn ? `Personal code ${val} saved on device!` : `Código pessoal ${val} gravado no dispositivo!`);
+          }
+        }
+      });
+    }
+
+    // 3. Passo 4 - Mudar Estação no select
+    const stationSelect = document.getElementById("sim-station-select");
+    if (stationSelect) {
+      stationSelect.addEventListener("change", (e) => {
+        state.selectedSimStation = e.target.value;
+        saveStorageState();
+        renderSimulatorUI();
+        if (window.lucide) window.lucide.createIcons();
+      });
+    }
+
+    // 4. Passo 4 - Copiar E-mail do Simulador
+    const btnCopySimEmail = document.getElementById("btn-copy-sim-email");
+    if (btnCopySimEmail) {
+      btnCopySimEmail.addEventListener("click", () => {
+        const simUsers = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.simulatorUsers) || {};
+        const activeStation = (stationSelect && stationSelect.value) || state.selectedSimStation || "P01";
+        const email = (simUsers[activeStation] && simUsers[activeStation].email) || "participante01@renovate.eu";
+        const label = document.getElementById("btn-copy-sim-email-text");
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        copyToClipboard(email, btnCopySimEmail, label, isEn ? "Copy Email" : "Copiar E-mail", isEn ? "Copied!" : "✓ Copiado!");
+      });
+    }
+
+    // 5. Passo 4 - Copiar Senha do Simulador
+    const btnCopySimPass = document.getElementById("btn-copy-sim-pass");
+    if (btnCopySimPass) {
+      btnCopySimPass.addEventListener("click", () => {
+        const simUsers = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.simulatorUsers) || {};
+        const activeStation = (stationSelect && stationSelect.value) || state.selectedSimStation || "P01";
+        const pass = (simUsers[activeStation] && simUsers[activeStation].pass) || "Renovate2026!P01";
+        const label = document.getElementById("btn-copy-sim-pass-text");
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        copyToClipboard(pass, btnCopySimPass, label, isEn ? "Copy Password" : "Copiar Senha", isEn ? "Copied!" : "✓ Copiado!");
+      });
+    }
+
+    // 6. Passo 4 - Alternar visibilidade da senha (olho)
+    const btnToggleSimPass = document.getElementById("btn-toggle-sim-pass");
+    if (btnToggleSimPass) {
+      btnToggleSimPass.addEventListener("click", () => {
+        state.isSimPassVisible = !state.isSimPassVisible;
+        renderSimulatorUI();
+        if (window.lucide) window.lucide.createIcons();
+      });
+    }
+
+    // 7. Moderação - Copiar Chave do Jogo
+    const btnModCopyKey = document.getElementById("btn-mod-copy-game-key");
+    if (btnModCopyKey) {
+      btnModCopyKey.addEventListener("click", () => {
+        const creds = window.RENOVATE_CONFIG && RENOVATE_CONFIG.accessCredentials && RENOVATE_CONFIG.accessCredentials.seriousGame;
+        const pilotKey = (creds && creds.pilotKey) || "calibration-pilot";
+        const label = document.getElementById("btn-mod-copy-game-key-text");
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        copyToClipboard(pilotKey, btnModCopyKey, label, isEn ? "Copy" : "Copiar", isEn ? "Copied!" : "✓ Copiado!");
+      });
+    }
+
+    // 8. Moderação - Toggle Secção Credenciais
+    const btnToggleModCred = document.getElementById("btn-toggle-mod-credentials");
+    const containerModCred = document.getElementById("mod-credentials-container");
+    const chevronModCred = document.getElementById("icon-mod-cred-chevron");
+    if (btnToggleModCred && containerModCred) {
+      btnToggleModCred.addEventListener("click", () => {
+        const isHidden = containerModCred.classList.contains("hidden");
+        if (isHidden) {
+          containerModCred.classList.remove("hidden");
+          if (chevronModCred) chevronModCred.classList.add("rotate-180");
+          renderModeratorCredentialsUI();
+          if (window.lucide) window.lucide.createIcons();
+        } else {
+          containerModCred.classList.add("hidden");
+          if (chevronModCred) chevronModCred.classList.remove("rotate-180");
+        }
+      });
+    }
+
+    // 9. Moderação - Copiar E-mails ou Senhas individuais na lista de contas
+    document.addEventListener("click", (e) => {
+      const btnEmail = e.target.closest(".btn-mod-copy-user-email");
+      if (btnEmail) {
+        const email = btnEmail.getAttribute("data-email");
+        copyToClipboard(email, btnEmail, null, "Email", "✓ Copiado!");
+      }
+      const btnPass = e.target.closest(".btn-mod-copy-user-pass");
+      if (btnPass) {
+        const pass = btnPass.getAttribute("data-pass");
+        copyToClipboard(pass, btnPass, null, "Senha", "✓ Copiado!");
+      }
+
+      // 10. Programa - Copiar Chave no Acordeão do Serious Game
+      const btnScheduleCopy = e.target.closest(".btn-copy-game-key-schedule");
+      if (btnScheduleCopy) {
+        const key = btnScheduleCopy.getAttribute("data-key") || "calibration-pilot";
+        copyToClipboard(key, btnScheduleCopy, null, "Copiar Chave", "✓ Copiado!");
+      }
+
+      // 11. Programa - Ir para as Credenciais do Passo 4 na Sessão ao Vivo
+      const btnGotoStep4 = e.target.closest(".btn-goto-live-step4");
+      if (btnGotoStep4) {
+        if (window.switchTab) window.switchTab("live");
+        const stepCard4 = document.getElementById("step-card-4");
+        if (stepCard4) {
+          stepCard4.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    });
   }
 
   // API pública

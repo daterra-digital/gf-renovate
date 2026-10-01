@@ -624,6 +624,42 @@ const RENOVATE_CONFIG = {
     ]
   },
 
+  // Configurações de Acesso aos Testes Práticos (Serious Game & Simulador)
+  accessCredentials: {
+    // Serious Game (Tallentto / CordalGPT)
+    // Chave ativa do piloto para registo dos participantes
+    seriousGame: {
+      pilotKey: "calibration-pilot",
+      url: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt"
+    },
+
+    // Simulador Virtual 3D (Virmedex)
+    // Mapeamento de Credenciais Individuais por Código de Participante (P01 a P20)
+    // O organizador pode ajustar estes e-mails e passwords conforme a lista oficial do evento
+    simulatorUsers: {
+      "P01": { email: "participante01@renovate.eu", pass: "Renovate2026!P01" },
+      "P02": { email: "participante02@renovate.eu", pass: "Renovate2026!P02" },
+      "P03": { email: "participante03@renovate.eu", pass: "Renovate2026!P03" },
+      "P04": { email: "participante04@renovate.eu", pass: "Renovate2026!P04" },
+      "P05": { email: "participante05@renovate.eu", pass: "Renovate2026!P05" },
+      "P06": { email: "participante06@renovate.eu", pass: "Renovate2026!P06" },
+      "P07": { email: "participante07@renovate.eu", pass: "Renovate2026!P07" },
+      "P08": { email: "participante08@renovate.eu", pass: "Renovate2026!P08" },
+      "P09": { email: "participante09@renovate.eu", pass: "Renovate2026!P09" },
+      "P10": { email: "participante10@renovate.eu", pass: "Renovate2026!P10" },
+      "P11": { email: "participante11@renovate.eu", pass: "Renovate2026!P11" },
+      "P12": { email: "participante12@renovate.eu", pass: "Renovate2026!P12" },
+      "P13": { email: "participante13@renovate.eu", pass: "Renovate2026!P13" },
+      "P14": { email: "participante14@renovate.eu", pass: "Renovate2026!P14" },
+      "P15": { email: "participante15@renovate.eu", pass: "Renovate2026!P15" },
+      "P16": { email: "participante16@renovate.eu", pass: "Renovate2026!P16" },
+      "P17": { email: "participante17@renovate.eu", pass: "Renovate2026!P17" },
+      "P18": { email: "participante18@renovate.eu", pass: "Renovate2026!P18" },
+      "P19": { email: "participante19@renovate.eu", pass: "Renovate2026!P19" },
+      "P20": { email: "participante20@renovate.eu", pass: "Renovate2026!P20" }
+    }
+  },
+
   // Configuração do Dashboard de Resultados (Google Sheets com Múltiplos Separadores)
   resultsDashboard: {
     // ID da Folha de Cálculo Google Sheets partilhada (ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)
