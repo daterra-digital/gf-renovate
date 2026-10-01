@@ -37,8 +37,13 @@
   <!-- WordCloud2 para Nuvens de Palavras Interativas -->
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 
+  <!-- Anti-caching headers para garantir atualização imediata -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1715">
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
@@ -447,14 +452,15 @@
         </div>
 
         <!-- Player 16:9 Responsivo em Alta Resolução (HD Facade Interativo) -->
-        <div id="gf1-video-player-container" class="aspect-16-9 bg-slate-950 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200">
+        <div id="gf1-video-player-container" class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200">
           <!-- Thumbnail Nativa HD (assets/images/gf1/gf1-2.jpg) -->
           <img 
-            src="assets/images/gf1/gf1-2.jpg" 
-            onerror="this.src='https://img.youtube.com/vi/1_jQYkNluhY/maxresdefault.jpg'"
+            id="gf1-video-thumbnail-img"
+            src="assets/images/gf1/gf1-2.jpg?v=20261001-1715" 
+            onerror="this.onerror=null; this.src='assets/images/gf1/gf1-video-thumb.jpg';"
             alt="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)" 
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-            loading="lazy"
+            loading="eager"
           />
           
           <!-- Overlay de gradiente suave -->
@@ -1379,11 +1385,11 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261001-1630"></script>
-  <script src="assets/js/content-data.js?v=20261001-1630"></script>
-  <script src="assets/js/live-session.js?v=20261001-1630"></script>
-  <script src="assets/js/results-dashboard.js?v=20261001-1630"></script>
-  <script src="assets/js/app.js?v=20261001-1630"></script>
+  <script src="assets/js/i18n.js?v=20261001-1715"></script>
+  <script src="assets/js/content-data.js?v=20261001-1715"></script>
+  <script src="assets/js/live-session.js?v=20261001-1715"></script>
+  <script src="assets/js/results-dashboard.js?v=20261001-1715"></script>
+  <script src="assets/js/app.js?v=20261001-1715"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

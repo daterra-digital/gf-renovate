@@ -85,6 +85,11 @@ function initTabNavigation() {
       ResultsDashboard.onTabShown();
     }
 
+    // Garantir renderização imediata do GF1 ao abrir a aba
+    if (targetTab === "fg1") {
+      renderGF1();
+    }
+
     // Atualizar Hash sem scroll forçado
     if (window.location.hash !== `#${targetTab}`) {
       history.replaceState(null, null, `#${targetTab}`);
@@ -542,7 +547,7 @@ function renderGF1() {
                class="relative rounded-xl overflow-hidden bg-slate-900 border border-slate-200 group/img cursor-pointer aspect-16-9"
                onclick="window.openGf1Lightbox('${album.id}', 0)">
             <img id="featured-img-${album.id}" src="${firstImg.src}" alt="${firstImg.alt}" 
-                 class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" loading="lazy">
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" loading="eager">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-3.5">
               <span id="featured-title-${album.id}" class="text-white text-xs font-bold drop-shadow-md truncate pr-2">
                 ${firstTitle}
@@ -566,7 +571,7 @@ function renderGF1() {
                         class="thumb-btn-${album.id} rounded-lg overflow-hidden border-2 transition-all aspect-square relative group/thumb ${i === 0 ? 'border-[#F5B842] ring-2 ring-amber-300' : 'border-slate-200 hover:border-amber-400 opacity-80 hover:opacity-100'}"
                         onclick="window.selectFeaturedImage('${album.id}', ${i})"
                         title="${(isEn && img.titleEn) ? img.titleEn : img.title}">
-                  <img src="${img.src}" alt="${img.alt}" class="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200" loading="lazy">
+                  <img src="${img.src}" alt="${img.alt}" class="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200" loading="eager">
                 </button>
               `).join("")}
             </div>

@@ -499,6 +499,12 @@ const RENOVATE_CONFIG = {
           { filename: "gf1-20.jpg", src: "assets/images/gf1/gf1-20.jpg", alt: "Síntese dos Resultados - Foto 8", title: "Conclusão do Grupo Focal 1", titleEn: "Conclusion of Focus Group 1" }
         ]
       }
+    ],
+    // Fallback de retrocompatibilidade com fotos reais
+    gallery: [
+      { filename: "gf1-1.jpg", src: "assets/images/gf1/gf1-1.jpg", alt: "Abertura & Apresentação", title: "Abertura & Apresentação", titleEn: "Opening & Presentation", caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa.", captionEn: "Auditorium with agricultural experts and researchers at Focus Group 1 in Lisbon." },
+      { filename: "gf1-7.jpg", src: "assets/images/gf1/gf1-7.jpg", alt: "Dinâmica de Co-criação", title: "Dinâmica de Co-criação", titleEn: "Co-Creation Dynamics", caption: "Trabalho participativo e mapeamento de competências agrárias.", captionEn: "Participatory work and agricultural skills mapping." },
+      { filename: "gf1-13.jpg", src: "assets/images/gf1/gf1-13.jpg", alt: "Síntese dos Resultados", title: "Síntese dos Resultados", titleEn: "Synthesis of Results", caption: "Partilha em plenário e consolidação das conclusões dos grupos.", captionEn: "Plenary sharing and consolidation of group conclusions." }
     ]
   },
 
