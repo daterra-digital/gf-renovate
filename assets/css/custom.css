@@ -97,21 +97,29 @@ body {
   background: #64748B;
 }
 
-/* 16:9 Aspect Ratio Container for Google Slides */
+/* 16:9 Aspect Ratio Container for Videos, Slides & Galleries */
 .aspect-16-9 {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 */
-  height: 0;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 0.75rem;
 }
-.aspect-16-9 iframe {
+@supports not (aspect-ratio: 16 / 9) {
+  .aspect-16-9 {
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 fallback */
+  }
+}
+.aspect-16-9 iframe,
+.aspect-16-9 img,
+.aspect-16-9 > img {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
   border: 0;
 }
 

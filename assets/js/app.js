@@ -547,7 +547,7 @@ function renderGF1() {
                class="relative rounded-xl overflow-hidden bg-slate-900 border border-slate-200 group/img cursor-pointer aspect-16-9"
                onclick="window.openGf1Lightbox('${album.id}', 0)">
             <img id="featured-img-${album.id}" src="${firstImg.src}" alt="${firstImg.alt}" 
-                 class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" loading="eager">
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105" loading="eager">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-3.5">
               <span id="featured-title-${album.id}" class="text-white text-xs font-bold drop-shadow-md truncate pr-2">
                 ${firstTitle}
@@ -586,6 +586,7 @@ function renderGF1() {
   if (gf1PlayerContainer && !gf1PlayerContainer.dataset.initialized) {
     gf1PlayerContainer.dataset.initialized = "true";
     gf1PlayerContainer.addEventListener("click", () => {
+      gf1PlayerContainer.style.backgroundImage = "none";
       gf1PlayerContainer.innerHTML = `
         <iframe 
           src="https://www.youtube-nocookie.com/embed/1_jQYkNluhY?autoplay=1&rel=0&modestbranding=1" 

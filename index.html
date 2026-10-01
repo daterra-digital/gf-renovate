@@ -43,7 +43,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1715">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1730">
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
@@ -452,19 +452,22 @@
         </div>
 
         <!-- Player 16:9 Responsivo em Alta Resolução (HD Facade Interativo) -->
-        <div id="gf1-video-player-container" class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200">
+        <div id="gf1-video-player-container" 
+             class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200"
+             style="background-image: url('assets/images/gf1/gf1-2.jpg'); background-size: cover; background-position: center;">
           <!-- Thumbnail Nativa HD (assets/images/gf1/gf1-2.jpg) -->
           <img 
             id="gf1-video-thumbnail-img"
-            src="assets/images/gf1/gf1-2.jpg?v=20261001-1715" 
-            onerror="this.onerror=null; this.src='assets/images/gf1/gf1-video-thumb.jpg';"
+            src="assets/images/gf1/gf1-2.jpg?v=20261001-1730" 
+            onerror="this.onerror=null; this.src='assets/images/gf1/gf1-2.jpg';"
             alt="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)" 
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="eager"
+            decoding="sync"
           />
           
-          <!-- Overlay de gradiente suave -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 group-hover:from-black/60 transition-colors"></div>
+          <!-- Overlay de gradiente suave para realce do botão play e badges sem escurecer a foto -->
+          <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
 
           <!-- Botão Play Central Estilo YouTube Oficial -->
           <div class="absolute inset-0 flex items-center justify-center">
@@ -1385,11 +1388,11 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261001-1715"></script>
-  <script src="assets/js/content-data.js?v=20261001-1715"></script>
-  <script src="assets/js/live-session.js?v=20261001-1715"></script>
-  <script src="assets/js/results-dashboard.js?v=20261001-1715"></script>
-  <script src="assets/js/app.js?v=20261001-1715"></script>
+  <script src="assets/js/i18n.js?v=20261001-1730"></script>
+  <script src="assets/js/content-data.js?v=20261001-1730"></script>
+  <script src="assets/js/live-session.js?v=20261001-1730"></script>
+  <script src="assets/js/results-dashboard.js?v=20261001-1730"></script>
+  <script src="assets/js/app.js?v=20261001-1730"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
