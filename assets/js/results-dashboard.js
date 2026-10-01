@@ -223,13 +223,20 @@ window.ResultsDashboard = (function () {
     };
   }
 
+  // Configuração Oficial e Permanente das Folhas Google Sheets (Focus Group 2)
+  const OFFICIAL_SHEET_CONFIG = {
+    spreadsheetId: "2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e",
+    tabGids: {
+      game: "1971530026",  // Questionário 1: Serious Game (Tallentto) + Demografia
+      sim: "1882859537",    // Questionário 2: Simulador 3D (Virmedex)
+      global: "914346842"   // Questionário 3: Avaliação Global (NPS + Síntese)
+    },
+    autoRefreshSeconds: 30
+  };
+
   // Estado interno
   let state = {
-    config: {
-      spreadsheetId: "",
-      tabGids: { game: "0", sim: "", global: "" },
-      autoRefreshSeconds: 45
-    },
+    config: Object.assign({}, OFFICIAL_SHEET_CONFIG),
     isLive: false,
     isLoading: false,
     lastUpdated: null,
@@ -250,23 +257,17 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Carrega a configuração do localStorage ou de RENOVATE_CONFIG
+   * Carrega a configuração oficial dos Google Sheets
    */
   function loadConfig() {
-    // 1. Carregar definições padrão de RENOVATE_CONFIG
-    if (window.RENOVATE_CONFIG && RENOVATE_CONFIG.resultsDashboard) {
-      const cfg = RENOVATE_CONFIG.resultsDashboard;
-      state.config.spreadsheetId = cfg.spreadsheetId || "";
-      state.config.tabGids = Object.assign({}, state.config.tabGids, cfg.tabGids || {});
-      state.config.autoRefreshSeconds = cfg.autoRefreshSeconds || 30;
-    }
+    state.config = Object.assign({}, OFFICIAL_SHEET_CONFIG);
 
-    // 2. Sobrepor com definições personalizadas no localStorage (se existirem)
+    // Se houver personalização válida no localStorage com ID não-vazio
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.spreadsheetId) {
+        if (parsed && parsed.spreadsheetId && parsed.spreadsheetId.trim()) {
           state.config = Object.assign({}, state.config, parsed);
         }
       } catch (e) {
@@ -299,6 +300,35 @@ window.ResultsDashboard = (function () {
       });
     }
 
+    // Dropdown de Conexão Sheets e Links Diretos Oficiais
+    const btnSheetsMenu = document.getElementById("btn-sheets-menu");
+    const dropdownSheetsMenu = document.getElementById("dropdown-sheets-menu");
+    const dropdownSheetsContainer = document.getElementById("dropdown-sheets-container");
+
+    if (btnSheetsMenu && dropdownSheetsMenu) {
+      btnSheetsMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdownSheetsMenu.classList.toggle("hidden");
+      });
+
+      // Fechar dropdown ao clicar fora
+      document.addEventListener("click", (e) => {
+        if (dropdownSheetsContainer && !dropdownSheetsContainer.contains(e.target)) {
+          dropdownSheetsMenu.classList.add("hidden");
+        }
+      });
+    }
+
+    // Botão Sincronizar Agora no Dropdown
+    const btnSyncNowDropdown = document.getElementById("btn-sync-now-dropdown");
+    if (btnSyncNowDropdown) {
+      btnSyncNowDropdown.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (dropdownSheetsMenu) dropdownSheetsMenu.classList.add("hidden");
+        fetchData(true);
+      });
+    }
+
     // Botões de Alternância da Nuvem de Palavras (Serious Game vs Simulador)
     const btnWcGame = document.getElementById("btn-wc-game");
     const btnWcSim = document.getElementById("btn-wc-sim");
@@ -322,43 +352,6 @@ window.ResultsDashboard = (function () {
       });
     }
 
-    // Botão de Abertura do Painel de Configuração da Folha
-    const toggleConfigBtn = document.getElementById("btn-toggle-results-config");
-    const configDrawer = document.getElementById("results-config-drawer");
-    if (toggleConfigBtn && configDrawer) {
-      toggleConfigBtn.addEventListener("click", () => {
-        configDrawer.classList.toggle("hidden");
-        populateConfigInputs();
-      });
-    }
-
-    // Botão Guardar Configuração
-    const btnSaveConfig = document.getElementById("btn-save-sheet-config");
-    if (btnSaveConfig) {
-      btnSaveConfig.addEventListener("click", () => {
-        handleSaveConfigForm();
-      });
-    }
-
-    // Botão Testar Ligação
-    const btnTestConn = document.getElementById("btn-test-sheet-conn");
-    if (btnTestConn) {
-      btnTestConn.addEventListener("click", () => {
-        testConnection();
-      });
-    }
-
-    // Botão Usar Dados de Demonstração
-    const btnUseDemo = document.getElementById("btn-use-demo-data");
-    if (btnUseDemo) {
-      btnUseDemo.addEventListener("click", () => {
-        state.config.spreadsheetId = "";
-        saveConfig(state.config);
-        populateConfigInputs();
-        fetchData(true);
-      });
-    }
-
     // Filtros de Secção do Dashboard
     const filterBtns = document.querySelectorAll(".results-filter-btn");
     filterBtns.forEach(btn => {
@@ -369,22 +362,6 @@ window.ResultsDashboard = (function () {
     });
   }
 
-  /**
-   * Preenche os inputs do formulário de configuração com os dados atuais
-   */
-  function populateConfigInputs() {
-    const inputId = document.getElementById("input-sheet-id");
-    const inputGidGame = document.getElementById("input-gid-game");
-    const inputGidSim = document.getElementById("input-gid-sim");
-    const inputGidGlobal = document.getElementById("input-gid-global");
-
-    if (inputId) inputId.value = state.config.spreadsheetId || "";
-    if (inputGidGame) inputGidGame.value = state.config.tabGids.game !== undefined ? state.config.tabGids.game : "0";
-    if (inputGidSim) inputGidSim.value = state.config.tabGids.sim || "";
-    if (inputGidGlobal) inputGidGlobal.value = state.config.tabGids.global || "";
-  }
-
-  /**
   /**
    * Constrói a URL de exportação CSV quer seja uma folha normal ou um link de 'Publicar na Web'
    */
@@ -420,103 +397,6 @@ window.ResultsDashboard = (function () {
     }
 
     return `https://docs.google.com/spreadsheets/d/${normalId}/export?format=csv&gid=${rawGid}`;
-  }
-
-  /**
-   * Processa o formulário de configuração (com suporte a link publicado ou ID de folha)
-   */
-  function handleSaveConfigForm() {
-    const inputId = document.getElementById("input-sheet-id");
-    const inputGidGame = document.getElementById("input-gid-game");
-    const inputGidSim = document.getElementById("input-gid-sim");
-    const inputGidGlobal = document.getElementById("input-gid-global");
-    const statusMsg = document.getElementById("sheet-config-status");
-
-    let sheetId = (inputId ? inputId.value : "").trim();
-    let gidGame = (inputGidGame ? inputGidGame.value : "").trim();
-    let gidSim = (inputGidSim ? inputGidSim.value : "").trim();
-    let gidGlobal = (inputGidGlobal ? inputGidGlobal.value : "").trim();
-
-    // Se o utilizador colou o link completo, extrair o ID e o gid automaticamente se aplicável
-    if (sheetId.includes("docs.google.com/spreadsheets/d/")) {
-      if (sheetId.includes("/d/e/")) {
-        const matchPub = sheetId.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
-        if (matchPub && matchPub[1]) {
-          sheetId = matchPub[1];
-        }
-      } else {
-        const matchNormal = sheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
-        if (matchNormal && matchNormal[1] && matchNormal[1] !== "e") {
-          sheetId = matchNormal[1];
-        }
-      }
-
-      const matchGid = sheetId.match(/gid=([0-9]+)/);
-      if (matchGid && matchGid[1] && !gidGame) {
-        gidGame = matchGid[1];
-      }
-    }
-
-    state.config.spreadsheetId = sheetId;
-    state.config.tabGids = {
-      game: gidGame || "0",
-      sim: gidSim,
-      global: gidGlobal
-    };
-
-    saveConfig(state.config);
-
-    if (statusMsg) {
-      statusMsg.className = "text-xs font-semibold text-emerald-700 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200";
-      statusMsg.innerHTML = "Configuração guardada com sucesso! A carregar dados...";
-      statusMsg.classList.remove("hidden");
-    }
-
-    setTimeout(() => {
-      fetchData(true);
-      const drawer = document.getElementById("results-config-drawer");
-      if (drawer) drawer.classList.add("hidden");
-    }, 800);
-  }
-
-  /**
-   * Teste de Ligação rápido para os separadores
-   */
-  async function testConnection() {
-    const statusMsg = document.getElementById("sheet-config-status");
-    if (!statusMsg) return;
-
-    const inputId = document.getElementById("input-sheet-id");
-    let sheetId = (inputId ? inputId.value : "").trim();
-
-    if (!sheetId) {
-      statusMsg.className = "text-xs font-semibold text-amber-800 bg-amber-50 p-2.5 rounded-lg border border-amber-300";
-      statusMsg.innerHTML = "Por favor introduza o ID ou o link do Google Sheets para testar.";
-      statusMsg.classList.remove("hidden");
-      return;
-    }
-
-    statusMsg.className = "text-xs font-semibold text-slate-700 bg-slate-100 p-2.5 rounded-lg border border-slate-200 animate-pulse";
-    statusMsg.innerHTML = "A testar comunicação com a folha de cálculo pública...";
-    statusMsg.classList.remove("hidden");
-
-    try {
-      const gidGame = (document.getElementById("input-gid-game")?.value || "0").trim();
-      const testUrl = buildTabUrl(sheetId, gidGame, "0");
-      const res = await fetch(testUrl);
-
-      if (res.ok) {
-        const text = await res.text();
-        const rows = parseCSV(text);
-        statusMsg.className = "text-xs font-semibold text-emerald-800 bg-emerald-50 p-2.5 rounded-lg border border-emerald-300";
-        statusMsg.innerHTML = `Ligação com Sucesso! Respostas recebidas: ${rows.length > 0 ? rows.length - 1 : 0} linhas de dados.`;
-      } else {
-        throw new Error(`Código HTTP: ${res.status}`);
-      }
-    } catch (e) {
-      statusMsg.className = "text-xs font-semibold text-rose-800 bg-rose-50 p-2.5 rounded-lg border border-rose-300";
-      statusMsg.innerHTML = `Não foi possível aceder à folha (${e.message}). Certifique-se de que no "Publicar na Web" desmarcou a opção "Restringir o acesso a [empresa]".`;
-    }
   }
 
   /**

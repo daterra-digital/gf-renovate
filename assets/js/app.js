@@ -956,19 +956,18 @@ function initModeratorModal() {
     });
   });
 
-  // Atalho para Configuração de Resultados & Google Sheets a partir da Modal
+  // Atalho para Resultados & Google Sheets a partir da Modal
   const btnModResults = document.getElementById("btn-mod-goto-results");
   if (btnModResults) {
     btnModResults.addEventListener("click", () => {
       closeModal();
       const resultsBtn = document.querySelector('[data-tab="results"]');
       if (resultsBtn) resultsBtn.click();
-      const drawer = document.getElementById("results-config-drawer");
-      if (drawer) {
-        drawer.classList.remove("hidden");
+      const resultsSec = document.getElementById("tab-results");
+      if (resultsSec) {
         setTimeout(() => {
-          drawer.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 200);
+          resultsSec.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
       }
     });
   }
