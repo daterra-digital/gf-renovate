@@ -192,7 +192,45 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Processa o formulário de configuração (com suporte a extração de URL completa do Google Sheets)
+  /**
+   * Constrói a URL de exportação CSV quer seja uma folha normal ou um link de 'Publicar na Web'
+   */
+  function buildTabUrl(sheetId, gid, defaultGid = "0") {
+    const rawGid = (gid !== undefined && gid !== null && String(gid).trim() !== "") ? String(gid).trim() : defaultGid;
+    
+    // Se o campo do separador for já um link HTTP completo (ex: colado de 'Publicar na Web')
+    if (rawGid.startsWith("http://") || rawGid.startsWith("https://")) {
+      let u = rawGid;
+      if (!u.includes("output=csv") && !u.includes("format=csv")) {
+        u += (u.includes("?") ? "&" : "?") + "output=csv";
+      }
+      return u;
+    }
+
+    const cleanSheet = (sheetId || "").trim();
+
+    // Se for URL ou ID de 'Publicar na Web' (/d/e/2PACX-...)
+    if (cleanSheet.includes("/d/e/") || cleanSheet.startsWith("2PACX-")) {
+      let pubId = cleanSheet;
+      if (cleanSheet.includes("/d/e/")) {
+        const m = cleanSheet.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
+        if (m && m[1]) pubId = m[1];
+      }
+      return `https://docs.google.com/spreadsheets/d/e/${pubId}/pub?gid=${rawGid}&single=true&output=csv`;
+    }
+
+    // Se for URL normal de edição (/d/ID/...)
+    let normalId = cleanSheet;
+    if (cleanSheet.includes("/d/")) {
+      const m = cleanSheet.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (m && m[1] && m[1] !== "e") normalId = m[1];
+    }
+
+    return `https://docs.google.com/spreadsheets/d/${normalId}/export?format=csv&gid=${rawGid}`;
+  }
+
+  /**
+   * Processa o formulário de configuração (com suporte a link publicado ou ID de folha)
    */
   function handleSaveConfigForm() {
     const inputId = document.getElementById("input-sheet-id");
@@ -206,15 +244,23 @@ window.ResultsDashboard = (function () {
     let gidSim = (inputGidSim ? inputGidSim.value : "").trim();
     let gidGlobal = (inputGidGlobal ? inputGidGlobal.value : "").trim();
 
-    // Se o utilizador colou o link completo do Google Sheets, extrair o ID e gid automaticamente
+    // Se o utilizador colou o link completo, extrair o ID e o gid automaticamente se aplicável
     if (sheetId.includes("docs.google.com/spreadsheets/d/")) {
-      const matchId = sheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (matchId && matchId[1]) {
-        const matchGid = sheetId.match(/gid=([0-9]+)/);
-        sheetId = matchId[1];
-        if (matchGid && matchGid[1] && !gidGame) {
-          gidGame = matchGid[1];
+      if (sheetId.includes("/d/e/")) {
+        const matchPub = sheetId.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
+        if (matchPub && matchPub[1]) {
+          sheetId = matchPub[1];
         }
+      } else {
+        const matchNormal = sheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (matchNormal && matchNormal[1] && matchNormal[1] !== "e") {
+          sheetId = matchNormal[1];
+        }
+      }
+
+      const matchGid = sheetId.match(/gid=([0-9]+)/);
+      if (matchGid && matchGid[1] && !gidGame) {
+        gidGame = matchGid[1];
       }
     }
 
@@ -241,7 +287,7 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Teste de Ligação rápido para os 3 separadores
+   * Teste de Ligação rápido para os separadores
    */
   async function testConnection() {
     const statusMsg = document.getElementById("sheet-config-status");
@@ -249,10 +295,6 @@ window.ResultsDashboard = (function () {
 
     const inputId = document.getElementById("input-sheet-id");
     let sheetId = (inputId ? inputId.value : "").trim();
-    if (sheetId.includes("/d/")) {
-      const m = sheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (m) sheetId = m[1];
-    }
 
     if (!sheetId) {
       statusMsg.className = "text-xs font-semibold text-amber-800 bg-amber-50 p-2.5 rounded-lg border border-amber-300";
@@ -267,20 +309,20 @@ window.ResultsDashboard = (function () {
 
     try {
       const gidGame = (document.getElementById("input-gid-game")?.value || "0").trim();
-      const testUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gidGame}`;
+      const testUrl = buildTabUrl(sheetId, gidGame, "0");
       const res = await fetch(testUrl);
 
       if (res.ok) {
         const text = await res.text();
         const rows = parseCSV(text);
         statusMsg.className = "text-xs font-semibold text-emerald-800 bg-emerald-50 p-2.5 rounded-lg border border-emerald-300";
-        statusMsg.innerHTML = `Ligação com Sucesso! Separador 1 lido com ${rows.length > 0 ? rows.length - 1 : 0} respostas submetidas.`;
+        statusMsg.innerHTML = `Ligação com Sucesso! Respostas recebidas: ${rows.length > 0 ? rows.length - 1 : 0} linhas de dados.`;
       } else {
         throw new Error(`Código HTTP: ${res.status}`);
       }
     } catch (e) {
       statusMsg.className = "text-xs font-semibold text-rose-800 bg-rose-50 p-2.5 rounded-lg border border-rose-300";
-      statusMsg.innerHTML = `Não foi possível aceder à folha (${e.message}). Certifique-se de que a partilha está definida como "Qualquer pessoa com o link pode ver (Leitor)".`;
+      statusMsg.innerHTML = `Não foi possível aceder à folha (${e.message}). Certifique-se de que no "Publicar na Web" desmarcou a opção "Restringir o acesso a [empresa]".`;
     }
   }
 
@@ -400,9 +442,9 @@ window.ResultsDashboard = (function () {
 
     try {
       const gids = state.config.tabGids;
-      const gameUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gids.game || "0"}`;
-      const simUrl = gids.sim ? `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gids.sim}` : null;
-      const globalUrl = gids.global ? `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gids.global}` : null;
+      const gameUrl = buildTabUrl(sheetId, gids.game, "0");
+      const simUrl = gids.sim ? buildTabUrl(sheetId, gids.sim) : null;
+      const globalUrl = gids.global ? buildTabUrl(sheetId, gids.global) : null;
 
       const [gameRes, simRes, globalRes] = await Promise.all([
         fetch(gameUrl),
