@@ -342,6 +342,24 @@ const RENOVATE_CONFIG = {
     location: "Lisboa, Portugal",
     title: "1ª Sessão do Grupo Focal RENOVATE - Diagnóstico de Necessidades",
     summary: "O primeiro Grupo Focal reuniu peritos agrários, formadores e consultores agrícolas para mapear as principais lacunas na formação sobre proteção de culturas sustentável e identificar as barreiras tecnológicas no setor primário português.",
+    video: {
+      url: "https://youtu.be/1_jQYkNluhY?si=BJvw2ftMW5WyCqki",
+      embedUrl: "https://www.youtube-nocookie.com/embed/1_jQYkNluhY",
+      title: "Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)",
+      description: "Reportagem em vídeo da sessão realizada em Lisboa, reunindo testemunhos de formadores, agricultores e especialistas do consórcio."
+    },
+    newsArticle: {
+      title: "Grupo Focal RENOVATE: Primeira Sessão em Lisboa Reúne Agricultores e Especialistas",
+      source: "Página de Notícias da DATERRA",
+      url: "https://daterra.com.pt/grupo-focal-renovate-primeira-sessao-em-lisboa-reune-agricultores-e-especialistas/",
+      description: "Cobertura completa dos debates, perfil dos participantes e diagnóstico de competências recolhido na primeira sessão."
+    },
+    resultsDocument: {
+      title: "Conclusões do 1º Grupo Focal RENOVATE",
+      format: "Documento Oficial (PDF)",
+      url: "https://daterra.com.pt/wp-content/uploads/2025/03/10_ConclusoesGrupoFocalRENOVATE_pt.pdf",
+      description: "Relatório executivo contendo a análise sistematizada dos inquéritos aos especialistas e as diretrizes pedagógicas prioritárias."
+    },
     metrics: [
       { label: "Participantes Especialistas", value: "24" },
       { label: "Organizações Representadas", value: "15" },
@@ -353,6 +371,36 @@ const RENOVATE_CONFIG = {
       "Identificação do elevado potencial dos Serious Games para formação contínua certificada.",
       "Necessidade de ligação direta entre simulações e cálculos de custos/poupança real.",
       "Consenso sobre a relevância de criar recursos acessíveis em dispositivos móveis."
+    ],
+    gallery: [
+      {
+        filename: "gf1-foto-1.jpg",
+        src: "assets/images/gf1/gf1-foto-1.jpg",
+        alt: "Abertura e Enquadramento - GF1 Lisboa",
+        title: "Abertura & Apresentação",
+        caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa."
+      },
+      {
+        filename: "gf1-foto-2.jpg",
+        src: "assets/images/gf1/gf1-foto-2.jpg",
+        alt: "Debate Participativo - GF1 Lisboa",
+        title: "Mesa Redonda & Debate",
+        caption: "Discussão participativa sobre barreiras na adoção de tecnologias agrícolas sustentáveis."
+      },
+      {
+        filename: "gf1-foto-3.jpg",
+        src: "assets/images/gf1/gf1-foto-3.jpg",
+        alt: "Dinâmica de Co-Criação - GF1 Lisboa",
+        title: "Dinâmica de Co-Criação",
+        caption: "Mapeamento das necessidades de formação contínua em proteção fitossanitária."
+      },
+      {
+        filename: "gf1-foto-4.jpg",
+        src: "assets/images/gf1/gf1-foto-4.jpg",
+        alt: "Síntese dos Trabalhos - GF1 Lisboa",
+        title: "Síntese dos Resultados",
+        caption: "Registo e consolidação das diretrizes que alimentaram as ferramentas digitais."
+      }
     ]
   },
 

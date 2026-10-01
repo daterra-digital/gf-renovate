@@ -408,34 +408,118 @@
         </div>
       </div>
 
-      <!-- Principais Conclusões e Artigo DATERRA -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="md:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
-            Principais Conclusões & Diretrizes Extraídas
-          </h3>
-          <ul id="gf1-highlights-container" class="space-y-3">
-            <!-- Renderizado via app.js -->
-          </ul>
+      <!-- Vídeo Oficial do Grupo Focal 1 (Embed 16:9) -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+              <i data-lucide="video" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900">Vídeo Oficial do Grupo Focal 1 (Lisboa)</h3>
+              <p class="text-xs text-slate-500">Reportagem audiovisual e testemunhos dos participantes da sessão inaugural.</p>
+            </div>
+          </div>
+          <a href="https://youtu.be/1_jQYkNluhY?si=BJvw2ftMW5WyCqki" target="_blank" rel="noopener noreferrer" 
+             class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#FF0000] hover:bg-[#e60000] text-white text-xs font-bold transition shadow-sm">
+            <i data-lucide="youtube" class="w-4 h-4"></i>
+            <span>Ver no YouTube</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
         </div>
 
-        <!-- Cartão com Ligação ao Portal DATERRA -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <!-- Player 16:9 Responsivo -->
+        <div class="aspect-16-9 bg-slate-950 rounded-xl overflow-hidden shadow-inner">
+          <iframe 
+            src="https://www.youtube-nocookie.com/embed/1_jQYkNluhY" 
+            title="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+        <p class="text-[11px] text-slate-500 italic">
+          O primeiro Grupo Focal em Portugal juntou especialistas, consultores e produtores para definir os requisitos das ferramentas pedagógicas digitais.
+        </p>
+      </div>
+
+      <!-- Recursos & Documentação do GF1 (Notícia DATERRA & PDF de Conclusões) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Cartão 1: Notícia DATERRA -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
           <div class="space-y-3">
-            <span class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">Portal DATERRA</span>
-            <h4 class="text-lg font-bold leading-snug">Artigo Completo & Cobertura do Evento</h4>
+            <span class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">
+              Página de Notícias da DATERRA
+            </span>
+            <h4 class="text-lg font-bold leading-snug">
+              Grupo Focal RENOVATE: Primeira Sessão em Lisboa Reúne Agricultores e Especialistas
+            </h4>
             <p class="text-xs text-slate-300 leading-relaxed">
-              Consulte a cobertura jornalística, testemunhos dos intervenientes e a galeria fotográfica detalhada da sessão de Lisboa.
+              Consulte a cobertura jornalística completa, os testemunhos dos intervenientes e o resumo das perspetivas recolhidas na primeira sessão em Lisboa.
             </p>
           </div>
-          <div class="pt-6">
-            <a href="https://daterra.com.pt" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold transition w-full justify-center">
-              <span>Ler no Portal DATERRA</span>
+          <div>
+            <a href="https://daterra.com.pt/grupo-focal-renovate-primeira-sessao-em-lisboa-reune-agricultores-e-especialistas/" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold transition w-full justify-center shadow-sm">
+              <span>Ler Notícia na DATERRA</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
           </div>
+        </div>
+
+        <!-- Cartão 2: Documento de Resultados (PDF) -->
+        <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
+          <div class="space-y-3">
+            <span class="inline-block px-2.5 py-1 rounded bg-emerald-300 text-emerald-950 text-xs font-extrabold">
+              Documento Oficial (PDF)
+            </span>
+            <h4 class="text-lg font-bold leading-snug">
+              Conclusões da 1ª Sessão do Grupo Focal RENOVATE
+            </h4>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Aceda ao relatório executivo com a síntese de resultados, mapeamento de competências e as recomendações técnicas prioritárias apuradas pelo consórcio.
+            </p>
+          </div>
+          <div>
+            <a href="https://daterra.com.pt/wp-content/uploads/2025/03/10_ConclusoesGrupoFocalRENOVATE_pt.pdf" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-bold transition w-full justify-center shadow-sm">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+              <span>Abrir Documento de Conclusões (PDF)</span>
+              <i data-lucide="download" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Principais Conclusões Extraídas -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
+          Principais Conclusões & Diretrizes Extraídas
+        </h3>
+        <ul id="gf1-highlights-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Renderizado via app.js -->
+        </ul>
+      </div>
+
+      <!-- Galeria Fotográfica do Grupo Focal 1 (Espaço para Imagens do Evento) -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="images" class="w-5 h-5 text-amber-600"></i>
+              Galeria Fotográfica do Grupo Focal 1
+            </h3>
+            <p class="text-xs text-slate-500">Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.</p>
+          </div>
+          <div class="text-[11px] font-mono text-slate-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+            Pasta: assets/images/gf1/
+          </div>
+        </div>
+
+        <div id="gf1-gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <!-- Renderizado dinamicamente via app.js -->
         </div>
       </div>
     </section>
