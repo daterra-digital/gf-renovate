@@ -117,22 +117,37 @@ const LiveSession = (function () {
   }
 
   /**
-   * Atualiza as URLs dos Google Forms anexando o parâmetro ?entry.code=${code}
+   * Atualiza as URLs dos Google Forms anexando o código de participante aos campos oficiais (pre-fill)
    */
   function updateFormLinks(code) {
     const activeCode = (code !== undefined ? code : state.participantCode) || "";
-    const formBtns = [
-      { id: "btn-form-1", url: RENOVATE_CONFIG.externalLinks.googleFormPreSession, selector: ".form-link-pre" },
-      { id: "btn-form-2", url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto, selector: ".form-link-game" },
-      { id: "btn-form-3", url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex, selector: ".form-link-sim" },
-      { id: "btn-form-global", url: RENOVATE_CONFIG.externalLinks.googleFormGlobal, selector: ".form-link-global" }
+    const formConfig = [
+      { 
+        id: "btn-form-2", 
+        url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto, 
+        selector: ".form-link-game",
+        entryParams: activeCode ? `entry.1909349741=${encodeURIComponent(activeCode)}&entry.178320833=${encodeURIComponent(activeCode)}` : ""
+      },
+      { 
+        id: "btn-form-3", 
+        url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex, 
+        selector: ".form-link-sim",
+        entryParams: activeCode ? `entry.576387166=${encodeURIComponent(activeCode)}` : ""
+      },
+      { 
+        id: "btn-form-global", 
+        url: RENOVATE_CONFIG.externalLinks.googleFormGlobal, 
+        selector: ".form-link-global",
+        entryParams: activeCode ? `entry.208145689=${encodeURIComponent(activeCode)}` : ""
+      }
     ];
 
-    formBtns.forEach(item => {
+    formConfig.forEach(item => {
       if (!item.url) return;
-      const fullUrl = !activeCode 
-        ? item.url 
-        : `${item.url}${item.url.includes("?") ? "&" : "?"}entry.code=${encodeURIComponent(activeCode)}`;
+      let fullUrl = item.url;
+      if (item.entryParams) {
+        fullUrl += `${fullUrl.includes("?") ? "&" : "?"}${item.entryParams}`;
+      }
 
       const btn = document.getElementById(item.id);
       if (btn) btn.href = fullUrl;
