@@ -213,51 +213,52 @@ function renderPartners() {
   const hostContainer = document.getElementById("host-partner-container");
   if (!container || !RENOVATE_CONFIG.partners) return;
 
-  // 1. Renderizar Parceiro Anfitrião (ESAS) se container existir
+  // 1. Renderizar Parceiro Anfitrião (ESAS) com caixa ampla e logótipo de grande visibilidade
   if (hostContainer && RENOVATE_CONFIG.hostPartner) {
     const host = RENOVATE_CONFIG.hostPartner;
     hostContainer.innerHTML = `
-      <div class="bg-gradient-to-r from-emerald-50 via-amber-50 to-emerald-50 border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 bg-white rounded-xl border border-emerald-200 p-2 flex items-center justify-center shrink-0 shadow-sm">
-            <img src="${host.logo}" alt="${host.name}" class="h-12 w-auto object-contain">
+      <div class="bg-gradient-to-r from-emerald-50 via-amber-50/40 to-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-5 text-center sm:text-left">
+          <!-- Logótipo ESAS em tamanho de destaque e proporção original -->
+          <div class="w-56 sm:w-64 md:w-72 h-24 sm:h-28 bg-white rounded-2xl border-2 border-emerald-200 p-3 sm:p-4 flex items-center justify-center shrink-0 shadow-md">
+            <img src="${host.logo}" alt="${host.name}" class="max-h-20 sm:max-h-24 w-auto max-w-full object-contain">
           </div>
           <div>
-            <div class="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
-              <i data-lucide="map-pin" class="w-3 h-3 text-emerald-700"></i> ${host.role}
+            <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase px-2.5 py-1 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-700"></i> ${host.role}
             </div>
-            <h4 class="text-base font-extrabold text-slate-900 mt-1">${host.name}</h4>
-            <p class="text-xs text-slate-600">Local de realização da 2ª Sessão do Grupo Focal • Santarém, Portugal</p>
+            <h4 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1.5 leading-snug">${host.name}</h4>
+            <p class="text-xs sm:text-sm text-slate-600 mt-0.5">Local de realização da 2ª Sessão do Grupo Focal • Santarém, Portugal</p>
           </div>
         </div>
         <a href="${host.url}" target="_blank" rel="noopener noreferrer" 
-           class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shadow-sm">
+           class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold transition shadow-sm">
           <span>Website ESAS</span>
-          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <i data-lucide="external-link" class="w-4 h-4"></i>
         </a>
       </div>
     `;
   }
 
-  // 2. Renderizar a Grelha dos 16 Parceiros do Consórcio (conforme infografia)
+  // 2. Renderizar a Grelha dos 16 Parceiros do Consórcio com Logótipos Grandes e Nitidez Total
   container.innerHTML = RENOVATE_CONFIG.partners.map(p => `
-    <div class="group bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:shadow-md transition p-3.5 flex flex-col items-center justify-between text-center min-h-[140px]">
-      <!-- Logótipo Centrado -->
-      <div class="h-14 w-full flex items-center justify-center p-1.5" title="${p.name} (${p.role})">
-        <img src="${p.logo}" alt="${p.name}" class="max-h-12 max-w-[130px] w-auto object-contain transition-transform group-hover:scale-105" loading="lazy">
+    <div class="group bg-white rounded-2xl border-2 border-slate-200 hover:border-[#F5B842] hover:shadow-xl transition-all duration-200 p-4 sm:p-5 flex flex-col items-center justify-between text-center min-h-[220px]">
+      <!-- Logótipo Centrado e Ampliado -->
+      <div class="h-28 w-full flex items-center justify-center p-2" title="${p.name} (${p.role})">
+        <img src="${p.logo}" alt="${p.name}" class="max-h-24 max-w-[92%] w-auto object-contain transition-transform duration-200 group-hover:scale-105" loading="lazy">
       </div>
 
-      <!-- País e Ligação ao Website -->
-      <div class="w-full pt-2 border-t border-slate-100 space-y-1">
-        <div class="flex items-center justify-center gap-1 text-[11px] text-emerald-800 font-semibold">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-          <span>${p.country}</span>
+      <!-- País em Português e Ligação ao Website -->
+      <div class="w-full pt-3.5 border-t border-slate-100 space-y-2">
+        <div class="flex items-center justify-center gap-1.5 text-xs text-emerald-800 font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span>${p.countryPt || p.country}</span>
         </div>
         <a href="${p.url}" target="_blank" rel="noopener noreferrer" 
-           class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:underline transition-colors"
+           class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 hover:text-[#0F172A] bg-slate-50 hover:bg-[#FFCC66] px-3 py-1.5 rounded-lg border border-slate-200 transition-colors w-full"
            title="Abrir website de ${p.name}">
-          <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-emerald-600"></i>
           <span>Website</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-900"></i>
         </a>
       </div>
     </div>
