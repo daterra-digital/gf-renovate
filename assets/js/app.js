@@ -352,7 +352,7 @@ function renderSchedule() {
           <div class="w-9 h-9 rounded-full bg-emerald-200 text-emerald-900 flex items-center justify-center shrink-0">
             <i data-lucide="utensils" class="w-5 h-5"></i>
           </div>
-          <p>${isEn ? "Standing buffet lunch hosted by the organisation for all invited participants of the 2nd Focus Group session." : "Almoço volante de networking oferecido pela organização a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
+          <p>${isEn ? "Standing buffet lunch hosted by DATERRA for all invited participants of the 2nd Focus Group session." : "Almoço volante de networking oferecido pela DATERRA a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
         </div>
       `;
     } else if (item.type === "discussion") {
@@ -405,11 +405,10 @@ function renderSchedule() {
           </div>
 
           <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span class="hidden md:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
               <i data-lucide="${item.icon || 'circle'}" class="w-3 h-3"></i>
               ${itemBadge}
             </span>
-            ${item.step ? `<div class="accordion-lock-badge-${item.step} hidden sm:block"></div>` : ''}
             <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0"></i>
           </div>
         </summary>
@@ -420,7 +419,6 @@ function renderSchedule() {
               <i data-lucide="user" class="w-3.5 h-3.5"></i>
               <strong>${isEn ? "Speakers:" : "Intervenientes:"}</strong> ${itemSpeaker}
             </span>
-            ${item.step ? `<div class="accordion-lock-badge-${item.step} sm:hidden"></div>` : ''}
           </div>
           <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
             ${itemDesc}

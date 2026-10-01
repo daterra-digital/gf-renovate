@@ -73,7 +73,9 @@ window.I18nManager = (function () {
       "live.step5.btnForm": "Submeter Avaliação Global & Concluir",
       "live.step5.checkbox": "Marcar Sessão como Totalmente Concluída",
 
+      "live.unlocked": "Desbloqueado",
       "live.badge.unlocked": "Desbloqueado",
+      "live.waitingModerator": "Aguarda Moderador",
       "live.badge.waiting": "Aguarda Moderador",
 
       // Programme & Slides (Tab 2)
@@ -314,7 +316,9 @@ window.I18nManager = (function () {
       "live.step5.btnForm": "Submit Global Evaluation & Finish",
       "live.step5.checkbox": "Mark Session as Fully Completed",
 
+      "live.unlocked": "Unlocked",
       "live.badge.unlocked": "Unlocked",
+      "live.waitingModerator": "Awaiting Moderator",
       "live.badge.waiting": "Awaiting Moderator",
 
       // Programme & Slides (Tab 2)

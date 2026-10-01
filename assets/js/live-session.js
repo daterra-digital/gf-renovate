@@ -246,8 +246,27 @@ const LiveSession = (function () {
   function renderLiveSessionUI() {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const notSetText = window.I18nManager ? window.I18nManager.t("live.notSet") : (isEn ? "Not set" : "Não definido");
-    const unlockedText = window.I18nManager ? window.I18nManager.t("live.unlocked") : (isEn ? "Unlocked" : "Desbloqueado");
-    const waitingText = window.I18nManager ? window.I18nManager.t("live.waitingModerator") : (isEn ? "Awaiting Moderator" : "Aguarda Moderador");
+    let unlockedText = isEn ? "Unlocked" : "Desbloqueado";
+    if (window.I18nManager) {
+      const tVal = window.I18nManager.t("live.unlocked");
+      if (tVal && tVal !== "live.unlocked") {
+        unlockedText = tVal;
+      } else {
+        const altVal = window.I18nManager.t("live.badge.unlocked");
+        if (altVal && altVal !== "live.badge.unlocked") unlockedText = altVal;
+      }
+    }
+
+    let waitingText = isEn ? "Awaiting Moderator" : "Aguarda Moderador";
+    if (window.I18nManager) {
+      const tVal = window.I18nManager.t("live.waitingModerator");
+      if (tVal && tVal !== "live.waitingModerator") {
+        waitingText = tVal;
+      } else {
+        const altVal = window.I18nManager.t("live.badge.waiting");
+        if (altVal && altVal !== "live.badge.waiting") waitingText = altVal;
+      }
+    }
 
     // 1. Atualizar display do Código do Participante
     const codeDisplay = document.getElementById("current-participant-code");
