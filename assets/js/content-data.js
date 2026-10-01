@@ -190,7 +190,7 @@ const RENOVATE_CONFIG = {
   // Links Externos e Formulários da Sessão ao Vivo
   externalLinks: {
     seriousGameTallentto: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
-    simulatorVirmedex: "https://virmedex.com",
+    simulatorVirmedex: "https://simulator.renovateproject.eu/auth/login",
     googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
     googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform",
@@ -272,6 +272,7 @@ const RENOVATE_CONFIG = {
       badge: "Computador PC / Portátil",
       badgeColor: "bg-sky-100 text-sky-800 border-sky-300",
       icon: "monitor",
+      url: "https://simulator.renovateproject.eu/auth/login",
       description: "Teste prático individual do Simulador do RENOVATE no PC. Ambiente 3D interativo para otimização de parâmetros de pulverização, mitigação de deriva e análise de eficácia de campo.",
       type: "simulator"
     },

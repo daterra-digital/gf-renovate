@@ -165,6 +165,13 @@ const LiveSession = (function () {
     document.querySelectorAll(".game-link-tallentto, #btn-game-tallentto, #btn-schedule-tallentto").forEach(el => {
       el.href = gameUrl;
     });
+
+    // Garantir que todos os botões do Simulador apontam para o link oficial do Simulador RENOVATE
+    const simUrl = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.simulatorVirmedex) 
+      || "https://simulator.renovateproject.eu/auth/login";
+    document.querySelectorAll(".simulator-link-virmedex, #btn-simulator-virmedex, #btn-schedule-simulator").forEach(el => {
+      el.href = simUrl;
+    });
   }
 
   /**

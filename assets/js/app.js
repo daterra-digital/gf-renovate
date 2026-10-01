@@ -240,10 +240,10 @@ function renderSchedule() {
             Explore o ambiente de simulação 3D para testar variações de bicos de pulverização, velocidade e condições meteorológicas.
           </p>
           <div class="flex flex-wrap gap-2 pt-1">
-            <a href="${RENOVATE_CONFIG.externalLinks.simulatorVirmedex}" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
+            <a id="btn-schedule-simulator" href="${item.url || (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.simulatorVirmedex) || 'https://simulator.renovateproject.eu/auth/login'}" target="_blank" rel="noopener noreferrer" 
+               class="simulator-link-virmedex inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
               <i data-lucide="laptop" class="w-4 h-4"></i>
-              <span>Abrir Simulador Virmedex</span>
+              <span>Abrir Simulador RENOVATE</span>
             </a>
           </div>
         </div>
