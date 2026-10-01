@@ -511,19 +511,28 @@ const RENOVATE_CONFIG = {
   // Resultados & Media
   resultsMedia: {
     deliverable: {
-      code: "Deliverable 1.4",
-      title: "Relatório de Requisitos e Validação de Ferramentas Digitais para Formação em Proteção de Culturas",
-      status: "Documento Técnico Consolidado",
-      abstract: "Este entregável sintetiza a metodologia de validação de ferramentas pedagógicas digitais (Serious Games e Simuladores 3D), incorporando o feedback direto recolhido nos grupos focais de Portugal, Espanha, França e Itália. O relatório fundamenta as diretrizes de design instrucional adotadas pelo consórcio.",
+      code: "Entregável 1.4",
+      codeEn: "Deliverable 1.4",
+      status: "Relatório Oficial • Horizonte Europa",
+      statusEn: "Official Report • Horizon Europe",
+      url: "https://renovateproject.eu/shared-files/2751/?D1.3_Reports_on_analysis_of_expectation_for_training_and_Focus_Group_meetings_RENOVATE.pdf",
+      title: "Relatório de Análise de Expectativas de Formação e Resultados das Reuniões dos Grupos Focais",
+      titleEn: "Reports on analysis of expectation for training and results of Focus Group meetings",
+      abstract: "Este relatório apresenta a análise aprofundada das expectativas de formação e dos contributos recolhidos em seis Grupos Focais (Bélgica, França, Itália, Polónia, Portugal e Espanha), totalizando 153 intervenientes do setor agrícola. Elaborado pelo CNR-STEMS e DATERRA no âmbito do projeto europeu RENOVATE (Grant Agreement 101134024), o documento fundamenta as diretrizes pedagógicas e técnicas para o desenvolvimento da plataforma digital, Serious Games e simuladores 3D voltados para a proteção sustentável de culturas.",
+      abstractEn: "This report presents an in-depth analysis of training expectations and stakeholder feedback gathered across six Focus Groups (Belgium, France, Italy, Poland, Portugal, and Spain), engaging 153 key agricultural participants. Authored by CNR-STEMS and DATERRA under the EU RENOVATE project (Grant Agreement 101134024), the document establishes pedagogical and technical guidelines for developing the digital training platform, Serious Games, and 3D simulators tailored to sustainable crop protection.",
       highlights: [
-        "Matriz comparativa de eficácia pedagógica entre métodos expositivos e gamificados.",
-        "Critérios de acessibilidade e adaptação à literacia digital dos operadores agrários.",
-        "Recomendações técnicas para a integração de telemetria nos simuladores."
+        "<strong>Adoção de Tecnologias & Legislação da UE:</strong> A relação custo-benefício e a viabilidade económica são determinantes na decisão dos agricultores. A complexidade e sobreposição regulamentar (europeia, nacional e regional) exigem ferramentas digitais simples que auxiliem na interpretação de rótulos, cálculo de doses e redução de riscos sem comprometer a eficácia agronómica.",
+        "<strong>Lacunas Formativas & Abordagem Prática (Hands-on):</strong> Consenso unânime na necessidade urgente de formação eminentemente prática no terreno (<em>hands-on</em>) com equipamentos reais e simulações digitais, complementada pela capacitação contínua de formadores (<em>train the trainers</em>) em novas tecnologias e produtos fitossanitários de base biológica (Bio-PPP).",
+        "<strong>Personalização e Contextualização Regional:</strong> Imperativo de adaptar materiais formativos às especificidades locais (clima, relevo e culturas como vinha, olival, pomares e grandes culturas) e ao perfil de cada utilizador (gestores de exploração vs. operadores de máquinas), recorrendo a linguagem acessível, direta e sem redundâncias.",
+        "<strong>Áreas Temáticas Prioritárias:</strong> Prioridade máxima identificada para a Calibração de Pulverizadores (seleção de bicos, velocidade, caudal e pressão), Expressão e Cálculo de Volumes de Calda, Medidas de Mitigação da Deriva, Segurança do Operador e Proteção Integrada (IPM) estruturadas numa progressão modular lógica.",
+        "<strong>Requisitos da Plataforma RENOVATE:</strong> Desenvolvimento de um ecossistema intuitivo com forte componente audiovisual e interativa (Serious Games, simuladores 3D para cálculo de cenários custo-benefício e testes gamificados), informação técnica rigorosamente validada para assegurar total credibilidade e espaço para comunidade e partilha de experiências."
       ],
       highlightsEn: [
-        "Comparative pedagogical efficacy matrix between expository and gamified methods.",
-        "Accessibility criteria and digital literacy adaptation for farm operators.",
-        "Technical recommendations for telemetry integration in simulators."
+        "<strong>Technology Adoption & EU Legislation:</strong> Cost-effectiveness and economic feasibility are key drivers for farmers. Regulatory complexity and overlaps (EU, national, and regional) require intuitive digital tools to assist with label interpretation, dosage calculation, and risk mitigation without compromising agronomic efficacy.",
+        "<strong>Training Gaps & Hands-on Approach:</strong> Unanimous demand for practical, hands-on field demonstrations with real machinery and advanced digital simulation, supported by continuous trainer upskilling (<em>train the trainers</em>) in emerging technologies and bio-based plant protection products (Bio-PPPs).",
+        "<strong>Regional Customization & Target Profiling:</strong> Essential need to tailor training content to regional realities (climate, topography, and crops like vineyards, olive groves, orchards, and arable fields) and distinct user profiles (farm managers vs. machine operators), utilizing direct, accessible, and non-redundant language.",
+        "<strong>Priority Training Areas:</strong> Clear consensus on core priorities: Sprayer Calibration (nozzle selection, ground speed, flow rate, and pressure), Spray Volume & Dose Calculation, Drift Mitigation Measures, Operator Safety, and Integrated Pest Management (IPM) organized in a logical modular progression.",
+        "<strong>RENOVATE Platform Requirements:</strong> Development of an intuitive digital environment featuring rich audiovisual media and interactive tools (Serious Games, 3D simulators for cost-benefit scenario testing, and gamified quizzes), robustly validated technical content ensuring credibility, and community-driven knowledge exchange."
       ]
     },
     gf2Video: {

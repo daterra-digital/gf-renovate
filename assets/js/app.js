@@ -383,7 +383,7 @@ function renderSchedule() {
             ${isEn ? "Closing of Proceedings & Access to Reports" : "Encerramento dos Trabalhos & Acesso a Relatórios"}
           </div>
           <p class="text-xs text-slate-600">
-            ${isEn ? "Thank you to all participants for active contribution. Consolidated findings will be integrated into Project Deliverable 1.4." : "Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Deliverable 1.4 do projeto."}
+            ${isEn ? "Thank you to all participants for active contribution. Consolidated findings will be integrated into Project Deliverable 1.4." : "Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Entregável 1.4 do projeto."}
           </p>
         </div>
       `;
@@ -615,10 +615,16 @@ function renderResultsAndMedia() {
   const isEn = window.I18nManager && window.I18nManager.isEnglish();
   const delivList = (isEn && results.deliverable.highlightsEn) ? results.deliverable.highlightsEn : results.deliverable.highlights;
 
+  // Atualizar link de download dinamicamente caso o elemento exista
+  const downloadLink = document.getElementById("deliverable-download-link");
+  if (downloadLink && results.deliverable.url) {
+    downloadLink.href = results.deliverable.url;
+  }
+
   delivContainer.innerHTML = delivList.map(h => `
-    <li class="flex items-start gap-2.5 text-sm text-slate-700">
-      <i data-lucide="arrow-right-circle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
-      <span>${h}</span>
+    <li class="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
+      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+      <div>${h}</div>
     </li>
   `).join("");
 

@@ -195,13 +195,13 @@ window.I18nManager = (function () {
       "results.nps.zoneText": "(Zona de Excelência)",
       "results.feedback.title": "Voz dos Participantes: Sugestões & Bloqueios Identificados",
 
-      // Deliverable 1.4 & Media
-      "results.deliv.code": "Deliverable 1.4",
-      "results.deliv.status": "Documento Consolidado",
-      "results.deliv.link": "Ver Entregáveis no Site RENOVATE →",
-      "results.deliv.title": "Relatório de Requisitos e Validação de Ferramentas Digitais para Formação em Proteção de Culturas",
-      "results.deliv.abstract": "Este entregável técnico sintetiza a metodologia de validação de ferramentas pedagógicas digitais (Serious Games e Simuladores 3D), incorporando o feedback direto recolhido nas sessões práticas de campo.",
-      "results.deliv.highlightsTitle": "Pontos Fundamentais do Relatório:",
+      // Deliverable 1.4 & Media (Entregável 1.4)
+      "results.deliv.code": "Entregável 1.4",
+      "results.deliv.status": "Relatório Oficial • Horizonte Europa",
+      "results.deliv.link": "Descarregar Relatório Oficial PDF (2.0 MB) →",
+      "results.deliv.title": "Relatório de Análise de Expectativas de Formação e Resultados das Reuniões dos Grupos Focais",
+      "results.deliv.abstract": "Este relatório apresenta a análise aprofundada das expectativas de formação e dos contributos recolhidos em seis Grupos Focais (Bélgica, França, Itália, Polónia, Portugal e Espanha), totalizando 153 intervenientes do setor agrícola. Elaborado pelo CNR-STEMS e DATERRA no âmbito do projeto europeu RENOVATE (Grant Agreement 101134024), o documento fundamenta as diretrizes pedagógicas e técnicas para o desenvolvimento da plataforma digital, Serious Games e simuladores 3D voltados para a proteção sustentável de culturas.",
+      "results.deliv.highlightsTitle": "Pontos Fundamentais do Relatório (Macro-Áreas de Convergência):",
       // Vídeo Oficial do Grupo Focal 2 (Santarém)
       "results.gf2video.title": "Vídeo Oficial do Grupo Focal 2 (Santarém)",
       "results.gf2video.desc": "Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.",
@@ -210,7 +210,7 @@ window.I18nManager = (function () {
       "results.gf2video.boxText": "A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.",
       "results.gf2video.boxBadge": "Disponível após 06 de Outubro de 2026",
       "results.gf2video.footer": "Reportagem Audiovisual DATERRA & RENOVATE",
-      "results.gf2video.caption": "A cobertura audiovisual integra o Deliverable 1.4 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.",
+      "results.gf2video.caption": "A cobertura audiovisual integra o Entregável 1.4 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.",
 
       // Galeria Fotográfica do Grupo Focal 2 (Etapas do Programa)
       "results.gallery.title": "Galeria Fotográfica do Grupo Focal 2 (Santarém)",
@@ -437,10 +437,11 @@ window.I18nManager = (function () {
 
       // Deliverable 1.4 & Media
       "results.deliv.code": "Deliverable 1.4",
-      "results.deliv.status": "Consolidated Document",
-      "results.deliv.link": "View Deliverables on RENOVATE Website →",
-      "results.deliv.title": "Requirements and Validation Report on Digital Tools for Crop Protection Training",
-      "results.deliv.abstract": "This technical deliverable synthesises the validation methodology for digital pedagogical tools (Serious Games and 3D Simulators), incorporating direct feedback collected during hands-on field sessions.",
+      "results.deliv.status": "Official Report • Horizon Europe",
+      "results.deliv.link": "Download Official Report PDF (2.0 MB) →",
+      "results.deliv.title": "Reports on analysis of expectation for training and results of Focus Group meetings",
+      "results.deliv.abstract": "This report presents an in-depth analysis of training expectations and stakeholder feedback gathered across six Focus Groups (Belgium, France, Italy, Poland, Portugal, and Spain), engaging 153 key agricultural participants. Authored by CNR-STEMS and DATERRA under the EU RENOVATE project (Grant Agreement 101134024), the document establishes pedagogical and technical guidelines for developing the digital training platform, Serious Games, and 3D simulators tailored to sustainable crop protection.",
+      "results.deliv.highlightsTitle": "Key Report Highlights (Core Convergence Macro-Areas):",
       // Official Focus Group 2 Video (Santarém)
       "results.gf2video.title": "Official Video: Focus Group 2 (Santarém)",
       "results.gf2video.desc": "Audiovisual coverage, hands-on training dynamics and participant testimonials at ESAS.",
