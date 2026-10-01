@@ -634,7 +634,7 @@ const RENOVATE_CONFIG = {
     },
 
     // Simulador Virtual 3D (Virmedex)
-    // Mapeamento de Credenciais Individuais por Código de Participante (P01 a P20)
+    // Mapeamento de Credenciais Individuais por Código de Participante (P01 a P50)
     // O organizador pode ajustar estes e-mails e passwords conforme a lista oficial do evento
     simulatorUsers: {
       "P01": { email: "participante01@renovate.eu", pass: "Renovate2026!P01" },
@@ -656,7 +656,37 @@ const RENOVATE_CONFIG = {
       "P17": { email: "participante17@renovate.eu", pass: "Renovate2026!P17" },
       "P18": { email: "participante18@renovate.eu", pass: "Renovate2026!P18" },
       "P19": { email: "participante19@renovate.eu", pass: "Renovate2026!P19" },
-      "P20": { email: "participante20@renovate.eu", pass: "Renovate2026!P20" }
+      "P20": { email: "participante20@renovate.eu", pass: "Renovate2026!P20" },
+      "P21": { email: "participante21@renovate.eu", pass: "Renovate2026!P21" },
+      "P22": { email: "participante22@renovate.eu", pass: "Renovate2026!P22" },
+      "P23": { email: "participante23@renovate.eu", pass: "Renovate2026!P23" },
+      "P24": { email: "participante24@renovate.eu", pass: "Renovate2026!P24" },
+      "P25": { email: "participante25@renovate.eu", pass: "Renovate2026!P25" },
+      "P26": { email: "participante26@renovate.eu", pass: "Renovate2026!P26" },
+      "P27": { email: "participante27@renovate.eu", pass: "Renovate2026!P27" },
+      "P28": { email: "participante28@renovate.eu", pass: "Renovate2026!P28" },
+      "P29": { email: "participante29@renovate.eu", pass: "Renovate2026!P29" },
+      "P30": { email: "participante30@renovate.eu", pass: "Renovate2026!P30" },
+      "P31": { email: "participante31@renovate.eu", pass: "Renovate2026!P31" },
+      "P32": { email: "participante32@renovate.eu", pass: "Renovate2026!P32" },
+      "P33": { email: "participante33@renovate.eu", pass: "Renovate2026!P33" },
+      "P34": { email: "participante34@renovate.eu", pass: "Renovate2026!P34" },
+      "P35": { email: "participante35@renovate.eu", pass: "Renovate2026!P35" },
+      "P36": { email: "participante36@renovate.eu", pass: "Renovate2026!P36" },
+      "P37": { email: "participante37@renovate.eu", pass: "Renovate2026!P37" },
+      "P38": { email: "participante38@renovate.eu", pass: "Renovate2026!P38" },
+      "P39": { email: "participante39@renovate.eu", pass: "Renovate2026!P39" },
+      "P40": { email: "participante40@renovate.eu", pass: "Renovate2026!P40" },
+      "P41": { email: "participante41@renovate.eu", pass: "Renovate2026!P41" },
+      "P42": { email: "participante42@renovate.eu", pass: "Renovate2026!P42" },
+      "P43": { email: "participante43@renovate.eu", pass: "Renovate2026!P43" },
+      "P44": { email: "participante44@renovate.eu", pass: "Renovate2026!P44" },
+      "P45": { email: "participante45@renovate.eu", pass: "Renovate2026!P45" },
+      "P46": { email: "participante46@renovate.eu", pass: "Renovate2026!P46" },
+      "P47": { email: "participante47@renovate.eu", pass: "Renovate2026!P47" },
+      "P48": { email: "participante48@renovate.eu", pass: "Renovate2026!P48" },
+      "P49": { email: "participante49@renovate.eu", pass: "Renovate2026!P49" },
+      "P50": { email: "participante50@renovate.eu", pass: "Renovate2026!P50" }
     }
   },
 

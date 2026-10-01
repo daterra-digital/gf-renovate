@@ -161,7 +161,7 @@
               <span id="current-participant-code" class="text-slate-400 italic font-mono">Não definido</span>
             </label>
             <div class="flex gap-2">
-              <input type="text" id="participant-code-input" data-i18n-placeholder="live.banner.placeholder" placeholder="Ex: P01, EXP-08" 
+              <input type="text" id="participant-code-input" data-i18n-placeholder="live.banner.placeholder" placeholder="Ex: P01 a P50" 
                      class="uppercase px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none w-36">
               <button type="button" id="btn-save-participant-code" 
                       class="px-3 py-1.5 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center gap-1">
@@ -1614,9 +1614,16 @@
 
             <!-- Lista de Contas dos Participantes no Simulador -->
             <div>
-              <span class="text-[10px] font-bold uppercase text-slate-600 block mb-1.5" data-i18n="mod.simAccountsLabel">Simulador Virtual - Contas dos Participantes</span>
-              <div id="mod-simulator-accounts-list" class="space-y-1.5">
-                <!-- Gerado via JS: P01 a P20 -->
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[10px] font-bold uppercase text-slate-600" data-i18n="mod.simAccountsLabel">Simulador Virtual - Contas dos Participantes</span>
+                <span class="text-[10px] text-slate-500 font-semibold font-mono bg-slate-200/80 px-1.5 py-0.2 rounded">50 contas (P01-P50)</span>
+              </div>
+              <div class="mb-2">
+                <input type="text" id="mod-cred-filter-input" placeholder="Filtrar por código ou e-mail (ex: P15, P42)..."
+                       class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400">
+              </div>
+              <div id="mod-simulator-accounts-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                <!-- Gerado via JS: P01 a P50 -->
               </div>
             </div>
           </div>

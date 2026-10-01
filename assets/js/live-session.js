@@ -694,7 +694,7 @@ const LiveSession = (function () {
     const listContainer = document.getElementById("mod-simulator-accounts-list");
     if (listContainer && listContainer.children.length === 0 && creds.simulatorUsers) {
       listContainer.innerHTML = Object.entries(creds.simulatorUsers).map(([code, user]) => `
-        <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
+        <div class="mod-account-item p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between gap-2 shadow-2xs transition-all" data-filter-text="${code.toLowerCase()} ${user.email.toLowerCase()}">
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <span class="inline-flex items-center justify-center w-8 h-6 rounded bg-sky-100 text-sky-800 font-bold text-xs shrink-0">${code}</span>
             <div class="truncate text-[11px] leading-tight">
@@ -832,6 +832,23 @@ const LiveSession = (function () {
           containerModCred.classList.add("hidden");
           if (chevronModCred) chevronModCred.classList.remove("rotate-180");
         }
+      });
+    }
+
+    // 8.1. Moderação - Filtro em tempo real para as 50 contas
+    const filterInput = document.getElementById("mod-cred-filter-input");
+    if (filterInput) {
+      filterInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        const items = document.querySelectorAll(".mod-account-item");
+        items.forEach(el => {
+          const text = el.getAttribute("data-filter-text") || "";
+          if (!query || text.includes(query)) {
+            el.classList.remove("hidden");
+          } else {
+            el.classList.add("hidden");
+          }
+        });
       });
     }
 
