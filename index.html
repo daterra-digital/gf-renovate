@@ -205,9 +205,21 @@
               <span data-i18n="live.step1.activeCodeLabel" class="font-medium">Código Ativo:</span>
               <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview" data-i18n="live.step1.configuredTop">Configurado no Topo</span>
             </div>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-1" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span data-i18n="live.step1.checkbox">Marcar Passo 1 como Concluído</span>
+            <label for="step-checkbox-1" id="step-checkbox-label-1" 
+                   class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
+              <div class="flex items-center gap-2.5">
+                <div id="step-custom-box-1" 
+                     class="w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0">
+                  <i id="step-custom-check-1" data-lucide="check" class="w-3.5 h-3.5 text-white hidden stroke-[3]"></i>
+                </div>
+                <span id="step-checkbox-text-1" data-i18n="live.step1.checkbox" class="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  Marcar Passo 1 como Concluído
+                </span>
+              </div>
+              <span id="step-auto-badge-1" class="hidden text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Concluído
+              </span>
+              <input type="checkbox" id="step-checkbox-1" class="sr-only">
             </label>
           </div>
         </article>
@@ -239,9 +251,21 @@
               <i data-lucide="presentation" class="w-4 h-4 text-[#FFCC66]"></i>
               <span data-i18n="live.step2.schedule">Ver Slides no Programa (10:10)</span>
             </button>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span data-i18n="live.step2.checkbox">Marcar Passo 2 como Concluído</span>
+            <label for="step-checkbox-2" id="step-checkbox-label-2" 
+                   class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
+              <div class="flex items-center gap-2.5">
+                <div id="step-custom-box-2" 
+                     class="w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0">
+                  <i id="step-custom-check-2" data-lucide="check" class="w-3.5 h-3.5 text-white hidden stroke-[3]"></i>
+                </div>
+                <span id="step-checkbox-text-2" data-i18n="live.step2.checkbox" class="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  Marcar Passo 2 como Concluído
+                </span>
+              </div>
+              <span id="step-auto-badge-2" class="hidden text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Concluído
+              </span>
+              <input type="checkbox" id="step-checkbox-2" class="sr-only">
             </label>
           </div>
         </article>
@@ -280,9 +304,21 @@
                 <span data-i18n="live.step3.btnForm">Avaliar Jogo (Form 1)</span>
               </a>
             </div>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-3" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span data-i18n="live.step3.checkbox">Marcar Passo 3 como Concluído</span>
+            <label for="step-checkbox-3" id="step-checkbox-label-3" 
+                   class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
+              <div class="flex items-center gap-2.5">
+                <div id="step-custom-box-3" 
+                     class="w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0">
+                  <i id="step-custom-check-3" data-lucide="check" class="w-3.5 h-3.5 text-white hidden stroke-[3]"></i>
+                </div>
+                <span id="step-checkbox-text-3" data-i18n="live.step3.checkbox" class="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  Marcar Passo 3 como Concluído
+                </span>
+              </div>
+              <span id="step-auto-badge-3" class="hidden text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Concluído
+              </span>
+              <input type="checkbox" id="step-checkbox-3" class="sr-only">
             </label>
           </div>
         </article>
@@ -316,14 +352,26 @@
                 <span data-i18n="live.step4.btnSim">Abrir Simulador</span>
               </a>
               <a id="btn-form-3" href="#" target="_blank" rel="noopener noreferrer" 
-                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                 class="form-link-sim inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                 <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
                 <span data-i18n="live.step4.btnForm">Avaliar Simulador (Form 2)</span>
               </a>
             </div>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-4" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span data-i18n="live.step4.checkbox">Marcar Passo 4 como Concluído</span>
+            <label for="step-checkbox-4" id="step-checkbox-label-4" 
+                   class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
+              <div class="flex items-center gap-2.5">
+                <div id="step-custom-box-4" 
+                     class="w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0">
+                  <i id="step-custom-check-4" data-lucide="check" class="w-3.5 h-3.5 text-white hidden stroke-[3]"></i>
+                </div>
+                <span id="step-checkbox-text-4" data-i18n="live.step4.checkbox" class="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  Marcar Passo 4 como Concluído
+                </span>
+              </div>
+              <span id="step-auto-badge-4" class="hidden text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Concluído
+              </span>
+              <input type="checkbox" id="step-checkbox-4" class="sr-only">
             </label>
           </div>
         </article>
@@ -355,9 +403,21 @@
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
               <span data-i18n="live.step5.btnForm">Submeter Avaliação Global & Concluir</span>
             </a>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-              <input type="checkbox" id="step-checkbox-5" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span data-i18n="live.step5.checkbox">Marcar Sessão como Totalmente Concluída</span>
+            <label for="step-checkbox-5" id="step-checkbox-label-5" 
+                   class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
+              <div class="flex items-center gap-2.5">
+                <div id="step-custom-box-5" 
+                     class="w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0">
+                  <i id="step-custom-check-5" data-lucide="check" class="w-3.5 h-3.5 text-white hidden stroke-[3]"></i>
+                </div>
+                <span id="step-checkbox-text-5" data-i18n="live.step5.checkbox" class="text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  Marcar Sessão como Totalmente Concluída
+                </span>
+              </div>
+              <span id="step-auto-badge-5" class="hidden text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Concluído
+              </span>
+              <input type="checkbox" id="step-checkbox-5" class="sr-only">
             </label>
           </div>
         </article>
@@ -1485,11 +1545,11 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261001-2235"></script>
-  <script src="assets/js/content-data.js?v=20261001-2235"></script>
-  <script src="assets/js/live-session.js?v=20261001-2235"></script>
-  <script src="assets/js/results-dashboard.js?v=20261001-2235"></script>
-  <script src="assets/js/app.js?v=20261001-2235"></script>
+  <script src="assets/js/i18n.js?v=20261001-2248"></script>
+  <script src="assets/js/content-data.js?v=20261001-2248"></script>
+  <script src="assets/js/live-session.js?v=20261001-2248"></script>
+  <script src="assets/js/results-dashboard.js?v=20261001-2248"></script>
+  <script src="assets/js/app.js?v=20261001-2248"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

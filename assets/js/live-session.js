@@ -26,7 +26,13 @@ const LiveSession = (function () {
   function init() {
     loadStorageState();
     checkUrlOverrides();
+    // Se o código de participante estiver definido, o Passo 1 é marcado automaticamente como concluído
+    if (state.participantCode && !state.completedSteps.includes(1)) {
+      state.completedSteps.push(1);
+      saveStorageState();
+    }
     renderLiveSessionUI();
+    bindAutomaticStepTriggers();
   }
 
   /**
@@ -111,6 +117,9 @@ const LiveSession = (function () {
       return false;
     }
     state.participantCode = newCode.trim().toUpperCase();
+    if (!state.completedSteps.includes(1)) {
+      state.completedSteps.push(1);
+    }
     saveStorageState();
     renderLiveSessionUI();
     return true;
@@ -228,7 +237,7 @@ const LiveSession = (function () {
   }
 
   /**
-   * Alterna estado de conclusão de uma fase pelo participante
+   * Alterna estado de conclusão de uma fase pelo participante (manual)
    */
   function toggleStepCompleted(stepNumber) {
     if (state.completedSteps.includes(stepNumber)) {
@@ -238,6 +247,69 @@ const LiveSession = (function () {
     }
     saveStorageState();
     renderLiveSessionUI();
+  }
+
+  /**
+   * Marca um passo como concluído (ou não concluído) de forma programática ou automática
+   */
+  function markStepCompleted(stepNumber, completed = true, showToastNotice = false) {
+    const wasCompleted = state.completedSteps.includes(stepNumber);
+    if (completed && !wasCompleted) {
+      state.completedSteps.push(stepNumber);
+      saveStorageState();
+      renderLiveSessionUI();
+      if (showToastNotice && (window.showToast || typeof showToast === "function")) {
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        const stepTitles = {
+          1: isEn ? "Step 1 (Participant Code)" : "Passo 1 (Código de Participante)",
+          2: isEn ? "Step 2 (Presentation)" : "Passo 2 (Apresentação)",
+          3: isEn ? "Step 3 (Serious Game)" : "Passo 3 (Serious Game)",
+          4: isEn ? "Step 4 (Virtual Simulator)" : "Passo 4 (Simulador Virtual)",
+          5: isEn ? "Step 5 (Final Evaluation)" : "Passo 5 (Avaliação Final)"
+        };
+        const title = stepTitles[stepNumber] || (isEn ? `Step ${stepNumber}` : `Passo ${stepNumber}`);
+        const msg = isEn ? `${title} marked as completed!` : `${title} marcado automaticamente como concluído!`;
+        const toastFn = window.showToast || showToast;
+        toastFn(msg);
+      }
+      return true;
+    } else if (!completed && wasCompleted) {
+      state.completedSteps = state.completedSteps.filter(s => s !== stepNumber);
+      saveStorageState();
+      renderLiveSessionUI();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Liga os gatilhos automáticos aos botões de ação e fluxo de trabalho de cada fase
+   */
+  function bindAutomaticStepTriggers() {
+    if (window._renovateAutoTriggersBound) return;
+    window._renovateAutoTriggersBound = true;
+
+    document.addEventListener("click", (e) => {
+      // Passo 2: Diapositivos ("Ver Slides no Programa")
+      if (e.target.closest("#btn-goto-slides")) {
+        markStepCompleted(2, true, true);
+      }
+
+      // Passo 3: Serious Game Tallentto ou Avaliação Form 1
+      if (e.target.closest("#btn-game-tallentto, .game-link-tallentto, #btn-form-2, .form-link-game, #btn-schedule-tallentto")) {
+        markStepCompleted(3, true, true);
+      }
+
+      // Passo 4: Simulador PC Virmedex ou Avaliação Form 2
+      if (e.target.closest("#btn-simulator-virmedex, .simulator-link-virmedex, #btn-form-3, .form-link-sim, #btn-schedule-simulator")) {
+        markStepCompleted(4, true, true);
+      }
+
+      // Passo 5: Avaliação Global & Encerramento
+      if (e.target.closest("#btn-form-global, .form-link-global")) {
+        markStepCompleted(5, true, true);
+      }
+    });
   }
 
   /**
@@ -298,7 +370,21 @@ const LiveSession = (function () {
       }
     }
 
-    // 2. Atualizar estado dos cartões de fases
+    // Atualizar preview do Código Ativo no Passo 1
+    const step1CodePreview = document.getElementById("step1-code-preview");
+    if (step1CodePreview) {
+      if (state.participantCode) {
+        step1CodePreview.textContent = state.participantCode;
+        step1CodePreview.classList.add("text-emerald-800", "bg-emerald-100", "px-2", "py-0.5", "rounded-md");
+        step1CodePreview.classList.remove("text-slate-900");
+      } else {
+        step1CodePreview.textContent = window.I18nManager ? window.I18nManager.t("live.step1.configuredTop") : (isEn ? "Configured at Top" : "Configurado no Topo");
+        step1CodePreview.classList.remove("text-emerald-800", "bg-emerald-100", "px-2", "py-0.5", "rounded-md");
+        step1CodePreview.classList.add("text-slate-900");
+      }
+    }
+
+    // 2. Atualizar estado dos cartões de fases e checkboxes estilizadas
     for (let step = 1; step <= TOTAL_STEPS; step++) {
       const card = document.getElementById(`step-card-${step}`);
       const lockBadge = document.getElementById(`step-lock-badge-${step}`);
@@ -350,6 +436,62 @@ const LiveSession = (function () {
         completeCheckbox.disabled = !isUnlocked;
       }
 
+      // Atualizar visual da barra de checkbox personalizada
+      const chkLabel = document.getElementById(`step-checkbox-label-${step}`);
+      const customBox = document.getElementById(`step-custom-box-${step}`);
+      const customCheck = document.getElementById(`step-custom-check-${step}`);
+      const chkText = document.getElementById(`step-checkbox-text-${step}`);
+      const autoBadge = document.getElementById(`step-auto-badge-${step}`);
+
+      if (chkLabel && customBox && customCheck && chkText && autoBadge) {
+        if (!isUnlocked) {
+          chkLabel.classList.add("opacity-50", "pointer-events-none", "cursor-not-allowed");
+          chkLabel.classList.remove("cursor-pointer");
+        } else {
+          chkLabel.classList.remove("opacity-50", "pointer-events-none", "cursor-not-allowed");
+          chkLabel.classList.add("cursor-pointer");
+        }
+
+        if (isCompleted) {
+          // Estado Concluído
+          chkLabel.classList.remove("border-slate-200", "bg-slate-50/80", "hover:bg-[#FFFDF5]", "hover:border-[#FFCC66]");
+          chkLabel.classList.add("border-emerald-300", "bg-emerald-50/90", "hover:bg-emerald-100/70", "hover:border-emerald-400");
+          
+          customBox.classList.remove("border-slate-300", "bg-white", "group-hover:border-[#FFCC66]");
+          customBox.classList.add("border-emerald-600", "bg-emerald-600");
+          
+          customCheck.classList.remove("hidden");
+          
+          chkText.classList.remove("text-slate-700", "group-hover:text-slate-900");
+          chkText.classList.add("text-emerald-950");
+          
+          const completedKey = `live.step${step}.completed`;
+          const completedDefault = step === 5 ? (isEn ? "Session Fully Completed" : "Sessão Totalmente Concluída") : (isEn ? `Step ${step} Completed` : `Passo ${step} Concluído`);
+          chkText.textContent = (window.I18nManager && window.I18nManager.t(completedKey)) || completedDefault;
+          
+          autoBadge.classList.remove("hidden");
+          autoBadge.textContent = (window.I18nManager && window.I18nManager.t("live.badge.completed")) || (isEn ? "Completed" : "Concluído");
+        } else {
+          // Estado Não Concluído
+          chkLabel.classList.add("border-slate-200", "bg-slate-50/80", "hover:bg-[#FFFDF5]", "hover:border-[#FFCC66]");
+          chkLabel.classList.remove("border-emerald-300", "bg-emerald-50/90", "hover:bg-emerald-100/70", "hover:border-emerald-400");
+          
+          customBox.classList.add("border-slate-300", "bg-white", "group-hover:border-[#FFCC66]");
+          customBox.classList.remove("border-emerald-600", "bg-emerald-600");
+          
+          customCheck.classList.add("hidden");
+          
+          chkText.classList.add("text-slate-700", "group-hover:text-slate-900");
+          chkText.classList.remove("text-emerald-950");
+          
+          const checkboxKey = `live.step${step}.checkbox`;
+          const checkboxDefault = step === 5 ? (isEn ? "Mark Session as Fully Completed" : "Marcar Sessão como Totalmente Concluída") : (isEn ? `Mark Step ${step} as Completed` : `Marcar Passo ${step} como Concluído`);
+          chkText.textContent = (window.I18nManager && window.I18nManager.t(checkboxKey)) || checkboxDefault;
+          
+          autoBadge.classList.add("hidden");
+        }
+      }
+
       // Sincronizar também com os acordeões do Programa (Tab 2)
       document.querySelectorAll(`.accordion-step-${step}`).forEach(acc => {
         if (isUnlocked) {
@@ -383,7 +525,7 @@ const LiveSession = (function () {
     // 3. Atualizar botões com link para Google Forms (injetando ?entry.code=${code})
     updateFormLinks(state.participantCode);
 
-    // 4. Re-inicializar ícones Lucide nos badges alterados
+    // 4. Re-inicializar ícones Lucide nos badges e caixas alteradas
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -401,6 +543,7 @@ const LiveSession = (function () {
     unlockUpToStep,
     lockStep,
     toggleStepCompleted,
+    markStepCompleted,
     render: renderLiveSessionUI,
     renderSteps: renderLiveSessionUI
   };

@@ -46,12 +46,14 @@ window.I18nManager = (function () {
       "live.step1.activeCodeLabel": "Código Ativo:",
       "live.step1.configuredTop": "Configurado no Topo",
       "live.step1.checkbox": "Marcar Passo 1 como Concluído",
+      "live.step1.completed": "Passo 1 Concluído",
 
       "live.step2.badge": "Apresentação Oficial",
       "live.step2.title": 'Passo 2: "Disseram, e nós fizemos"',
       "live.step2.desc": "Breve recapitulação do GF1 e apresentação oficial dos diapositivos integrando o feedback dos participantes nas novas ferramentas.",
       "live.step2.schedule": "Ver Slides no Programa (10:10)",
       "live.step2.checkbox": "Marcar Passo 2 como Concluído",
+      "live.step2.completed": "Passo 2 Concluído",
 
       "live.step3.badge": "Smartphone / Tablet",
       "live.step3.title": "Passo 3: Serious Game (Tallentto)",
@@ -59,6 +61,7 @@ window.I18nManager = (function () {
       "live.step3.btnGame": "Jogar Tallentto",
       "live.step3.btnForm": "Avaliar Jogo (Form 1)",
       "live.step3.checkbox": "Marcar Passo 3 como Concluído",
+      "live.step3.completed": "Passo 3 Concluído",
 
       "live.step4.badge": "Computador PC / Portátil",
       "live.step4.title": "Passo 4: Simulador Virtual (Virmedex)",
@@ -66,12 +69,15 @@ window.I18nManager = (function () {
       "live.step4.btnSim": "Abrir Simulador",
       "live.step4.btnForm": "Avaliar Simulador (Form 2)",
       "live.step4.checkbox": "Marcar Passo 4 como Concluído",
+      "live.step4.completed": "Passo 4 Concluído",
 
       "live.step5.badge": "Formulário Final",
       "live.step5.title": "Passo 5: Síntese & Encerramento",
       "live.step5.desc": "Questionário de satisfação global, recomendações para o consórcio e acesso aos materiais técnicos da DATERRA.",
       "live.step5.btnForm": "Submeter Avaliação Global & Concluir",
       "live.step5.checkbox": "Marcar Sessão como Totalmente Concluída",
+      "live.step5.completed": "Sessão Totalmente Concluída",
+      "live.badge.completed": "Concluído",
 
       "live.unlocked": "Desbloqueado",
       "live.badge.unlocked": "Desbloqueado",
@@ -289,12 +295,14 @@ window.I18nManager = (function () {
       "live.step1.activeCodeLabel": "Active Code:",
       "live.step1.configuredTop": "Configured at Top",
       "live.step1.checkbox": "Mark Step 1 as Completed",
+      "live.step1.completed": "Step 1 Completed",
 
       "live.step2.badge": "Official Presentation",
       "live.step2.title": 'Step 2: "You said, and we delivered"',
       "live.step2.desc": "Brief recap of FG1 and official presentation slides showing how participant feedback was integrated into the new tools.",
       "live.step2.schedule": "View Slides in Programme (10:10)",
       "live.step2.checkbox": "Mark Step 2 as Completed",
+      "live.step2.completed": "Step 2 Completed",
 
       "live.step3.badge": "Smartphone / Tablet",
       "live.step3.title": "Step 3: Serious Game (Tallentto)",
@@ -302,6 +310,7 @@ window.I18nManager = (function () {
       "live.step3.btnGame": "Play Tallentto",
       "live.step3.btnForm": "Evaluate Game (Form 1)",
       "live.step3.checkbox": "Mark Step 3 as Completed",
+      "live.step3.completed": "Step 3 Completed",
 
       "live.step4.badge": "PC / Laptop",
       "live.step4.title": "Step 4: Virtual Simulator (Virmedex)",
@@ -309,12 +318,15 @@ window.I18nManager = (function () {
       "live.step4.btnSim": "Open Simulator",
       "live.step4.btnForm": "Evaluate Simulator (Form 2)",
       "live.step4.checkbox": "Mark Step 4 as Completed",
+      "live.step4.completed": "Step 4 Completed",
 
       "live.step5.badge": "Final Questionnaire",
       "live.step5.title": "Step 5: Synthesis & Wrap-up",
       "live.step5.desc": "Overall satisfaction questionnaire, recommendations for the consortium, and access to DATERRA technical resources.",
       "live.step5.btnForm": "Submit Global Evaluation & Finish",
       "live.step5.checkbox": "Mark Session as Fully Completed",
+      "live.step5.completed": "Session Fully Completed",
+      "live.badge.completed": "Completed",
 
       "live.unlocked": "Unlocked",
       "live.badge.unlocked": "Unlocked",
