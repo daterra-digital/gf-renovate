@@ -191,10 +191,10 @@ const RENOVATE_CONFIG = {
   externalLinks: {
     seriousGameTallentto: "https://tallentto.com",
     simulatorVirmedex: "https://virmedex.com",
-    googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM1/viewform",
-    googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM2/viewform",
-    googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-FORM3/viewform",
-    googleFormGlobal: "https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER-GLOBAL/viewform",
+    googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
+    googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
+    googleFormSimVirmedex: "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform",
+    googleFormGlobal: "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform",
     googleSlidesUrl: "https://docs.google.com/presentation/d/e/2PACX-1vRHnC6-5ki_78jMjLvzzpQA-8jX_uso_NRWE63z0xf5Lf2bXjU51iaXKthzZTdWjhk9iPA9WxsiivGU/embed?start=false&loop=false",
     googleSlidesFullscreen: "https://docs.google.com/presentation/d/e/2PACX-1vRHnC6-5ki_78jMjLvzzpQA-8jX_uso_NRWE63z0xf5Lf2bXjU51iaXKthzZTdWjhk9iPA9WxsiivGU/pub?start=false&loop=false",
     gf1DaterraArticle: "https://daterra.com.pt"
