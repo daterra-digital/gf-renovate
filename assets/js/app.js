@@ -3,6 +3,11 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 0. Inicializar Gestor de Idioma (i18n)
+  if (window.I18nManager) {
+    window.I18nManager.init();
+  }
+
   // 1. Inicializar LiveSession
   LiveSession.init();
 
@@ -155,10 +160,17 @@ function renderSchedule() {
   const container = document.getElementById("schedule-container");
   if (!container || !RENOVATE_CONFIG.schedule) return;
 
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
   // Recuperar o último acordeão aberto (por defeito: slot-1 "Sessão de Abertura")
   const savedOpenSlot = localStorage.getItem("renovate_last_open_slot") || "slot-1";
 
   container.innerHTML = RENOVATE_CONFIG.schedule.map((item, index) => {
+    const itemTitle = (isEn && item.titleEn) ? item.titleEn : item.title;
+    const itemSpeaker = (isEn && item.speakerEn) ? item.speakerEn : item.speaker;
+    const itemBadge = (isEn && item.badgeEn) ? item.badgeEn : item.badge;
+    const itemDesc = (isEn && item.descriptionEn) ? item.descriptionEn : item.description;
+
     // Conteúdo embutido de acordo com o tipo da fase
     let embeddedContent = "";
 
@@ -168,13 +180,13 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <i data-lucide="presentation" class="w-4 h-4 text-amber-600"></i>
-              Apresentação Oficial da Sessão
+              ${isEn ? "Official Session Presentation" : "Apresentação Oficial da Sessão"}
             </span>
             <a href="${RENOVATE_CONFIG.externalLinks.googleSlidesFullscreen || 'https://docs.google.com/presentation'}" 
                target="_blank" rel="noopener noreferrer" 
                class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition">
               <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
-              <span>Ecrã Inteiro / Abrir Slides</span>
+              <span>${isEn ? "Fullscreen / Open Slides" : "Ecrã Inteiro / Abrir Slides"}</span>
             </a>
           </div>
 
@@ -188,7 +200,7 @@ function renderSchedule() {
             </iframe>
           </div>
           <p class="text-[11px] text-slate-500 italic">
-            Os diapositivos acompanham a recapitulação do GF1 e o enquadramento prático das ferramentas digitais.
+            ${isEn ? "Slides accompany the FG1 summary and practical framework of the digital tools." : "Os diapositivos acompanham a recapitulação do GF1 e o enquadramento prático das ferramentas digitais."}
           </p>
         </div>
       `;
@@ -198,18 +210,18 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-1.5 text-xs font-bold text-purple-900">
               <i data-lucide="smartphone" class="w-4 h-4"></i>
-              <span>Dispositivo Recomendado: Smartphone ou Tablet</span>
+              <span>${isEn ? "Recommended Device: Smartphone or Tablet" : "Dispositivo Recomendado: Smartphone ou Tablet"}</span>
             </div>
             <div class="accordion-lock-badge-3"></div>
           </div>
           <p class="text-xs text-slate-600">
-            Aceda à plataforma de jogo e conclua os módulos interativos de calibração fitossanitária no seu próprio ritmo.
+            ${isEn ? "Access the game platform and complete the interactive sprayer calibration modules at your own pace." : "Aceda à plataforma de jogo e conclua os módulos interativos de calibração fitossanitária no seu próprio ritmo."}
           </p>
           <div class="flex flex-wrap gap-2 pt-1">
             <a id="btn-schedule-tallentto" href="${item.url || (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) || 'https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt'}" target="_blank" rel="noopener noreferrer" 
                class="game-link-tallentto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
               <i data-lucide="gamepad-2" class="w-4 h-4"></i>
-              <span>Jogar Tallentto</span>
+              <span>${isEn ? "Play Tallentto" : "Jogar Tallentto"}</span>
             </a>
           </div>
         </div>
@@ -220,18 +232,18 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-1.5 text-xs font-bold text-blue-900">
               <i data-lucide="clipboard-check" class="w-4 h-4"></i>
-              <span>Questionário de Avaliação Pedagógica</span>
+              <span>${isEn ? "Pedagogical Evaluation Questionnaire" : "Questionário de Avaliação Pedagógica"}</span>
             </div>
             <div class="accordion-lock-badge-3"></div>
           </div>
           <p class="text-xs text-slate-600">
-            Registe as suas respostas sobre a jogabilidade, clareza e utilidade formativa. O seu código de participante será associado automaticamente.
+            ${isEn ? "Submit your feedback on gameplay, clarity, and training utility. Your participant code is automatically attached." : "Registe as suas respostas sobre a jogabilidade, clareza e utilidade formativa. O seu código de participante será associado automaticamente."}
           </p>
           <div class="pt-1">
             <a href="${RENOVATE_CONFIG.externalLinks.googleFormGameTallentto}" target="_blank" rel="noopener noreferrer" 
                class="form-link-game inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
-              <span>Abrir Avaliação Serious Game (Form 2)</span>
+              <span>${isEn ? "Open Serious Game Evaluation (Form 1)" : "Abrir Avaliação Serious Game (Form 1)"}</span>
             </a>
           </div>
         </div>
@@ -242,18 +254,18 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-1.5 text-xs font-bold text-sky-900">
               <i data-lucide="monitor" class="w-4 h-4"></i>
-              <span>Dispositivo Recomendado: Computador PC ou Portátil</span>
+              <span>${isEn ? "Recommended Device: PC or Laptop" : "Dispositivo Recomendado: Computador PC ou Portátil"}</span>
             </div>
             <div class="accordion-lock-badge-4"></div>
           </div>
           <p class="text-xs text-slate-600">
-            Explore o ambiente de simulação 3D para testar variações de bicos de pulverização, velocidade e condições meteorológicas.
+            ${isEn ? "Explore the 3D simulation environment to test spray nozzle variations, speed, and weather conditions." : "Explore o ambiente de simulação 3D para testar variações de bicos de pulverização, velocidade e condições meteorológicas."}
           </p>
           <div class="flex flex-wrap gap-2 pt-1">
             <a id="btn-schedule-simulator" href="${item.url || (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.simulatorVirmedex) || 'https://simulator.renovateproject.eu/auth/login'}" target="_blank" rel="noopener noreferrer" 
                class="simulator-link-virmedex inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
               <i data-lucide="laptop" class="w-4 h-4"></i>
-              <span>Abrir Simulador RENOVATE</span>
+              <span>${isEn ? "Open RENOVATE Simulator" : "Abrir Simulador RENOVATE"}</span>
             </a>
           </div>
         </div>
@@ -264,18 +276,18 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-1.5 text-xs font-bold text-blue-900">
               <i data-lucide="clipboard-check" class="w-4 h-4"></i>
-              <span>Questionário de Avaliação Técnica</span>
+              <span>${isEn ? "Technical Evaluation Questionnaire" : "Questionário de Avaliação Técnica"}</span>
             </div>
             <div class="accordion-lock-badge-4"></div>
           </div>
           <p class="text-xs text-slate-600">
-            Validação da fidelidade agronómica, curva de aprendizagem e aplicabilidade no apoio à decisão no campo.
+            ${isEn ? "Validation of agronomic fidelity, learning curve, and field decision-support applicability." : "Validação da fidelidade agronómica, curva de aprendizagem e aplicabilidade no apoio à decisão no campo."}
           </p>
           <div class="pt-1">
             <a href="${RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex}" target="_blank" rel="noopener noreferrer" 
                class="form-link-sim inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
-              <span>Abrir Avaliação Simulador (Form 3)</span>
+              <span>${isEn ? "Open Simulator Evaluation (Form 2)" : "Abrir Avaliação Simulador (Form 2)"}</span>
             </a>
           </div>
         </div>
@@ -286,18 +298,18 @@ function renderSchedule() {
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
               <i data-lucide="check-check" class="w-4 h-4"></i>
-              <span>Inquérito de Síntese & Satisfação Geral</span>
+              <span>${isEn ? "Synthesis & Overall Satisfaction Survey" : "Inquérito de Síntese & Satisfação Geral"}</span>
             </div>
             <div class="accordion-lock-badge-5"></div>
           </div>
           <p class="text-xs text-slate-600">
-            Classificação global do impacto pedagógico, viabilidade de certificação de operadores agrários e prioridades para o projeto RENOVATE.
+            ${isEn ? "Overall rating of training impact, agricultural operator certification feasibility, and priorities for the RENOVATE project." : "Classificação global do impacto pedagógico, viabilidade de certificação de operadores agrários e prioridades para o projeto RENOVATE."}
           </p>
           <div class="pt-1">
             <a href="${RENOVATE_CONFIG.externalLinks.googleFormGlobal}" target="_blank" rel="noopener noreferrer" 
                class="form-link-global inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
-              <span>Submeter Avaliação Global</span>
+              <span>${isEn ? "Submit Overall Evaluation" : "Submeter Avaliação Global"}</span>
             </a>
           </div>
         </div>
@@ -308,13 +320,13 @@ function renderSchedule() {
           <div class="space-y-1">
             <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
               <i data-lucide="map-pin" class="w-4 h-4 text-emerald-700"></i>
-              Escola Superior Agrária de Santarém (Auditório)
+              ${isEn ? "School of Agriculture of Santarém (Auditorium)" : "Escola Superior Agrária de Santarém (Auditório)"}
             </span>
-            <p class="text-xs text-slate-600">Acolhimento da direção da ESAS, verificação das credenciais e introdução da agenda de trabalho.</p>
+            <p class="text-xs text-slate-600">${isEn ? "Welcome address by ESAS leadership, credential check, and overview of the agenda." : "Acolhimento da direção da ESAS, verificação das credenciais e introdução da agenda de trabalho."}</p>
           </div>
           <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" 
              class="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:underline">
-            <span>Portal ESAS</span>
+            <span>${isEn ? "ESAS Portal" : "Portal ESAS"}</span>
             <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
           </a>
         </div>
@@ -325,7 +337,7 @@ function renderSchedule() {
           <div class="w-9 h-9 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
             <i data-lucide="coffee" class="w-5 h-5"></i>
           </div>
-          <p>Momento de pausa técnica e convívio informal entre formadores, consultores e investigadores agrícolas na área de receção da ESAS.</p>
+          <p>${isEn ? "Coffee break, rest, and informal networking between trainers, agricultural advisors, and researchers in the ESAS reception area." : "Momento de pausa técnica e convívio informal entre formadores, consultores e investigadores agrícolas na área de receção da ESAS."}</p>
         </div>
       `;
     } else if (item.type === "lunch") {
@@ -334,7 +346,7 @@ function renderSchedule() {
           <div class="w-9 h-9 rounded-full bg-emerald-200 text-emerald-900 flex items-center justify-center shrink-0">
             <i data-lucide="utensils" class="w-5 h-5"></i>
           </div>
-          <p>Almoço volante de networking oferecido pela organização a todos os participantes convidados da 2ª sessão do Grupo Focal.</p>
+          <p>${isEn ? "Standing buffet lunch hosted by the organisation for all invited participants of the 2nd Focus Group session." : "Almoço volante de networking oferecido pela organização a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
         </div>
       `;
     } else if (item.type === "discussion") {
@@ -342,12 +354,18 @@ function renderSchedule() {
         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
           <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
             <i data-lucide="line-chart" class="w-4 h-4 text-amber-600"></i>
-            Tópicos de Debate em Auditório
+            ${isEn ? "Auditorium Discussion Topics" : "Tópicos de Debate em Auditório"}
           </div>
           <ul class="text-xs text-slate-600 space-y-1 list-disc list-inside">
-            <li>Projeção e reflexão sobre as respostas submetidas nos questionários.</li>
-            <li>Barreiras identificadas na utilização das ferramentas em contexto real de exploração.</li>
-            <li>Sugestões práticas de melhoria para o consórcio internacional RENOVATE.</li>
+            ${isEn ? `
+              <li>Projection and reflection on submitted questionnaire responses.</li>
+              <li>Barriers identified in using digital tools within real-world farm contexts.</li>
+              <li>Practical recommendations for the international RENOVATE consortium.</li>
+            ` : `
+              <li>Projeção e reflexão sobre as respostas submetidas nos questionários.</li>
+              <li>Barreiras identificadas na utilização das ferramentas em contexto real de exploração.</li>
+              <li>Sugestões práticas de melhoria para o consórcio internacional RENOVATE.</li>
+            `}
           </ul>
         </div>
       `;
@@ -356,10 +374,10 @@ function renderSchedule() {
         <div class="p-4 bg-amber-50/60 rounded-xl border border-amber-200 space-y-2">
           <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
             <i data-lucide="award" class="w-4 h-4 text-amber-700"></i>
-            Encerramento dos Trabalhos & Acesso a Relatórios
+            ${isEn ? "Closing of Proceedings & Access to Reports" : "Encerramento dos Trabalhos & Acesso a Relatórios"}
           </div>
           <p class="text-xs text-slate-600">
-            Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Deliverable 1.4 do projeto.
+            ${isEn ? "Thank you to all participants for active contribution. Consolidated findings will be integrated into Project Deliverable 1.4." : "Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Deliverable 1.4 do projeto."}
           </p>
         </div>
       `;
@@ -376,14 +394,14 @@ function renderSchedule() {
               ${item.time}
             </span>
             <span class="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-amber-900 transition-colors">
-              ${item.title}
+              ${itemTitle}
             </span>
           </div>
 
           <div class="flex items-center gap-2 sm:gap-3 shrink-0">
             <span class="hidden md:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
               <i data-lucide="${item.icon || 'circle'}" class="w-3 h-3"></i>
-              ${item.badge}
+              ${itemBadge}
             </span>
             ${item.step ? `<div class="accordion-lock-badge-${item.step} hidden sm:block"></div>` : ''}
             <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0"></i>
@@ -394,12 +412,12 @@ function renderSchedule() {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
             <span class="font-medium text-amber-800 flex items-center gap-1.5">
               <i data-lucide="user" class="w-3.5 h-3.5"></i>
-              <strong>Intervenientes:</strong> ${item.speaker}
+              <strong>${isEn ? "Speakers:" : "Intervenientes:"}</strong> ${itemSpeaker}
             </span>
             ${item.step ? `<div class="accordion-lock-badge-${item.step} sm:hidden"></div>` : ''}
           </div>
           <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            ${item.description}
+            ${itemDesc}
           </p>
           ${embeddedContent}
         </div>
@@ -465,18 +483,20 @@ function renderGF1() {
   if (!RENOVATE_CONFIG.gf1) return;
 
   const gf1 = RENOVATE_CONFIG.gf1;
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
   if (metricsContainer && gf1.metrics) {
     metricsContainer.innerHTML = gf1.metrics.map(m => `
       <div class="bg-white p-5 rounded-xl border border-slate-200 text-center shadow-sm">
         <div class="text-3xl font-extrabold text-slate-900 mb-1">${m.value}</div>
-        <div class="text-xs font-semibold text-slate-600 uppercase tracking-wider">${m.label}</div>
+        <div class="text-xs font-semibold text-slate-600 uppercase tracking-wider">${(isEn && m.labelEn) ? m.labelEn : m.label}</div>
       </div>
     `).join("");
   }
 
   if (highlightsContainer && gf1.highlights) {
-    highlightsContainer.innerHTML = gf1.highlights.map(h => `
+    const highlightsList = (isEn && gf1.highlightsEn) ? gf1.highlightsEn : gf1.highlights;
+    highlightsContainer.innerHTML = highlightsList.map(h => `
       <li class="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 font-bold">
           <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -497,8 +517,8 @@ function renderGF1() {
         </div>
         <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
           <div>
-            <h4 class="font-bold text-slate-900 text-sm leading-snug">${img.title}</h4>
-            <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">${img.caption}</p>
+            <h4 class="font-bold text-slate-900 text-sm leading-snug">${(isEn && img.titleEn) ? img.titleEn : img.title}</h4>
+            <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">${(isEn && img.captionEn) ? img.captionEn : img.caption}</p>
           </div>
           <div class="pt-2 text-[10px] text-slate-400 font-mono flex items-center gap-1 border-t border-slate-100 mt-3">
             <i data-lucide="folder" class="w-3 h-3 text-amber-500"></i>
@@ -539,8 +559,10 @@ function renderResultsAndMedia() {
   if (!delivContainer || !galleryContainer || !RENOVATE_CONFIG.resultsMedia) return;
 
   const results = RENOVATE_CONFIG.resultsMedia;
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
+  const delivList = (isEn && results.deliverable.highlightsEn) ? results.deliverable.highlightsEn : results.deliverable.highlights;
 
-  delivContainer.innerHTML = results.deliverable.highlights.map(h => `
+  delivContainer.innerHTML = delivList.map(h => `
     <li class="flex items-start gap-2.5 text-sm text-slate-700">
       <i data-lucide="arrow-right-circle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
       <span>${h}</span>
@@ -564,9 +586,6 @@ function renderResultsAndMedia() {
 }
 
 /**
- * Renderização da Lista de Parceiros Oficiais do Consórcio RENOVATE
- */
-/**
  * Renderização da Secção de Parceiros Oficiais do Consórcio RENOVATE
  * Alinhada com a infografia oficial (16 parceiros, 8 países) + ESAS Anfitrião
  */
@@ -575,9 +594,12 @@ function renderPartners() {
   const hostContainer = document.getElementById("host-partner-container");
   if (!container || !RENOVATE_CONFIG.partners) return;
 
+  const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
   // 1. Renderizar Parceiro Anfitrião (ESAS) com caixa ampla e logótipo de grande visibilidade
   if (hostContainer && RENOVATE_CONFIG.hostPartner) {
     const host = RENOVATE_CONFIG.hostPartner;
+    const hostRole = (isEn && host.roleEn) ? host.roleEn : host.role;
     hostContainer.innerHTML = `
       <div class="bg-gradient-to-r from-emerald-50 via-amber-50/40 to-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
         <div class="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-5 text-center sm:text-left">
@@ -587,15 +609,15 @@ function renderPartners() {
           </div>
           <div>
             <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase px-2.5 py-1 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-700"></i> ${host.role}
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-700"></i> ${hostRole}
             </div>
             <h4 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1.5 leading-snug">${host.name}</h4>
-            <p class="text-xs sm:text-sm text-slate-600 mt-0.5">Local de realização da 2ª Sessão do Grupo Focal • Santarém, Portugal</p>
+            <p class="text-xs sm:text-sm text-slate-600 mt-0.5">${isEn ? "Host venue for the 2nd Focus Group Session • Santarém, Portugal" : "Local de realização da 2ª Sessão do Grupo Focal • Santarém, Portugal"}</p>
           </div>
         </div>
         <a href="${host.url}" target="_blank" rel="noopener noreferrer" 
            class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold transition shadow-sm">
-          <span>Website ESAS</span>
+          <span>${isEn ? "ESAS Website" : "Website ESAS"}</span>
           <i data-lucide="external-link" class="w-4 h-4"></i>
         </a>
       </div>
@@ -603,32 +625,35 @@ function renderPartners() {
   }
 
   // 2. Renderizar a Grelha dos 16 Parceiros do Consórcio com Logótipos Grandes e Nitidez Total
-  container.innerHTML = RENOVATE_CONFIG.partners.map(p => `
-    <div class="group bg-white rounded-2xl border-2 border-slate-200 hover:border-[#F5B842] hover:shadow-xl transition-all duration-200 p-4 sm:p-5 flex flex-col items-center justify-between text-center min-h-[220px]">
-      <!-- Logótipo Centrado e Ampliado -->
-      <div class="h-28 w-full flex items-center justify-center p-2" title="${p.name} (${p.role})">
-        <img src="${p.logo}" alt="${p.name}" class="max-h-24 max-w-[92%] w-auto object-contain transition-transform duration-200 group-hover:scale-105" loading="lazy">
-      </div>
-
-      <!-- País em Português e Ligação ao Website -->
-      <div class="w-full pt-3.5 border-t border-slate-100 space-y-2">
-        <div class="flex items-center justify-center gap-1.5 text-xs text-emerald-800 font-bold">
-          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-          <span>${p.countryPt || p.country}</span>
+  container.innerHTML = RENOVATE_CONFIG.partners.map(p => {
+    const pRole = (isEn && p.roleEn) ? p.roleEn : p.role;
+    const pCountry = isEn ? p.country : (p.countryPt || p.country);
+    return `
+      <div class="group bg-white rounded-2xl border-2 border-slate-200 hover:border-[#F5B842] hover:shadow-xl transition-all duration-200 p-4 sm:p-5 flex flex-col items-center justify-between text-center min-h-[220px]">
+        <!-- Logótipo Centrado e Ampliado -->
+        <div class="h-28 w-full flex items-center justify-center p-2" title="${p.name} (${pRole})">
+          <img src="${p.logo}" alt="${p.name}" class="max-h-24 max-w-[92%] w-auto object-contain transition-transform duration-200 group-hover:scale-105" loading="lazy">
         </div>
-        <a href="${p.url}" target="_blank" rel="noopener noreferrer" 
-           class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 hover:text-[#0F172A] bg-slate-50 hover:bg-[#FFCC66] px-3 py-1.5 rounded-lg border border-slate-200 transition-colors w-full"
-           title="Abrir website de ${p.name}">
-          <span>Website</span>
-          <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-900"></i>
-        </a>
+
+        <!-- País e Ligação ao Website -->
+        <div class="w-full pt-3.5 border-t border-slate-100 space-y-2">
+          <div class="flex items-center justify-center gap-1.5 text-xs text-emerald-800 font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <span>${pCountry}</span>
+          </div>
+          <a href="${p.url}" target="_blank" rel="noopener noreferrer" 
+             class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 hover:text-[#0F172A] bg-slate-50 hover:bg-[#FFCC66] px-3 py-1.5 rounded-lg border border-slate-200 transition-colors w-full"
+             title="${isEn ? `Open website of ${p.name}` : `Abrir website de ${p.name}`}">
+            <span>Website</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-900"></i>
+          </a>
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 
   if (window.lucide) window.lucide.createIcons();
 }
-
 
 /**
  * Gestão do Código de Participante
@@ -856,3 +881,10 @@ function showToast(message) {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// Exposição explícita para o I18nManager
+window.renderSchedule = renderSchedule;
+window.renderGF1 = renderGF1;
+window.renderResultsAndMedia = renderResultsAndMedia;
+window.renderPartners = renderPartners;
+window.showToast = showToast;

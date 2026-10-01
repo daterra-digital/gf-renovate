@@ -244,13 +244,18 @@ const LiveSession = (function () {
    * Renderiza a interface da Sessão ao Vivo
    */
   function renderLiveSessionUI() {
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const notSetText = window.I18nManager ? window.I18nManager.t("live.notSet") : (isEn ? "Not set" : "Não definido");
+    const unlockedText = window.I18nManager ? window.I18nManager.t("live.unlocked") : (isEn ? "Unlocked" : "Desbloqueado");
+    const waitingText = window.I18nManager ? window.I18nManager.t("live.waitingModerator") : (isEn ? "Awaiting Moderator" : "Aguarda Moderador");
+
     // 1. Atualizar display do Código do Participante
     const codeDisplay = document.getElementById("current-participant-code");
     const codeInput = document.getElementById("participant-code-input");
     const codeNotice = document.getElementById("participant-code-notice");
 
     if (codeDisplay) {
-      codeDisplay.textContent = state.participantCode || "Não definido";
+      codeDisplay.textContent = state.participantCode || notSetText;
       if (state.participantCode) {
         codeDisplay.classList.remove("text-slate-400", "italic");
         codeDisplay.classList.add("text-slate-900", "font-mono", "font-bold");
@@ -302,9 +307,9 @@ const LiveSession = (function () {
 
       if (lockBadge) {
         if (isUnlocked) {
-          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3.5 h-3.5"></i> Desbloqueado</span>`;
+          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3.5 h-3.5"></i> ${unlockedText}</span>`;
         } else {
-          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Aguarda Moderador</span>`;
+          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3.5 h-3.5"></i> ${waitingText}</span>`;
         }
       }
 
@@ -337,9 +342,9 @@ const LiveSession = (function () {
 
       document.querySelectorAll(`.accordion-lock-badge-${step}`).forEach(badge => {
         if (isUnlocked) {
-          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3 h-3"></i> Desbloqueado</span>`;
+          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3 h-3"></i> ${unlockedText}</span>`;
         } else {
-          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3 h-3"></i> Aguarda Moderador</span>`;
+          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3 h-3"></i> ${waitingText}</span>`;
         }
       });
 
@@ -366,7 +371,7 @@ const LiveSession = (function () {
   }
 
   // API pública
-  return {
+  const publicApi = {
     init,
     getState: () => ({ ...state }),
     setParticipantCode,
@@ -377,6 +382,10 @@ const LiveSession = (function () {
     unlockUpToStep,
     lockStep,
     toggleStepCompleted,
-    render: renderLiveSessionUI
+    render: renderLiveSessionUI,
+    renderSteps: renderLiveSessionUI
   };
+
+  window.LiveSession = publicApi;
+  return publicApi;
 })();

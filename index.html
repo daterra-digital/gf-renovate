@@ -71,17 +71,29 @@
         </a>
       </div>
 
-      <!-- Título de Contexto & Acesso de Moderação -->
-      <div class="flex items-center gap-3">
+      <!-- Título de Contexto & Acesso de Moderação & Seletor de Idioma -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Dropdown de Idioma (pt-PT / en-GB) -->
+        <div class="relative inline-flex items-center">
+          <label for="lang-select" class="sr-only">Idioma / Language</label>
+          <select id="lang-select" aria-label="Idioma / Language" class="appearance-none bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold py-1.5 pl-2.5 pr-7 rounded-lg border border-slate-300 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#F5B842] focus:border-slate-900 cursor-pointer transition">
+            <option value="pt-PT" selected>🇵🇹 pt-PT</option>
+            <option value="en-GB">🇬🇧 en-GB</option>
+          </select>
+          <div class="pointer-events-none absolute right-2 text-slate-500 flex items-center">
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+          </div>
+        </div>
+
         <div class="text-right hidden md:block">
-          <h1 class="text-sm font-bold text-slate-900 leading-tight">2ª Sessão do Grupo Focal</h1>
-          <p class="text-[11px] text-slate-500 font-medium">06 Outubro 2026 • ESAS - Santarém</p>
+          <h1 data-i18n="header.title" class="text-sm font-bold text-slate-900 leading-tight">2ª Sessão do Grupo Focal</h1>
+          <p data-i18n="header.subtitle" class="text-[11px] text-slate-500 font-medium">06 Outubro 2026 • ESAS - Santarém</p>
         </div>
 
         <!-- Botão Modal do Moderador (Opção C) com ícone de engrenagem -->
         <button type="button" class="btn-open-moderator-modal inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition" title="Painel do Moderador">
           <i data-lucide="settings" class="w-4 h-4 text-slate-700"></i>
-          <span class="hidden sm:inline">Moderação</span>
+          <span data-i18n="header.moderation" class="hidden sm:inline">Moderação</span>
         </button>
       </div>
 
@@ -92,20 +104,20 @@
       <div class="max-w-6xl mx-auto px-4 flex space-x-1">
         <button type="button" data-tab="live" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="radio" class="w-4 h-4 text-amber-600"></i>
-          Sessão ao Vivo
+          <span data-i18n="nav.live">Sessão ao Vivo</span>
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         </button>
         <button type="button" data-tab="program" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="calendar" class="w-4 h-4"></i>
-          Programa & Slides
+          <span data-i18n="nav.program">Programa & Slides</span>
         </button>
         <button type="button" data-tab="fg1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="history" class="w-4 h-4"></i>
-          Grupo Focal 1 (Lisboa)
+          <span data-i18n="nav.fg1">Grupo Focal 1 (Lisboa)</span>
         </button>
         <button type="button" data-tab="results" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="folder-check" class="w-4 h-4"></i>
-          Resultados & Media
+          <span data-i18n="nav.results">Resultados & Media</span>
         </button>
       </div>
     </nav>
@@ -127,12 +139,12 @@
           <div class="space-y-1">
             <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#FFCC66] text-[#0F172A] text-xs font-bold">
               <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-              Fluxo Guiado Interativo
+              <span data-i18n="live.guidedFlow">Fluxo Guiado Interativo</span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+            <h2 data-i18n="live.mainTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900">
               Sessão Prática de Validação Digital
             </h2>
-            <p class="text-xs sm:text-sm text-slate-600 max-w-2xl">
+            <p data-i18n="live.mainDesc" class="text-xs sm:text-sm text-slate-600 max-w-2xl">
               Siga cada fase da sessão técnica. Os passos práticos são desbloqueados em sintonia com a moderação da sala. O seu código é injetado automaticamente nos formulários.
             </p>
           </div>
@@ -140,21 +152,21 @@
           <!-- Caixa de Gestão do Código de Participante -->
           <div class="bg-white p-3.5 rounded-xl border border-amber-300 shadow-sm w-full lg:w-auto shrink-0">
             <label for="participant-code-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>Código de Participante</span>
+              <span data-i18n="live.banner.title">Código de Participante</span>
               <span id="current-participant-code" class="text-slate-400 italic font-mono">Não definido</span>
             </label>
             <div class="flex gap-2">
-              <input type="text" id="participant-code-input" placeholder="Ex: P01, EXP-08" 
+              <input type="text" id="participant-code-input" data-i18n-placeholder="live.banner.placeholder" placeholder="Ex: P01, EXP-08" 
                      class="uppercase px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none w-36">
               <button type="button" id="btn-save-participant-code" 
                       class="px-3 py-1.5 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center gap-1">
                 <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                Guardar
+                <span data-i18n="live.banner.saveBtn">Guardar</span>
               </button>
             </div>
             <p id="participant-code-notice" class="text-[11px] text-amber-700 mt-1.5 flex items-center gap-1">
               <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
-              Introduza o seu código para associar as respostas.
+              <span data-i18n="live.banner.notice">Introduza o seu código para associar as respostas.</span>
             </p>
           </div>
         </div>
@@ -170,14 +182,14 @@
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FFCC66] text-[#0F172A] font-extrabold text-sm border border-slate-900">1</span>
               <div class="flex items-center gap-1.5">
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
-                  <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Credenciação
+                  <i data-lucide="user-check" class="w-3.5 h-3.5"></i> <span data-i18n="live.step1.badge">Credenciação</span>
                 </span>
                 <div id="step-lock-badge-1"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 1: Identificação de Participante</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
+              <h3 data-i18n="live.step1.title" class="text-base font-bold text-slate-900 mb-1">Passo 1: Identificação de Participante</h3>
+              <p data-i18n="live.step1.desc" class="text-xs text-slate-600 leading-relaxed">
                 Atribuição do código individual gravado no dispositivo. Este código garante o anonimato e unifica os resultados nos questionários do estudo.
               </p>
             </div>
@@ -185,12 +197,12 @@
 
           <div id="step-actions-1" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
             <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-              <span class="font-medium">Código Ativo:</span>
-              <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview">Configurado no Topo</span>
+              <span data-i18n="live.step1.activeCodeLabel" class="font-medium">Código Ativo:</span>
+              <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview" data-i18n="live.step1.configuredTop">Configurado no Topo</span>
             </div>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-1" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Passo 1 como Concluído</span>
+              <span data-i18n="live.step1.checkbox">Marcar Passo 1 como Concluído</span>
             </label>
           </div>
         </article>
@@ -203,14 +215,14 @@
               <div class="flex items-center gap-1.5">
                 <!-- Badge Identificativa: Apresentação -->
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                  <i data-lucide="presentation" class="w-3.5 h-3.5"></i> Apresentação Oficial
+                  <i data-lucide="presentation" class="w-3.5 h-3.5"></i> <span data-i18n="live.step2.badge">Apresentação Oficial</span>
                 </span>
                 <div id="step-lock-badge-2"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 2: "Disseram, e nós fizemos"</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
+              <h3 data-i18n="live.step2.title" class="text-base font-bold text-slate-900 mb-1">Passo 2: "Disseram, e nós fizemos"</h3>
+              <p data-i18n="live.step2.desc" class="text-xs text-slate-600 leading-relaxed">
                 Breve recapitulação do GF1 e apresentação oficial dos diapositivos integrando o feedback dos participantes nas novas ferramentas.
               </p>
             </div>
@@ -220,11 +232,11 @@
             <button type="button" id="btn-goto-slides" 
                     class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="presentation" class="w-4 h-4 text-[#FFCC66]"></i>
-              Ver Slides no Programa (10:10)
+              <span data-i18n="live.step2.schedule">Ver Slides no Programa (10:10)</span>
             </button>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-2" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Passo 2 como Concluído</span>
+              <span data-i18n="live.step2.checkbox">Marcar Passo 2 como Concluído</span>
             </label>
           </div>
         </article>
@@ -237,14 +249,14 @@
               <div class="flex items-center gap-1.5 flex-wrap">
                 <!-- Badge Identificativa: Smartphone para Serious Game -->
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                  <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Smartphone / Tablet
+                  <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> <span data-i18n="live.step3.badge">Smartphone / Tablet</span>
                 </span>
                 <div id="step-lock-badge-3"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 3: Serious Game (Tallentto)</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
+              <h3 data-i18n="live.step3.title" class="text-base font-bold text-slate-900 mb-1">Passo 3: Serious Game (Tallentto)</h3>
+              <p data-i18n="live.step3.desc" class="text-xs text-slate-600 leading-relaxed">
                 Dinâmica de formação lúdica focada em calibração e boas práticas fitossanitárias, seguida de questionário de avaliação.
               </p>
             </div>
@@ -255,17 +267,17 @@
               <a id="btn-game-tallentto" href="https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt" target="_blank" rel="noopener noreferrer" 
                  class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
                 <i data-lucide="gamepad-2" class="w-4 h-4"></i>
-                Jogar Tallentto
+                <span data-i18n="live.step3.btnGame">Jogar Tallentto</span>
               </a>
               <a id="btn-form-2" href="#" target="_blank" rel="noopener noreferrer" 
                  class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                 <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
-                Avaliar Jogo (Form 2)
+                <span data-i18n="live.step3.btnForm">Avaliar Jogo (Form 1)</span>
               </a>
             </div>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-3" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Passo 3 como Concluído</span>
+              <span data-i18n="live.step3.checkbox">Marcar Passo 3 como Concluído</span>
             </label>
           </div>
         </article>
@@ -278,14 +290,14 @@
               <div class="flex items-center gap-1.5 flex-wrap">
                 <!-- Badge Identificativa: Computador PC para Simulador -->
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
-                  <i data-lucide="monitor" class="w-3.5 h-3.5"></i> Computador PC / Portátil
+                  <i data-lucide="monitor" class="w-3.5 h-3.5"></i> <span data-i18n="live.step4.badge">Computador PC / Portátil</span>
                 </span>
                 <div id="step-lock-badge-4"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 4: Simulador Virtual (Virmedex)</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
+              <h3 data-i18n="live.step4.title" class="text-base font-bold text-slate-900 mb-1">Passo 4: Simulador Virtual (Virmedex)</h3>
+              <p data-i18n="live.step4.desc" class="text-xs text-slate-600 leading-relaxed">
                 Ambiente de simulação 3D para otimização de parâmetros de pulverização, mitigação de deriva e análise de eficácia de campo.
               </p>
             </div>
@@ -296,17 +308,17 @@
               <a id="btn-simulator-virmedex" href="https://simulator.renovateproject.eu/auth/login" target="_blank" rel="noopener noreferrer" 
                  class="simulator-link-virmedex inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition">
                 <i data-lucide="laptop" class="w-4 h-4"></i>
-                Abrir Simulador
+                <span data-i18n="live.step4.btnSim">Abrir Simulador</span>
               </a>
               <a id="btn-form-3" href="#" target="_blank" rel="noopener noreferrer" 
                  class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                 <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
-                Avaliar Simulador (Form 3)
+                <span data-i18n="live.step4.btnForm">Avaliar Simulador (Form 2)</span>
               </a>
             </div>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-4" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Passo 4 como Concluído</span>
+              <span data-i18n="live.step4.checkbox">Marcar Passo 4 como Concluído</span>
             </label>
           </div>
         </article>
@@ -319,14 +331,14 @@
               <div class="flex items-center gap-1.5">
                 <!-- Badge Identificativa: Formulário de Encerramento -->
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Formulário Final
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> <span data-i18n="live.step5.badge">Formulário Final</span>
                 </span>
                 <div id="step-lock-badge-5"></div>
               </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">Passo 5: Síntese & Encerramento</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
+              <h3 data-i18n="live.step5.title" class="text-base font-bold text-slate-900 mb-1">Passo 5: Síntese & Encerramento</h3>
+              <p data-i18n="live.step5.desc" class="text-xs text-slate-600 leading-relaxed">
                 Questionário de satisfação global, recomendações para o consórcio e acesso aos materiais técnicos da DATERRA.
               </p>
             </div>
@@ -336,11 +348,11 @@
             <a id="btn-form-global" href="#" target="_blank" rel="noopener noreferrer" 
                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
-              Submeter Avaliação Global & Concluir
+              <span data-i18n="live.step5.btnForm">Submeter Avaliação Global & Concluir</span>
             </a>
             <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
               <input type="checkbox" id="step-checkbox-5" class="rounded border-slate-300 text-amber-500 focus:ring-[#FFCC66] w-4 h-4">
-              <span>Marcar Sessão como Totalmente Concluída</span>
+              <span data-i18n="live.step5.checkbox">Marcar Sessão como Totalmente Concluída</span>
             </label>
           </div>
         </article>
@@ -359,26 +371,26 @@
           <div>
             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFCC66] text-[#0F172A] text-xs font-bold mb-1">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-              Cronograma Oficial da Sessão
+              <span data-i18n="program.badge">Cronograma Oficial da Sessão</span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Programa Oficial dos Trabalhos</h2>
-            <p class="text-xs text-slate-500 font-medium">06 de outubro de 2026 • Auditório ESAS - Santarém • Clique em cada fase para expandir</p>
+            <h2 data-i18n="program.title" class="text-xl sm:text-2xl font-extrabold text-slate-900">Programa Oficial dos Trabalhos</h2>
+            <p data-i18n="program.subtitle" class="text-xs text-slate-500 font-medium">06 de outubro de 2026 • Auditório ESAS - Santarém • Clique em cada fase para expandir</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap no-print">
             <button type="button" id="btn-expand-all-schedule" 
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
               <i data-lucide="chevrons-down-up" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span>Expandir Todos</span>
+              <span data-i18n="program.expand">Expandir Todos</span>
             </button>
             <button type="button" id="btn-collapse-all-schedule" 
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
               <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-500"></i>
-              <span>Recolher</span>
+              <span data-i18n="program.collapse">Recolher</span>
             </button>
             <button type="button" onclick="window.print()" 
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-              <span>Imprimir</span>
+              <span data-i18n="program.print">Imprimir</span>
             </button>
           </div>
         </div>
@@ -399,12 +411,12 @@
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div class="flex items-center gap-2 text-xs font-bold text-amber-700 uppercase tracking-wider">
           <i data-lucide="map-pin" class="w-4 h-4"></i>
-          Lisboa • 22 de outubro de 2024
+          <span data-i18n="fg1.badge">Lisboa • 22 de outubro de 2024</span>
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-900">
+        <h2 data-i18n="fg1.title" class="text-2xl font-extrabold text-slate-900">
           1ª Sessão do Grupo Focal RENOVATE
         </h2>
-        <p class="text-sm text-slate-600 max-w-3xl leading-relaxed">
+        <p data-i18n="fg1.desc" class="text-sm text-slate-600 max-w-3xl leading-relaxed">
           O primeiro Grupo Focal em Portugal reuniu peritos agrários, formadores e consultores para mapear as principais necessidades de formação em proteção sustentável das culturas e analisar a permeabilidade do setor a soluções digitais.
         </p>
 
@@ -422,14 +434,14 @@
               <i data-lucide="video" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="text-base sm:text-lg font-bold text-slate-900">Vídeo Oficial do Grupo Focal 1 (Lisboa)</h3>
-              <p class="text-xs text-slate-500">Reportagem audiovisual e testemunhos dos participantes da sessão inaugural.</p>
+              <h3 data-i18n="fg1.videoTitle" class="text-base sm:text-lg font-bold text-slate-900">Vídeo Oficial do Grupo Focal 1 (Lisboa)</h3>
+              <p data-i18n="fg1.videoDesc" class="text-xs text-slate-500">Reportagem audiovisual e testemunhos dos participantes da sessão inaugural.</p>
             </div>
           </div>
           <a href="https://youtu.be/1_jQYkNluhY?si=BJvw2ftMW5WyCqki" target="_blank" rel="noopener noreferrer" 
              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#FF0000] hover:bg-[#e60000] text-white text-xs font-bold transition shadow-sm">
             <i data-lucide="youtube" class="w-4 h-4"></i>
-            <span>Ver no YouTube</span>
+            <span data-i18n="fg1.videoBtn">Ver no YouTube</span>
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
           </a>
         </div>
@@ -470,14 +482,14 @@
           <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
             <span class="bg-slate-900/85 backdrop-blur-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shadow">
               <i data-lucide="play-circle" class="w-4 h-4 text-red-400"></i>
-              Clique para reproduzir em alta resolução
+              <span data-i18n="fg1.videoPlay">Clique para reproduzir em alta resolução</span>
             </span>
             <span class="bg-black/75 px-2.5 py-1 rounded-md font-mono text-[11px] font-bold">
               HD 1080p
             </span>
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 italic">
+        <p data-i18n="fg1.videoCaption" class="text-[11px] text-slate-500 italic">
           O primeiro Grupo Focal em Portugal juntou especialistas, consultores e produtores para definir os requisitos das ferramentas pedagógicas digitais.
         </p>
       </div>
@@ -488,20 +500,20 @@
         <!-- Cartão 1: Notícia DATERRA -->
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
           <div class="space-y-3">
-            <span class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">
+            <span data-i18n="fg1.newsBadge" class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">
               Página de Notícias da DATERRA
             </span>
-            <h4 class="text-lg font-bold leading-snug">
+            <h4 data-i18n="fg1.newsTitle" class="text-lg font-bold leading-snug">
               Grupo Focal RENOVATE: Primeira Sessão em Lisboa Reúne Agricultores e Especialistas
             </h4>
-            <p class="text-xs text-slate-300 leading-relaxed">
+            <p data-i18n="fg1.newsDesc" class="text-xs text-slate-300 leading-relaxed">
               Consulte a cobertura jornalística completa, os testemunhos dos intervenientes e o resumo das perspetivas recolhidas na primeira sessão em Lisboa.
             </p>
           </div>
           <div>
             <a href="https://daterra.com.pt/grupo-focal-renovate-primeira-sessao-em-lisboa-reune-agricultores-e-especialistas/" target="_blank" rel="noopener noreferrer" 
                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold transition w-full justify-center shadow-sm">
-              <span>Ler Notícia na DATERRA</span>
+              <span data-i18n="fg1.newsBtn">Ler Notícia na DATERRA</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
           </div>
@@ -510,13 +522,13 @@
         <!-- Cartão 2: Documento de Resultados (PDF) -->
         <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
           <div class="space-y-3">
-            <span class="inline-block px-2.5 py-1 rounded bg-emerald-300 text-emerald-950 text-xs font-extrabold">
+            <span data-i18n="fg1.docBadge" class="inline-block px-2.5 py-1 rounded bg-emerald-300 text-emerald-950 text-xs font-extrabold">
               Documento Oficial (PDF)
             </span>
-            <h4 class="text-lg font-bold leading-snug">
+            <h4 data-i18n="fg1.docTitle" class="text-lg font-bold leading-snug">
               Conclusões da 1ª Sessão do Grupo Focal RENOVATE
             </h4>
-            <p class="text-xs text-slate-300 leading-relaxed">
+            <p data-i18n="fg1.docDesc" class="text-xs text-slate-300 leading-relaxed">
               Aceda ao relatório executivo com a síntese de resultados, mapeamento de competências e as recomendações técnicas prioritárias apuradas pelo consórcio.
             </p>
           </div>
@@ -524,7 +536,7 @@
             <a href="https://daterra.com.pt/wp-content/uploads/2025/03/10_ConclusoesGrupoFocalRENOVATE_pt.pdf" target="_blank" rel="noopener noreferrer" 
                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-bold transition w-full justify-center shadow-sm">
               <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-              <span>Abrir Documento de Conclusões (PDF)</span>
+              <span data-i18n="fg1.docBtn">Abrir Documento de Conclusões (PDF)</span>
               <i data-lucide="download" class="w-3.5 h-3.5 ml-1"></i>
             </a>
           </div>
@@ -534,7 +546,7 @@
 
       <!-- Principais Conclusões Extraídas -->
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+        <h3 data-i18n="fg1.highlightsTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
           Principais Conclusões & Diretrizes Extraídas
         </h3>
@@ -547,13 +559,13 @@
       <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <h3 data-i18n="fg1.galleryTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i data-lucide="images" class="w-5 h-5 text-amber-600"></i>
               Galeria Fotográfica do Grupo Focal 1
             </h3>
-            <p class="text-xs text-slate-500">Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.</p>
+            <p data-i18n="fg1.galleryDesc" class="text-xs text-slate-500">Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.</p>
           </div>
-          <div class="text-[11px] font-mono text-slate-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+          <div data-i18n="fg1.galleryFolder" class="text-[11px] font-mono text-slate-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
             Pasta: assets/images/gf1/
           </div>
         </div>
@@ -578,14 +590,14 @@
             <div class="flex items-center gap-2 flex-wrap">
               <span id="results-live-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span>A carregar resultados...</span>
+                <span data-i18n="results.loading">A carregar resultados...</span>
               </span>
-              <span id="results-last-sync-time" class="text-xs text-slate-500 font-medium">Aguardando dados...</span>
+              <span id="results-last-sync-time" data-i18n="results.waiting" class="text-xs text-slate-500 font-medium">Aguardando dados...</span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h2 data-i18n="results.title" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
               Dashboard de Resultados & Validação
             </h2>
-            <p class="text-xs sm:text-sm text-slate-600">
+            <p data-i18n="results.subtitle" class="text-xs sm:text-sm text-slate-600">
               Análise em tempo real das respostas recolhidas nos 3 questionários da 2ª Sessão do Grupo Focal (ESAS Santarém).
             </p>
           </div>
@@ -595,13 +607,13 @@
             <button type="button" id="btn-refresh-results" 
                     class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i id="icon-refresh-results" data-lucide="refresh-cw" class="w-4 h-4"></i>
-              <span>Atualizar Dados</span>
+              <span data-i18n="results.refreshBtn">Atualizar Dados</span>
             </button>
             <!-- Botão Configuração da Ligação Google Sheets -->
             <button type="button" id="btn-toggle-results-config" 
                     class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-700 text-xs font-bold border border-slate-200 transition">
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-700"></i>
-              <span>Conexão Sheets</span>
+              <span data-i18n="results.configBtn">Conexão Sheets</span>
             </button>
           </div>
         </div>
@@ -610,30 +622,30 @@
         <div id="results-config-drawer" class="hidden bg-slate-50 border-2 border-dashed border-amber-300 rounded-2xl p-4 sm:p-5 space-y-4">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <h3 data-i18n="results.drawer.title" class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <i data-lucide="link" class="w-4 h-4 text-amber-600"></i>
                 Configuração da Folha de Cálculo Google Sheets
               </h3>
-              <p class="text-xs text-slate-600 mt-1">
+              <p data-i18n="results.drawer.desc" class="text-xs text-slate-600 mt-1">
                 Introduza o ID da folha (ou o link completo) e o GID de cada separador. A folha deve ter partilha definida como <strong>"Qualquer pessoa com o link pode ver (Leitor)"</strong>.
               </p>
             </div>
-            <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-bold uppercase">Painel Técnico</span>
+            <span data-i18n="results.drawer.techBadge" class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-bold uppercase">Painel Técnico</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div class="md:col-span-2 space-y-1">
-              <label for="input-sheet-id" class="text-[11px] font-bold text-slate-700 uppercase">ID ou URL da Folha Google Sheets:</label>
-              <input type="text" id="input-sheet-id" placeholder="Cole o link ou ID da folha de cálculo" 
+              <label for="input-sheet-id" data-i18n="results.drawer.labelId" class="text-[11px] font-bold text-slate-700 uppercase">ID ou URL da Folha Google Sheets:</label>
+              <input type="text" id="input-sheet-id" data-i18n-placeholder="results.drawer.placeholderId" placeholder="Cole o link ou ID da folha de cálculo" 
                      class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none bg-white">
             </div>
             <div class="space-y-1">
-              <label for="input-gid-game" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 1 (Game):</label>
+              <label for="input-gid-game" data-i18n="results.drawer.labelGid1" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 1 (Game):</label>
               <input type="text" id="input-gid-game" placeholder="0" 
                      class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-[#FFCC66] outline-none bg-white">
             </div>
             <div class="space-y-1">
-              <label for="input-gid-sim" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 2 (Simulador):</label>
+              <label for="input-gid-sim" data-i18n="results.drawer.labelGid2" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 2 (Simulador):</label>
               <input type="text" id="input-gid-sim" placeholder="Ex: 12345678" 
                      class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-[#FFCC66] outline-none bg-white">
             </div>
@@ -641,22 +653,22 @@
 
           <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div class="space-y-1">
-              <label for="input-gid-global" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 3 (Global/NPS):</label>
+              <label for="input-gid-global" data-i18n="results.drawer.labelGid3" class="text-[11px] font-bold text-slate-700 uppercase">GID Sep. 3 (Global/NPS):</label>
               <input type="text" id="input-gid-global" placeholder="Ex: 98765432" 
                      class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-[#FFCC66] outline-none bg-white">
             </div>
             <div class="md:col-span-3 flex items-end gap-2 flex-wrap">
               <button type="button" id="btn-save-sheet-config" 
                       class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
-                Guardar Configuração
+                <span data-i18n="results.drawer.save">Guardar Configuração</span>
               </button>
               <button type="button" id="btn-test-sheet-conn" 
                       class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300 transition">
-                Testar Ligação
+                <span data-i18n="results.drawer.test">Testar Ligação</span>
               </button>
               <button type="button" id="btn-use-demo-data" 
                       class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-200 transition">
-                Repor Modo Demonstração
+                <span data-i18n="results.drawer.demo">Repor Modo Demonstração</span>
               </button>
             </div>
           </div>
@@ -669,64 +681,64 @@
           <!-- KPI 1: Respondentes -->
           <div class="bg-gradient-to-br from-slate-50 to-slate-100/60 p-4 rounded-xl border border-slate-200 shadow-2xs">
             <div class="flex items-center justify-between text-slate-500 mb-1">
-              <span class="text-[11px] font-bold uppercase tracking-wider">Amostra Total</span>
+              <span data-i18n="results.kpi.sample" class="text-[11px] font-bold uppercase tracking-wider">Amostra Total</span>
               <i data-lucide="users" class="w-4 h-4 text-slate-600"></i>
             </div>
             <div class="flex items-baseline gap-1.5">
               <span id="kpi-responses-count" class="text-2xl sm:text-3xl font-extrabold text-slate-900">18</span>
-              <span class="text-xs text-slate-500 font-medium">participantes</span>
+              <span data-i18n="results.kpi.participants" class="text-xs text-slate-500 font-medium">participantes</span>
             </div>
-            <p class="text-[10px] text-slate-600 mt-1">Sessão Prática na ESAS Santarém</p>
+            <p data-i18n="results.kpi.venue" class="text-[10px] text-slate-600 mt-1">Sessão Prática na ESAS Santarém</p>
           </div>
 
           <!-- KPI 2: SUS Serious Game -->
           <div class="bg-gradient-to-br from-amber-50/70 to-orange-50/40 p-4 rounded-xl border border-amber-200 shadow-2xs">
             <div class="flex items-center justify-between text-amber-800 mb-1">
-              <span class="text-[11px] font-bold uppercase tracking-wider">SUS Serious Game</span>
+              <span data-i18n="results.kpi.susGame" class="text-[11px] font-bold uppercase tracking-wider">SUS Serious Game</span>
               <i data-lucide="gamepad-2" class="w-4 h-4 text-amber-700"></i>
             </div>
             <div class="flex items-baseline gap-1.5">
               <span id="kpi-sus-game" class="text-2xl sm:text-3xl font-extrabold text-amber-900">78.4</span>
               <span class="text-xs text-slate-500 font-medium">/ 100</span>
             </div>
-            <p id="kpi-sus-game-bench" class="text-[10px] text-amber-900 font-semibold mt-1">Bom / Acima da Média</p>
+            <p id="kpi-sus-game-bench" data-i18n="results.kpi.susGameBench" class="text-[10px] text-amber-900 font-semibold mt-1">Bom / Acima da Média</p>
           </div>
 
           <!-- KPI 3: SUS Simulador -->
           <div class="bg-gradient-to-br from-emerald-50/70 to-teal-50/40 p-4 rounded-xl border border-emerald-200 shadow-2xs">
             <div class="flex items-center justify-between text-emerald-800 mb-1">
-              <span class="text-[11px] font-bold uppercase tracking-wider">SUS Simulador 3D</span>
+              <span data-i18n="results.kpi.susSim" class="text-[11px] font-bold uppercase tracking-wider">SUS Simulador 3D</span>
               <i data-lucide="monitor" class="w-4 h-4 text-emerald-700"></i>
             </div>
             <div class="flex items-baseline gap-1.5">
               <span id="kpi-sus-sim" class="text-2xl sm:text-3xl font-extrabold text-emerald-900">81.6</span>
               <span class="text-xs text-slate-500 font-medium">/ 100</span>
             </div>
-            <p id="kpi-sus-sim-bench" class="text-[10px] text-emerald-900 font-semibold mt-1">Excelente</p>
+            <p id="kpi-sus-sim-bench" data-i18n="results.kpi.susSimBench" class="text-[10px] text-emerald-900 font-semibold mt-1">Excelente</p>
           </div>
 
           <!-- KPI 4: Net Promoter Score -->
           <div class="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 p-4 rounded-xl border border-blue-200 shadow-2xs">
             <div class="flex items-center justify-between text-blue-800 mb-1">
-              <span class="text-[11px] font-bold uppercase tracking-wider">Net Promoter Score</span>
+              <span data-i18n="results.kpi.nps" class="text-[11px] font-bold uppercase tracking-wider">Net Promoter Score</span>
               <i data-lucide="trending-up" class="w-4 h-4 text-blue-700"></i>
             </div>
             <div class="flex items-baseline gap-1.5">
               <span id="kpi-nps" class="text-2xl sm:text-3xl font-extrabold text-blue-900">+67</span>
               <span class="text-xs text-slate-500 font-medium">NPS (-100 a +100)</span>
             </div>
-            <p class="text-[10px] text-blue-900 font-semibold mt-1">Zona de Excelência (&gt;50)</p>
+            <p data-i18n="results.kpi.npsZone" class="text-[10px] text-blue-900 font-semibold mt-1">Zona de Excelência (&gt;50)</p>
           </div>
         </div>
 
         <!-- Filtros Rápidos de Navegação das Secções Analíticas -->
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-100">
-          <button type="button" data-filter="all" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 bg-slate-900 text-white">Visão Global</button>
-          <button type="button" data-filter="wordcloud" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Nuvem de Palavras</button>
-          <button type="button" data-filter="sus" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Usabilidade SUS</button>
-          <button type="button" data-filter="pedagogical" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Avaliação Pedagógica</button>
-          <button type="button" data-filter="demographics" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Demografia</button>
-          <button type="button" data-filter="feedback" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Sugestões & Melhorias</button>
+          <button type="button" data-filter="all" data-i18n="results.filter.all" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 bg-slate-900 text-white">Visão Global</button>
+          <button type="button" data-filter="wordcloud" data-i18n="results.filter.wordcloud" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Nuvem de Palavras</button>
+          <button type="button" data-filter="sus" data-i18n="results.filter.sus" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Usabilidade SUS</button>
+          <button type="button" data-filter="pedagogical" data-i18n="results.filter.pedagogical" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Avaliação Pedagógica</button>
+          <button type="button" data-filter="demographics" data-i18n="results.filter.demographics" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Demografia</button>
+          <button type="button" data-filter="feedback" data-i18n="results.filter.feedback" class="results-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shrink-0">Sugestões & Melhorias</button>
         </div>
 
         <!-- ========================================== -->
@@ -735,19 +747,19 @@
         <div id="results-sec-wordcloud" class="bg-slate-50/80 rounded-2xl p-5 border border-slate-200 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <h3 data-i18n="results.wc.title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <i data-lucide="cloud" class="w-5 h-5 text-amber-600"></i>
                 Nuvem de Palavras: A Experiência em 3 Palavras
               </h3>
-              <p class="text-xs text-slate-600">
+              <p data-i18n="results.wc.desc" class="text-xs text-slate-600">
                 Frequência de termos e adjetivos espontâneos indicados pelos participantes no final de cada ferramenta.
               </p>
             </div>
 
             <!-- Alternador de Ferramenta (Game vs Simulador) -->
             <div class="inline-flex p-1 rounded-xl bg-white border border-slate-200 shadow-2xs self-start sm:self-auto">
-              <button type="button" id="btn-wc-game" class="px-3 py-1 rounded-lg text-xs font-bold transition bg-[#F5B842] text-[#0F172A]">Serious Game</button>
-              <button type="button" id="btn-wc-sim" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition">Simulador RENOVATE</button>
+              <button type="button" id="btn-wc-game" data-i18n="results.wc.game" class="px-3 py-1 rounded-lg text-xs font-bold transition bg-[#F5B842] text-[#0F172A]">Serious Game</button>
+              <button type="button" id="btn-wc-sim" data-i18n="results.wc.sim" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition">Simulador RENOVATE</button>
             </div>
           </div>
 
@@ -761,12 +773,12 @@
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
               <div class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
                 <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-600"></i>
-                Mais Citadas
+                <span data-i18n="results.wc.topCited">Mais Citadas</span>
               </div>
               <ul id="wordcloud-top-list" class="space-y-1.5">
                 <!-- Preenchido via results-dashboard.js -->
               </ul>
-              <div class="text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-100">
+              <div data-i18n="results.wc.note" class="text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-100">
                 Stopwords em português filtradas automaticamente.
               </div>
             </div>
@@ -779,16 +791,16 @@
         <div id="results-sec-sus" class="space-y-4">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <h3 data-i18n="results.sus.title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <i data-lucide="scale" class="w-5 h-5 text-amber-600"></i>
                 System Usability Scale (SUS) - Análise Comparativa
               </h3>
-              <p class="text-xs text-slate-600">
+              <p data-i18n="results.sus.desc" class="text-xs text-slate-600">
                 Comparação das 10 dimensões estandardizadas (Brooke, 1996) entre o Serious Game (Q13) e o Simulador (Q24).
               </p>
             </div>
             <!-- Legenda da Média Internacional -->
-            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+            <span data-i18n="results.sus.benchmark" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
               Benchmark Indústria = 68.0 pts
             </span>
           </div>
@@ -796,11 +808,11 @@
           <!-- Régua Visual de Escala SUS -->
           <div class="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-2xs space-y-2">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-600">
-              <span>0 (Inaceitável)</span>
-              <span>50 (Marginal)</span>
-              <span class="text-amber-800 font-extrabold">68 (Média Mundial)</span>
-              <span class="text-emerald-800 font-extrabold">80 (Excelente)</span>
-              <span>100 (Classe A)</span>
+              <span data-i18n="results.sus.unacceptable">0 (Inaceitável)</span>
+              <span data-i18n="results.sus.marginal">50 (Marginal)</span>
+              <span data-i18n="results.sus.globalAvg" class="text-amber-800 font-extrabold">68 (Média Mundial)</span>
+              <span data-i18n="results.sus.excellent" class="text-emerald-800 font-extrabold">80 (Excelente)</span>
+              <span data-i18n="results.sus.gradeA">100 (Classe A)</span>
             </div>
             <div class="h-3 w-full rounded-full overflow-hidden flex shadow-inner">
               <div class="w-1/2 bg-gradient-to-r from-rose-500 to-amber-400"></div>
@@ -809,9 +821,9 @@
               <div class="w-[20%] bg-emerald-600"></div>
             </div>
             <div class="flex items-center justify-between text-[10px] text-slate-500">
-              <span>Zona de Risco (&lt;50)</span>
-              <span>Zona de Aceitação Média (68-80)</span>
-              <span>Zona de Excelência (&gt;80)</span>
+              <span data-i18n="results.sus.risk">Zona de Risco (&lt;50)</span>
+              <span data-i18n="results.sus.acceptable">Zona de Aceitação Média (68-80)</span>
+              <span data-i18n="results.sus.excellence">Zona de Excelência (&gt;80)</span>
             </div>
           </div>
 
@@ -824,13 +836,16 @@
         <!-- ========================================== -->
         <!-- SECÇÃO 3: AVALIAÇÃO PEDAGÓGICA & TÉCNICA   -->
         <!-- ========================================== -->
+        <!-- ========================================== -->
+        <!-- SECÇÃO 3: AVALIAÇÃO PEDAGÓGICA & TÉCNICA   -->
+        <!-- ========================================== -->
         <div id="results-sec-pedagogical" class="space-y-4">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <h3 data-i18n="results.ped.title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
               <i data-lucide="award" class="w-5 h-5 text-amber-600"></i>
               Eficácia Pedagógica & Módulos Técnicos de Calibração
             </h3>
-            <p class="text-xs text-slate-600">
+            <p data-i18n="results.ped.desc" class="text-xs text-slate-600">
               Avaliação detalhada da clareza, realismo dos cenários, cálculo de débito e correspondência às práticas de campo.
             </p>
           </div>
@@ -840,9 +855,9 @@
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
               <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <i data-lucide="gamepad-2" class="w-4 h-4 text-amber-600"></i> Serious Game (Q7 a Q12)
+                  <i data-lucide="gamepad-2" class="w-4 h-4 text-amber-600"></i> <span data-i18n="results.ped.gameTitle">Serious Game (Q7 a Q12)</span>
                 </span>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">Radar Pedagógico</span>
+                <span data-i18n="results.ped.gameBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">Radar Pedagógico</span>
               </div>
               <div class="h-[280px]">
                 <canvas id="chart-game-pedagogy"></canvas>
@@ -853,9 +868,9 @@
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
               <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <i data-lucide="cpu" class="w-4 h-4 text-emerald-700"></i> Módulos do Simulador (Q15 a Q23)
+                  <i data-lucide="cpu" class="w-4 h-4 text-emerald-700"></i> <span data-i18n="results.ped.simTitle">Módulos do Simulador (Q15 a Q23)</span>
                 </span>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Média (1 a 5)</span>
+                <span data-i18n="results.ped.simBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Média (1 a 5)</span>
               </div>
               <div class="h-[280px]">
                 <canvas id="chart-sim-modules"></canvas>
@@ -869,11 +884,11 @@
         <!-- ========================================== -->
         <div id="results-sec-demographics" class="space-y-4">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <h3 data-i18n="results.demo.title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
               <i data-lucide="pie-chart" class="w-5 h-5 text-amber-600"></i>
               Caracterização da Amostra & Literacia Digital
             </h3>
-            <p class="text-xs text-slate-600">
+            <p data-i18n="results.demo.desc" class="text-xs text-slate-600">
               Distribuição dos participantes por perfil profissional (Q1), culturas agrícolas acompanhadas (Q5) e literacia agronómica digital (Q6).
             </p>
           </div>
@@ -881,7 +896,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <!-- Donut: Perfis Profissionais (Q1) -->
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2">
-              <div class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+              <div data-i18n="results.demo.profileTitle" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
                 Perfil Profissional (Q1)
               </div>
               <div class="h-[220px]">
@@ -891,7 +906,7 @@
 
             <!-- Barras: Culturas Agrícolas (Q5) -->
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2">
-              <div class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+              <div data-i18n="results.demo.cropsTitle" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
                 Culturas com Maior Envolvimento (Q5)
               </div>
               <div class="h-[220px]">
@@ -902,22 +917,22 @@
             <!-- Card: Literacia e Conforto Digital (Q6) -->
             <div class="bg-gradient-to-br from-amber-50/60 to-emerald-50/40 rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
               <div class="space-y-2">
-                <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                <span data-i18n="results.demo.digitalTitle" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
                   Literacia Digital Agrícola (Q6)
                 </span>
-                <p class="text-xs text-slate-600 leading-relaxed">
+                <p data-i18n="results.demo.digitalDesc" class="text-xs text-slate-600 leading-relaxed">
                   Quão confortáveis se sentem os participantes na utilização diária de software de agricultura de precisão antes da formação.
                 </p>
               </div>
 
               <div class="py-4 text-center">
                 <span id="demo-digital-comfort" class="text-4xl font-extrabold text-slate-900 font-mono">3.8 / 5.0</span>
-                <p class="text-xs text-slate-600 font-medium mt-1">Nível de Literacia Digital Intermédio-Alto</p>
+                <p data-i18n="results.demo.digitalLevel" class="text-xs text-slate-600 font-medium mt-1">Nível de Literacia Digital Intermédio-Alto</p>
               </div>
 
               <div class="p-3 bg-white/80 rounded-lg border border-slate-200 text-[11px] text-slate-600 space-y-1">
-                <div class="font-bold text-slate-800">Conclusão Metodológica:</div>
-                <p>A amostra valida que os simuladores têm adesão intuitiva mesmo entre operadores com conforto digital moderado.</p>
+                <div data-i18n="results.demo.conclusionTitle" class="font-bold text-slate-800">Conclusão Metodológica:</div>
+                <p data-i18n="results.demo.conclusionText">A amostra valida que os simuladores têm adesão intuitiva mesmo entre operadores com conforto digital moderado.</p>
               </div>
             </div>
           </div>
@@ -930,23 +945,23 @@
           <!-- Donut: Net Promoter Score (Q29) -->
           <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+              <span data-i18n="results.nps.title" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
                 Recomendação (NPS - Q29)
               </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900">Escala 0 a 10</span>
+              <span data-i18n="results.nps.scale" class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900">Escala 0 a 10</span>
             </div>
             <div class="h-[180px] relative flex items-center justify-center">
               <canvas id="chart-nps-gauge"></canvas>
             </div>
             <div class="text-center pt-1 border-t border-slate-100 text-xs text-slate-600">
-              Score Global: <strong id="nps-center-score" class="text-blue-900 font-mono text-sm">+67</strong> (Zona de Excelência)
+              <span data-i18n="results.nps.scoreLabel">Score Global:</span> <strong id="nps-center-score" class="text-blue-900 font-mono text-sm">+67</strong> <span data-i18n="results.nps.zoneText">(Zona de Excelência)</span>
             </div>
           </div>
 
           <!-- Comentários e Sugestões do Simulador (Q25) -->
           <div id="results-sec-feedback" class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <span data-i18n="results.feedback.title" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <i data-lucide="message-square" class="w-4 h-4 text-amber-600"></i>
                 Voz dos Participantes: Sugestões & Bloqueios Identificados
               </span>
@@ -974,24 +989,24 @@
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs">Deliverable 1.4</span>
-            <span class="text-xs text-slate-500 font-medium">Documento Consolidado</span>
+            <span data-i18n="results.deliv.code" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs">Deliverable 1.4</span>
+            <span data-i18n="results.deliv.status" class="text-xs text-slate-500 font-medium">Documento Consolidado</span>
           </div>
           <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
              class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 underline">
-            Ver Entregáveis no Site RENOVATE &rarr;
+            <span data-i18n="results.deliv.link">Ver Entregáveis no Site RENOVATE →</span>
           </a>
         </div>
 
-        <h2 class="text-xl font-extrabold text-slate-900">
+        <h2 data-i18n="results.deliv.title" class="text-xl font-extrabold text-slate-900">
           Relatório de Requisitos e Validação de Ferramentas Digitais para Formação em Proteção de Culturas
         </h2>
-        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        <p data-i18n="results.deliv.abstract" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
           Este entregável técnico sintetiza a metodologia de validação de ferramentas pedagógicas digitais (Serious Games e Simuladores 3D), incorporando o feedback direto recolhido nas sessões práticas de campo.
         </p>
 
         <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Pontos Fundamentais do Relatório:</h3>
+          <h3 data-i18n="results.deliv.highlightsTitle" class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Pontos Fundamentais do Relatório:</h3>
           <ul id="deliverable-highlights-container" class="space-y-2">
             <!-- Renderizado via app.js -->
           </ul>
@@ -1000,7 +1015,7 @@
 
       <!-- Hub de Vídeos (YouTube Embeds) -->
       <div class="space-y-4">
-        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <h3 data-i18n="results.videos.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
           Vídeos & Demonstrações Técnicas
         </h3>
@@ -1015,8 +1030,8 @@
                 allowfullscreen>
               </iframe>
             </div>
-            <h4 class="font-bold text-slate-900 text-sm">Visão Geral do Projeto RENOVATE</h4>
-            <p class="text-xs text-slate-600">Apresentação da estratégia europeia para formação e sustentabilidade fitossanitária.</p>
+            <h4 data-i18n="results.videos.v1Title" class="font-bold text-slate-900 text-sm">Visão Geral do Projeto RENOVATE</h4>
+            <p data-i18n="results.videos.v1Desc" class="text-xs text-slate-600">Apresentação da estratégia europeia para formação e sustentabilidade fitossanitária.</p>
           </div>
 
           <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-3 p-4">
@@ -1028,8 +1043,8 @@
                 allowfullscreen>
               </iframe>
             </div>
-            <h4 class="font-bold text-slate-900 text-sm">Demonstração: Serious Game (Tallentto)</h4>
-            <p class="text-xs text-slate-600">Mecânica de simulação de decisões em ambiente lúdico interativo.</p>
+            <h4 data-i18n="results.videos.v2Title" class="font-bold text-slate-900 text-sm">Demonstração: Serious Game (Tallentto)</h4>
+            <p data-i18n="results.videos.v2Desc" class="text-xs text-slate-600">Mecânica de simulação de decisões em ambiente lúdico interativo.</p>
           </div>
 
         </div>
@@ -1037,7 +1052,7 @@
 
       <!-- Galeria de Imagens do Evento -->
       <div class="space-y-4">
-        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <h3 data-i18n="results.gallery.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="image" class="w-5 h-5 text-amber-600"></i>
           Galeria Fotográfica
         </h3>
@@ -1067,14 +1082,14 @@
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
               <i data-lucide="building-2" class="w-7 h-7 stroke-[1.75]"></i>
             </div>
-            <span class="text-base sm:text-lg font-extrabold text-emerald-800">16 parceiros</span>
+            <span data-i18n="consortium.partnersCount" class="text-base sm:text-lg font-extrabold text-emerald-800">16 parceiros</span>
           </div>
 
           <div class="flex flex-col items-center">
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
               <i data-lucide="globe-2" class="w-7 h-7 stroke-[1.75]"></i>
             </div>
-            <span class="text-base sm:text-lg font-extrabold text-emerald-800">8 países</span>
+            <span data-i18n="consortium.countriesCount" class="text-base sm:text-lg font-extrabold text-emerald-800">8 países</span>
           </div>
         </div>
 
@@ -1085,10 +1100,10 @@
 
         <!-- Ligação ao Portal Global RENOVATE -->
         <div class="pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-xs">
-          <span class="text-slate-500">Consórcio de investigação aplicada para a transição digital e sustentabilidade agrária.</span>
+          <span data-i18n="consortium.desc" class="text-slate-500">Consórcio de investigação aplicada para a transição digital e sustentabilidade agrária.</span>
           <a href="https://renovateproject.eu" target="_blank" rel="noopener noreferrer" 
              class="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 hover:underline">
-            <span>Visitar Portal Oficial RENOVATE</span>
+            <span data-i18n="consortium.portalLink">Visitar Portal Oficial RENOVATE</span>
             <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
           </a>
         </div>
@@ -1148,20 +1163,20 @@
           <div class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
               <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-              Projeto & Coordenação
+              <span data-i18n="footer.projectCoord">Projeto & Coordenação</span>
             </span>
             <ul class="space-y-2.5 font-medium">
               <li>
                 <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span>Projeto RENOVATE</span>
+                  <span data-i18n="footer.project">Projeto RENOVATE</span>
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
               <li>
                 <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span>DATERRA</span>
+                  <span data-i18n="footer.daterra">DATERRA</span>
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
@@ -1171,20 +1186,20 @@
           <div class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
               <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
-              Iniciativas & Anfitrião
+              <span data-i18n="footer.initiativesHost">Iniciativas & Anfitrião</span>
             </span>
             <ul class="space-y-2.5 font-medium">
               <li>
                 <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span>EuroTech Day</span>
+                  <span data-i18n="footer.eurotech">EuroTech Day</span>
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
               <li>
                 <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span>ESAS - Santarém</span>
+                  <span data-i18n="footer.esas">ESAS - Santarém</span>
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
@@ -1213,19 +1228,19 @@
     <div class="grid grid-cols-4 gap-1 text-center">
       <button type="button" data-tab="live" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="radio" class="w-4 h-4 mb-0.5"></i>
-        <span>Ao Vivo</span>
+        <span data-i18n="nav.mobile.live">Ao Vivo</span>
       </button>
       <button type="button" data-tab="program" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="calendar" class="w-4 h-4 mb-0.5"></i>
-        <span>Programa</span>
+        <span data-i18n="nav.mobile.program">Programa</span>
       </button>
       <button type="button" data-tab="fg1" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="history" class="w-4 h-4 mb-0.5"></i>
-        <span>GF1</span>
+        <span data-i18n="nav.mobile.fg1">GF1</span>
       </button>
       <button type="button" data-tab="results" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="folder-check" class="w-4 h-4 mb-0.5"></i>
-        <span>Resultados</span>
+        <span data-i18n="nav.mobile.results">Resultados</span>
       </button>
     </div>
   </nav>
@@ -1243,8 +1258,8 @@
             <i data-lucide="shield-check" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900">Painel do Moderador</h3>
-            <p class="text-[11px] text-slate-500">Controlo de Desbloqueio das Fases</p>
+            <h3 data-i18n="mod.title" class="text-base font-bold text-slate-900">Painel do Moderador</h3>
+            <p data-i18n="mod.subtitle" class="text-[11px] text-slate-500">Controlo de Desbloqueio das Fases</p>
           </div>
         </div>
         <button type="button" id="btn-close-moderator-modal" class="text-slate-400 hover:text-slate-700 p-1">
@@ -1254,15 +1269,15 @@
 
       <!-- Secção de Autenticação (PIN) -->
       <div id="moderator-auth-section" class="space-y-4">
-        <p class="text-xs text-slate-600">
+        <p data-i18n="mod.pinDesc" class="text-xs text-slate-600">
           Introduza o PIN de segurança para aceder aos comandos de gestão da sessão.
         </p>
         <div>
-          <input type="password" id="moderator-pin-input" maxlength="8" placeholder="Introduzir PIN" 
+          <input type="password" id="moderator-pin-input" maxlength="8" placeholder="Introduzir PIN" data-i18n-placeholder="mod.pinPlaceholder"
                  class="w-full text-center tracking-widest text-lg font-mono font-bold px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none">
           <p id="moderator-pin-error" class="text-xs text-rose-600 mt-1.5 hidden text-center font-semibold"></p>
         </div>
-        <button type="button" id="btn-verify-moderator-pin" 
+        <button type="button" id="btn-verify-moderator-pin" data-i18n="mod.authBtn"
                 class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
           Autenticar Moderador
         </button>
@@ -1271,7 +1286,7 @@
       <!-- Secção do Painel de Controlo (Após PIN Válido) -->
       <div id="moderator-panel-section" class="space-y-5 hidden">
         <div class="space-y-2">
-          <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estado das Fases</div>
+          <div data-i18n="mod.statusHeader" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estado das Fases</div>
           <div id="moderator-step-toggles" class="space-y-2">
             <!-- Toggles individuais renderizados dinamicamente -->
           </div>
@@ -1279,13 +1294,13 @@
 
         <!-- Desbloquear até ao Passo X (Opção de Desbloqueio Sequencial) -->
         <div class="space-y-1.5 pt-2 border-t border-slate-100">
-          <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Desbloquear até ao Passo:</div>
+          <div data-i18n="mod.unlockUpto" class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Desbloquear até ao Passo:</div>
           <div class="grid grid-cols-5 gap-1.5">
-            <button type="button" data-target-step="1" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 1</button>
-            <button type="button" data-target-step="2" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 2</button>
-            <button type="button" data-target-step="3" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 3</button>
-            <button type="button" data-target-step="4" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 4</button>
-            <button type="button" data-target-step="5" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 5</button>
+            <button type="button" data-target-step="1" data-i18n="mod.upto1" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 1</button>
+            <button type="button" data-target-step="2" data-i18n="mod.upto2" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 2</button>
+            <button type="button" data-target-step="3" data-i18n="mod.upto3" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 3</button>
+            <button type="button" data-target-step="4" data-i18n="mod.upto4" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 4</button>
+            <button type="button" data-target-step="5" data-i18n="mod.upto5" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 5</button>
           </div>
         </div>
 
@@ -1293,12 +1308,12 @@
           <button type="button" id="btn-mod-unlock-all" 
                   class="w-full py-2 px-3 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center justify-center gap-1.5">
             <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
-            Desbloquear Tudo
+            <span data-i18n="mod.unlockAll">Desbloquear Tudo</span>
           </button>
           <button type="button" id="btn-mod-reset" 
                   class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-            Repor Padrão
+            <span data-i18n="mod.reset">Repor Padrão</span>
           </button>
         </div>
 
@@ -1307,17 +1322,17 @@
           <button type="button" id="btn-mod-goto-results" 
                   class="w-full py-2 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-300 transition flex items-center justify-center gap-1.5">
             <i data-lucide="folder-check" class="w-3.5 h-3.5 text-emerald-700"></i>
-            Ver Dashboard de Resultados & Conectar Sheets
+            <span data-i18n="mod.gotoResults">Ver Dashboard de Resultados & Conectar Sheets</span>
           </button>
         </div>
 
         <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-[11px] text-amber-900 space-y-1">
           <div class="font-bold flex items-center gap-1">
             <i data-lucide="link-2" class="w-3.5 h-3.5"></i>
-            Atalho de Desbloqueio via URL:
+            <span data-i18n="mod.qrShortcut">Atalho de Desbloqueio via URL:</span>
           </div>
           <p class="text-slate-600">
-            Pode projetar ou partilhar com os participantes um QR code com o parâmetro:
+            <span data-i18n="mod.qrDesc">Pode projetar ou partilhar com os participantes um QR code com o parâmetro:</span>
             <code class="bg-white px-1.5 py-0.5 rounded border border-amber-300 font-mono font-bold text-slate-900">?unlock=all</code>
           </p>
         </div>
@@ -1327,10 +1342,11 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/content-data.js?v=20261001-1530"></script>
-  <script src="assets/js/live-session.js?v=20261001-1530"></script>
-  <script src="assets/js/results-dashboard.js?v=20261001-1530"></script>
-  <script src="assets/js/app.js?v=20261001-1530"></script>
+  <script src="assets/js/i18n.js?v=20261001-1630"></script>
+  <script src="assets/js/content-data.js?v=20261001-1630"></script>
+  <script src="assets/js/live-session.js?v=20261001-1630"></script>
+  <script src="assets/js/results-dashboard.js?v=20261001-1630"></script>
+  <script src="assets/js/app.js?v=20261001-1630"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

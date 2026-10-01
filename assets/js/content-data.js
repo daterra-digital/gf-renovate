@@ -28,6 +28,7 @@ const RENOVATE_CONFIG = {
     shortName: "ESAS - Santarém",
     country: "Portugal",
     role: "Entidade Anfitriã da 2ª Sessão do Grupo Focal",
+    roleEn: "Host Entity of the 2nd Focus Group Session",
     logo: "assets/images/logos/esas.png",
     url: "https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/"
   },
@@ -47,7 +48,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Espanha",
       logo: "assets/images/logos/upc.png",
       url: "https://uma.deab.upc.edu/en",
-      role: "Coordenação Geral"
+      role: "Coordenação Geral",
+      roleEn: "General Coordination"
     },
     {
       name: "Università di Torino",
@@ -56,7 +58,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Itália",
       logo: "assets/images/logos/unito.png",
       url: "https://www.unito.it",
-      role: "Investigação Agronómica"
+      role: "Investigação Agronómica",
+      roleEn: "Agronomic Research"
     },
     {
       name: "INRAE",
@@ -65,7 +68,8 @@ const RENOVATE_CONFIG = {
       countryPt: "França",
       logo: "assets/images/logos/inrae.png",
       url: "https://www.inrae.fr",
-      role: "Investigação & Inovação"
+      role: "Investigação & Inovação",
+      roleEn: "Research & Innovation"
     },
     {
       name: "da TERRA - Lógica de Terra",
@@ -74,7 +78,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Portugal",
       logo: "assets/images/logos/daterra.png",
       url: "https://daterra.com.pt",
-      role: "Consultoria Agrária & Organização"
+      role: "Consultoria Agrária & Organização",
+      roleEn: "Agricultural Consultancy & Organisation"
     },
     {
       name: "pcfruit",
@@ -83,7 +88,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Bélgica",
       logo: "assets/images/logos/pcfruit.png",
       url: "https://www.pcfruit.be",
-      role: "Investigação em Fruticultura"
+      role: "Investigação em Fruticultura",
+      roleEn: "Fruit Growing Research"
     },
     {
       name: "InHort - Instytut Ogrodnictwa",
@@ -92,7 +98,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Polónia",
       logo: "assets/images/logos/inhort.png",
       url: "https://www.inhort.pl",
-      role: "Investigação Hortícola"
+      role: "Investigação Hortícola",
+      roleEn: "Horticultural Research"
     },
     {
       name: "Department of Agriculture",
@@ -101,7 +108,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Chipre",
       logo: "assets/images/logos/dep-agri-cyprus.png",
       url: "http://www.moa.gov.cy/da",
-      role: "Entidade Governamental"
+      role: "Entidade Governamental",
+      roleEn: "Governmental Entity"
     },
     {
       name: "Laore Sardegna",
@@ -110,7 +118,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Itália",
       logo: "assets/images/logos/laore.png",
       url: "https://www.sardegnaagricoltura.it/",
-      role: "Desenvolvimento Agrário"
+      role: "Desenvolvimento Agrário",
+      roleEn: "Agricultural Development"
     },
     {
       name: "Česká společnost rostlinolékařská (ČSR)",
@@ -119,7 +128,8 @@ const RENOVATE_CONFIG = {
       countryPt: "República Checa",
       logo: "assets/images/logos/csr.png",
       url: "https://www.rostlinolekari.cz",
-      role: "Proteção Fitossanitária"
+      role: "Proteção Fitossanitária",
+      roleEn: "Plant Health Protection"
     },
     {
       name: "PEK - Panagrotikos Farmers Union",
@@ -128,7 +138,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Chipre",
       logo: "assets/images/logos/pek.png",
       url: "https://www.facebook.com/people/%CE%A0%CE%B1%CE%BD%CE%B1%CE%B3%CF%81%CE%BF%CF%84%CE%B9%CE%BA%CE%AE-%CE%88%CE%BD%CF%89%CF%83%CE%B7-%CE%9A%CF%8D%CF%80%CF%81%CE%BF%CF%85-%CE%A0%CE%95%CE%9A-Pancyprian-Farmers-Union/100064453069332/",
-      role: "Associação de Agricultores"
+      role: "Associação de Agricultores",
+      roleEn: "Farmers' Union"
     },
     {
       name: "Cooperatives Agro-alimentàries Comunitat Valenciana",
@@ -137,7 +148,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Espanha",
       logo: "assets/images/logos/coop-valenciana.png",
       url: "https://cooperativesagroalimentariescv.com/",
-      role: "Cooperativismo Agrário"
+      role: "Cooperativismo Agrário",
+      roleEn: "Agricultural Cooperativism"
     },
     {
       name: "HORT@",
@@ -146,7 +158,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Itália",
       logo: "assets/images/logos/horta.png",
       url: "https://www.horta-srl.it",
-      role: "Sistemas de Suporte à Decisão"
+      role: "Sistemas de Suporte à Decisão",
+      roleEn: "Decision Support Systems"
     },
     {
       name: "tallentto",
@@ -155,7 +168,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Espanha",
       logo: "assets/images/logos/tallentto.png",
       url: "https://tallentto.com",
-      role: "Serious Games & Gamificação"
+      role: "Serious Games & Gamificação",
+      roleEn: "Serious Games & Gamification"
     },
     {
       name: "ARTICAi",
@@ -164,7 +178,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Espanha",
       logo: "assets/images/logos/artica.png",
       url: "https://www.articai.es/",
-      role: "Engenharia & Inovação"
+      role: "Engenharia & Inovação",
+      roleEn: "Engineering & Innovation"
     },
     {
       name: "virmedex Virtual Experiences",
@@ -173,7 +188,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Espanha",
       logo: "assets/images/logos/virmedex.png",
       url: "https://virmedex.com",
-      role: "Simulação Virtual 3D"
+      role: "Simulação Virtual 3D",
+      roleEn: "Virtual 3D Simulation"
     },
     {
       name: "Consiglio Nazionale delle Ricerche - STEMS",
@@ -182,7 +198,8 @@ const RENOVATE_CONFIG = {
       countryPt: "Itália",
       logo: "assets/images/logos/cnr-stems.png",
       url: "https://www.stems.cnr.it",
-      role: "Investigação Científica"
+      role: "Investigação Científica",
+      roleEn: "Scientific Research"
     }
   ],
 
@@ -207,11 +224,15 @@ const RENOVATE_CONFIG = {
       step: 1,
       time: "10:00 - 10:10",
       title: "Sessão de Abertura",
+      titleEn: "Opening Session",
       speaker: "Diretor da ESAS (Universidade Politécnica de Santarém) & DATERRA",
+      speakerEn: "Director of ESAS (Polytechnic University of Santarém) & DATERRA",
       badge: "Boas-Vindas",
+      badgeEn: "Welcome",
       badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
       icon: "landmark",
       description: "Intervenção de boas-vindas pelo Diretor da Escola Superior Agrária (ESAS - Universidade Politécnica de Santarém), acolhimento institucional dos participantes e enquadramento dos trabalhos.",
+      descriptionEn: "Welcome address by the Director of the School of Agriculture (ESAS - Polytechnic University of Santarém), institutional greeting of participants, and framework of proceedings.",
       type: "opening"
     },
     {
@@ -219,11 +240,15 @@ const RENOVATE_CONFIG = {
       step: 2,
       time: "10:10 - 10:20",
       title: '"Disseram, e nós fizemos"',
+      titleEn: '"You said, and we delivered"',
       speaker: "DATERRA & Consórcio RENOVATE",
+      speakerEn: "DATERRA & RENOVATE Consortium",
       badge: "Apresentação Oficial",
+      badgeEn: "Official Presentation",
       badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
       icon: "presentation",
       description: "Breve recapitulação dos resultados do GF1. Apresentação mostrando como o feedback dos participantes foi integrado no desenvolvimento das ferramentas digitais e pedagógicas.",
+      descriptionEn: "Brief recap of FG1 findings. Presentation showing how participant feedback was integrated into the development of digital and pedagogical tools.",
       type: "slides"
     },
     {
@@ -231,12 +256,16 @@ const RENOVATE_CONFIG = {
       step: 3,
       time: "10:20 - 11:35",
       title: "Teste Prático 1: Serious Game",
+      titleEn: "Practical Test 1: Serious Game",
       speaker: "Facilitação Tallentto & DATERRA",
+      speakerEn: "Tallentto Facilitation & DATERRA",
       badge: "Smartphone / Tablet",
+      badgeEn: "Smartphone / Tablet",
       badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
       icon: "gamepad-2",
       url: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
       description: "Teste prático individual do Serious Game. Dinâmica lúdica interativa focada em calibração, diagnóstico e boas práticas de proteção fitossanitária.",
+      descriptionEn: "Individual hands-on testing of the Serious Game. Interactive gamified dynamics focusing on sprayer calibration, diagnosis, and crop protection best practices.",
       type: "game"
     },
     {
@@ -244,11 +273,15 @@ const RENOVATE_CONFIG = {
       step: 3,
       time: "11:35 - 11:45",
       title: "Avaliação 1: Serious Game",
+      titleEn: "Evaluation 1: Serious Game",
       speaker: "Participantes & Equipa de Investigação",
+      speakerEn: "Participants & Research Team",
       badge: "Formulário Online",
+      badgeEn: "Online Questionnaire",
       badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
       icon: "clipboard-list",
       description: "Preenchimento de um questionário sobre a experiência com o Serious Game. Avaliação de usabilidade, aplicabilidade pedagógica e clareza instrucional.",
+      descriptionEn: "Completion of questionnaire evaluating the Serious Game experience, focusing on usability, pedagogical applicability, and instructional clarity.",
       type: "form-game"
     },
     {
@@ -256,11 +289,15 @@ const RENOVATE_CONFIG = {
       step: null,
       time: "11:45 - 12:00",
       title: "Pausa curta (coffee break)",
+      titleEn: "Short Break (Coffee Break)",
       speaker: "Espaço de Convívio ESAS",
+      speakerEn: "ESAS Social Area",
       badge: "Coffee Break",
+      badgeEn: "Coffee Break",
       badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
       icon: "coffee",
       description: "Pausa para café, descanso e networking informal entre os participantes, técnicos agrários e a equipa do consórcio.",
+      descriptionEn: "Coffee break, rest, and informal networking between participants, agricultural advisors, and the consortium team.",
       type: "break"
     },
     {
@@ -268,12 +305,16 @@ const RENOVATE_CONFIG = {
       step: 4,
       time: "12:00 - 13:10",
       title: "Teste Prático 2: Simulador",
+      titleEn: "Practical Test 2: 3D Simulator",
       speaker: "Facilitação Virmedex & DATERRA",
+      speakerEn: "Virmedex Facilitation & DATERRA",
       badge: "Computador PC / Portátil",
+      badgeEn: "PC / Laptop",
       badgeColor: "bg-sky-100 text-sky-800 border-sky-300",
       icon: "monitor",
       url: "https://simulator.renovateproject.eu/auth/login",
       description: "Teste prático individual do Simulador do RENOVATE no PC. Ambiente 3D interativo para otimização de parâmetros de pulverização, mitigação de deriva e análise de eficácia de campo.",
+      descriptionEn: "Individual hands-on testing of the RENOVATE Simulator on PC. Interactive 3D environment for spray parameter optimisation, drift reduction, and field efficacy analysis.",
       type: "simulator"
     },
     {
@@ -281,11 +322,15 @@ const RENOVATE_CONFIG = {
       step: 4,
       time: "13:10 - 13:20",
       title: "Avaliação 2: Simulador",
+      titleEn: "Evaluation 2: 3D Simulator",
       speaker: "Participantes & Equipa de Investigação",
+      speakerEn: "Participants & Research Team",
       badge: "Formulário Online",
+      badgeEn: "Online Questionnaire",
       badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
       icon: "clipboard-list",
       description: "Preenchimento de um questionário sobre o teste prático com o Simulador. Recolha de opiniões sobre fidelidade agronómica, interface e potencial de integração no terreno.",
+      descriptionEn: "Completion of questionnaire regarding the simulator hands-on trial, collecting insights on agronomic fidelity, user interface, and field adoption potential.",
       type: "form-simulator"
     },
     {
@@ -293,11 +338,15 @@ const RENOVATE_CONFIG = {
       step: null,
       time: "13:20 - 14:40",
       title: "Almoço (oferecido pela organização)",
+      titleEn: "Lunch (Hosted by the organisation)",
       speaker: "Organização RENOVATE / DATERRA & ESAS",
+      speakerEn: "RENOVATE Organisation / DATERRA & ESAS",
       badge: "Almoço & Convívio",
+      badgeEn: "Lunch & Networking",
       badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
       icon: "utensils",
       description: "Pausa alargada para networking e discussão informal sobre a experiência da manhã. Almoço volante oferecido pelo projeto a todos os participantes convidados.",
+      descriptionEn: "Extended networking lunch and informal discussion on morning sessions, hosted by the project for all invited participants.",
       type: "lunch"
     },
     {
@@ -305,11 +354,15 @@ const RENOVATE_CONFIG = {
       step: 5,
       time: "14:40 - 14:50",
       title: "Avaliação Global",
+      titleEn: "Overall Evaluation",
       speaker: "Participantes & DATERRA",
+      speakerEn: "Participants & DATERRA",
       badge: "Formulário Final",
+      badgeEn: "Final Questionnaire",
       badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
       icon: "check-circle-2",
       description: "Preenchimento de um questionário sobre a perceção geral da plataforma RENOVATE, impacto conjunto das ferramentas e recomendações para formação profissional agrícola.",
+      descriptionEn: "Completion of final questionnaire assessing overall perception of the RENOVATE platform, joint impact of tools, and recommendations for agricultural vocational training.",
       type: "form-global"
     },
     {
@@ -317,11 +370,15 @@ const RENOVATE_CONFIG = {
       step: 5,
       time: "14:50 - 15:40",
       title: "Discussão Plenária",
+      titleEn: "Plenary Discussion",
       speaker: "Moderação DATERRA & Painel de Peritos",
+      speakerEn: "DATERRA Moderation & Expert Panel",
       badge: "Debate Plenário",
+      badgeEn: "Plenary Debate",
       badgeColor: "bg-slate-100 text-slate-800 border-slate-300",
       icon: "messages-square",
       description: "Debate aberto projetando os resultados dos questionários. Foco no que funcionou, o que falhou e possíveis melhorias para a transição digital na agricultura.",
+      descriptionEn: "Open plenary debate projecting questionnaire results, examining what worked well, key roadblocks, and actionable improvements for digital agricultural transition.",
       type: "discussion"
     },
     {
@@ -329,11 +386,15 @@ const RENOVATE_CONFIG = {
       step: 5,
       time: "15:40 - 15:50",
       title: "Sessão de Encerramento",
+      titleEn: "Closing Session",
       speaker: "Direção ESAS & DATERRA",
+      speakerEn: "ESAS Directorate & DATERRA",
       badge: "Conclusão",
+      badgeEn: "Conclusion",
       badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
       icon: "flag",
       description: "Próximos passos e conclusão da sessão. Agradecimentos institucionais, partilha das vias de acesso aos relatórios do projeto e encerramento oficial dos trabalhos.",
+      descriptionEn: "Next steps and session wrap-up, institutional acknowledgements, project report access details, and formal conclusion of proceedings.",
       type: "closing"
     }
   ],
@@ -363,10 +424,10 @@ const RENOVATE_CONFIG = {
       description: "Relatório executivo contendo a análise sistematizada dos inquéritos aos especialistas e as diretrizes pedagógicas prioritárias."
     },
     metrics: [
-      { label: "Participantes Especialistas", value: "24" },
-      { label: "Organizações Representadas", value: "15" },
-      { label: "Necessidades Mapeadas", value: "38" },
-      { label: "Índice de Interesse em Ferramentas Digitais", value: "92%" }
+      { label: "Participantes Especialistas", labelEn: "Specialist Participants", value: "24" },
+      { label: "Organizações Representadas", labelEn: "Represented Organisations", value: "15" },
+      { label: "Necessidades Mapeadas", labelEn: "Mapped Training Needs", value: "38" },
+      { label: "Índice de Interesse em Ferramentas Digitais", labelEn: "Digital Tool Interest Index", value: "92%" }
     ],
     highlights: [
       "Priorização da simplicidade de interface em ferramentas para operadores no terreno.",
@@ -374,34 +435,48 @@ const RENOVATE_CONFIG = {
       "Necessidade de ligação direta entre simulações e cálculos de custos/poupança real.",
       "Consenso sobre a relevância de criar recursos acessíveis em dispositivos móveis."
     ],
+    highlightsEn: [
+      "Prioritisation of interface simplicity in tools for field operators.",
+      "Identification of high potential for Serious Games in accredited vocational training.",
+      "Need for direct linkages between simulations and real-world cost and savings calculations.",
+      "Consensus on the importance of creating mobile-accessible resources."
+    ],
     gallery: [
       {
         filename: "gf1-foto-1.jpg",
         src: "assets/images/gf1/gf1-foto-1.jpg",
         alt: "Abertura e Enquadramento - GF1 Lisboa",
         title: "Abertura & Apresentação",
-        caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa."
+        titleEn: "Opening & Presentation",
+        caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa.",
+        captionEn: "Auditorium with agricultural experts and researchers at Focus Group 1 in Lisbon."
       },
       {
         filename: "gf1-foto-2.jpg",
         src: "assets/images/gf1/gf1-foto-2.jpg",
         alt: "Debate Participativo - GF1 Lisboa",
         title: "Mesa Redonda & Debate",
-        caption: "Discussão participativa sobre barreiras na adoção de tecnologias agrícolas sustentáveis."
+        titleEn: "Round Table & Debate",
+        caption: "Discussão participativa sobre barreiras na adoção de tecnologias agrícolas sustentáveis.",
+        captionEn: "Participatory discussion on barriers to the adoption of sustainable farming technologies."
       },
       {
         filename: "gf1-foto-3.jpg",
         src: "assets/images/gf1/gf1-foto-3.jpg",
         alt: "Dinâmica de Co-Criação - GF1 Lisboa",
         title: "Dinâmica de Co-Criação",
-        caption: "Mapeamento das necessidades de formação contínua em proteção fitossanitária."
+        titleEn: "Co-Creation Dynamics",
+        caption: "Mapeamento das necessidades de formação contínua em proteção fitossanitária.",
+        captionEn: "Mapping continuous training needs in sustainable crop protection."
       },
       {
         filename: "gf1-foto-4.jpg",
         src: "assets/images/gf1/gf1-foto-4.jpg",
         alt: "Síntese dos Trabalhos - GF1 Lisboa",
         title: "Síntese dos Resultados",
-        caption: "Registo e consolidação das diretrizes que alimentaram as ferramentas digitais."
+        titleEn: "Synthesis of Results",
+        caption: "Registo e consolidação das diretrizes que alimentaram as ferramentas digitais.",
+        captionEn: "Recording and consolidating the core guidelines that informed the digital tools."
       }
     ]
   },
@@ -417,6 +492,11 @@ const RENOVATE_CONFIG = {
         "Matriz comparativa de eficácia pedagógica entre métodos expositivos e gamificados.",
         "Critérios de acessibilidade e adaptação à literacia digital dos operadores agrários.",
         "Recomendações técnicas para a integração de telemetria nos simuladores."
+      ],
+      highlightsEn: [
+        "Comparative pedagogical efficacy matrix between expository and gamified methods.",
+        "Accessibility criteria and digital literacy adaptation for farm operators.",
+        "Technical recommendations for telemetry integration in simulators."
       ]
     },
     videos: [

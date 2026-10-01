@@ -20,6 +20,18 @@ window.ResultsDashboard = (function () {
     "sim", "sobre", "ainda", "está", "estou", "estava", "1", "2", "3", "etc"
   ]);
 
+  // Stopwords in English for word clouds
+  const EN_STOPWORDS = new Set([
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
+    "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
+    "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if",
+    "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just",
+    "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see",
+    "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back",
+    "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because",
+    "any", "these", "give", "day", "most", "us", "very", "much", "1", "2", "3", "etc"
+  ]);
+
   // Paleta de Cores Oficial RENOVATE
   const PALETTE = {
     gold: "#F5B842",
@@ -546,29 +558,32 @@ window.ResultsDashboard = (function () {
     const timeEl = document.getElementById("results-last-sync-time");
     if (!badge) return;
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const now = new Date();
-    const timeStr = now.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const timeStr = now.toLocaleTimeString(isEn ? "en-GB" : "pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     state.lastUpdated = timeStr;
 
-    if (timeEl) timeEl.textContent = `Última sincronização: ${timeStr}`;
+    if (timeEl) {
+      timeEl.textContent = isEn ? `Last sync: ${timeStr}` : `Última sincronização: ${timeStr}`;
+    }
 
     if (state.isLive && state.isWaitingAnswers) {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Google Sheets Conectado (Aguardando Respostas)</span>
+        <span>${isEn ? "Google Sheets Connected (Awaiting Responses)" : "Google Sheets Conectado (Aguardando Respostas)"}</span>
       `;
     } else if (state.isLive) {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Google Sheets Conectado (Em Tempo Real)</span>
+        <span>${isEn ? "Google Sheets Connected (Real-Time)" : "Google Sheets Conectado (Em Tempo Real)"}</span>
       `;
     } else {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-        <span>Modo Demonstração (Dados de Pré-Visualização)</span>
+        <span>${isEn ? "Demo Mode (Preview Data)" : "Modo Demonstração (Dados de Pré-Visualização)"}</span>
       `;
     }
   }
@@ -884,12 +899,13 @@ window.ResultsDashboard = (function () {
     const averageScore = count > 0 ? (totalScore / count) : 75.0;
     const itemsAvg = itemsSum.map(s => count > 0 ? (s / count).toFixed(1) : 3.5);
 
-    let benchmark = "Bom / Acima da Média";
-    if (averageScore >= 85) benchmark = "Excelente (Classe A)";
-    else if (averageScore >= 80) benchmark = "Excelente";
-    else if (averageScore >= 68) benchmark = "Bom (Média da Indústria: 68)";
-    else if (averageScore >= 50) benchmark = "Marginal / Razoável";
-    else benchmark = "Inaceitável";
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    let benchmark = isEn ? "Good / Above Average" : "Bom / Acima da Média";
+    if (averageScore >= 85) benchmark = isEn ? "Excellent (Grade A)" : "Excelente (Classe A)";
+    else if (averageScore >= 80) benchmark = isEn ? "Excellent" : "Excelente";
+    else if (averageScore >= 68) benchmark = isEn ? "Good (Industry Average: 68)" : "Bom (Média da Indústria: 68)";
+    else if (averageScore >= 50) benchmark = isEn ? "Marginal / OK" : "Marginal / Razoável";
+    else benchmark = isEn ? "Unacceptable" : "Inaceitável";
 
     return {
       average: parseFloat(averageScore.toFixed(1)),
@@ -937,7 +953,7 @@ window.ResultsDashboard = (function () {
 
       words.forEach(w => {
         const clean = w.trim();
-        if (clean.length >= 3 && !PT_STOPWORDS.has(clean)) {
+        if (clean.length >= 3 && !PT_STOPWORDS.has(clean) && !EN_STOPWORDS.has(clean)) {
           // Capitalizar primeira letra para estética elegante
           const capitalized = clean.charAt(0).toUpperCase() + clean.slice(1);
           counts[capitalized] = (counts[capitalized] || 0) + 1;
@@ -1008,13 +1024,14 @@ window.ResultsDashboard = (function () {
     const listContainer = document.getElementById("wordcloud-top-list");
     if (!canvas || !container || !state.metrics) return;
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const isGame = state.activeWordCloudTool === "game";
     const wordsList = isGame ? state.metrics.wordsGame : state.metrics.wordsSim;
 
     // Renderizar Lista Top 6 no Painel Lateral
     if (listContainer) {
       if (!wordsList.length) {
-        listContainer.innerHTML = `<li class="text-xs text-slate-500 italic">Sem palavras registadas de momento.</li>`;
+        listContainer.innerHTML = `<li class="text-xs text-slate-500 italic">${isEn ? "No words recorded yet." : "Sem palavras registadas de momento."}</li>`;
       } else {
         const topList = wordsList.slice(0, 6);
         const maxVal = topList[0][1] || 1;
@@ -1048,7 +1065,7 @@ window.ResultsDashboard = (function () {
         ctx.font = "14px sans-serif";
         ctx.fillStyle = "#64748B";
         ctx.textAlign = "center";
-        ctx.fillText("A aguardar recolha de palavras...", width / 2, height / 2);
+        ctx.fillText(isEn ? "Awaiting word submissions..." : "A aguardar recolha de palavras...", width / 2, height / 2);
         return;
       }
 
@@ -1120,7 +1137,20 @@ window.ResultsDashboard = (function () {
       state.charts.susComparison.destroy();
     }
 
-    const susLabels = [
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    const susLabels = isEn ? [
+      "1. Frequency of Use",
+      "2. Low Complexity",
+      "3. Ease of Use",
+      "4. Tech Independence",
+      "5. Well Integrated",
+      "6. Overall Consistency",
+      "7. Quick Learning",
+      "8. Usability Comfort",
+      "9. Confidence in Use",
+      "10. Easy Onboarding"
+    ] : [
       "1. Frequência de Uso",
       "2. Baixa Complexidade",
       "3. Facilidade de Uso",
@@ -1150,7 +1180,7 @@ window.ResultsDashboard = (function () {
             borderRadius: 6
           },
           {
-            label: "Simulador RENOVATE (Virmedex)",
+            label: isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)",
             data: simItems,
             backgroundColor: "#0F172A",
             borderColor: "#0F172A",
@@ -1168,6 +1198,9 @@ window.ResultsDashboard = (function () {
             callbacks: {
               afterLabel: function(context) {
                 const idx = context.dataIndex;
+                if (isEn) {
+                  return (idx % 2 === 1) ? "(Inverted item: lower score means better usability)" : "(Higher score means better usability)";
+                }
                 return (idx % 2 === 1) ? "(Nota invertida: quanto menor, melhor usabilidade)" : "(Quanto maior, melhor usabilidade)";
               }
             }
@@ -1178,7 +1211,7 @@ window.ResultsDashboard = (function () {
             min: 1,
             max: 5,
             ticks: { stepSize: 1, font: { size: 10 } },
-            title: { display: true, text: "Escala Likert (1 a 5)", font: { size: 11, weight: "bold" } }
+            title: { display: true, text: isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)", font: { size: 11, weight: "bold" } }
           },
           x: {
             ticks: { font: { size: 10, weight: "600" } }
@@ -1199,12 +1232,20 @@ window.ResultsDashboard = (function () {
       state.charts.gamePedagogy.destroy();
     }
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const p = state.metrics.gamePedagogy || { q7: 4.4, q8: 3.9, q9: 4.3, q10: 4.6, q11: 4.5, q12: 4.3 };
 
     state.charts.gamePedagogy = new Chart(ctx, {
       type: "radar",
       data: {
-        labels: [
+        labels: isEn ? [
+          "Q7. Explanation Clarity",
+          "Q8. Suitable Difficulty",
+          "Q9. Scenario Realism",
+          "Q10. Calibration Steps",
+          "Q11. Gamified Engagement",
+          "Q12. Global Expectations"
+        ] : [
           "Q7. Clareza Explicações",
           "Q8. Dificuldade Adequada",
           "Q9. Realismo de Cenários",
@@ -1213,7 +1254,7 @@ window.ResultsDashboard = (function () {
           "Q12. Expectativas Globais"
         ],
         datasets: [{
-          label: "Avaliação Pedagógica Média (1 a 5)",
+          label: isEn ? "Average Pedagogical Rating (1 to 5)" : "Avaliação Pedagógica Média (1 a 5)",
           data: [p.q7, p.q8, p.q9, p.q10, p.q11, p.q12],
           backgroundColor: "rgba(245, 184, 66, 0.25)",
           borderColor: "#F5B842",
@@ -1252,6 +1293,7 @@ window.ResultsDashboard = (function () {
       state.charts.simModules.destroy();
     }
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const s = state.metrics.simModules || {
       q15: 4.1, q16: 4.2, q17: 4.5, q18: 4.7, q19: 4.0, q20: 4.6, q21: 4.4, q22: 4.5, q23: 4.4
     };
@@ -1259,7 +1301,17 @@ window.ResultsDashboard = (function () {
     state.charts.simModules = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: [
+        labels: isEn ? [
+          "Q15. Navigation & Controls",
+          "Q16. Tutorials & Menus",
+          "Q17. Pedagogical Efficacy",
+          "Q18. Decision Sequence",
+          "Q19. Calculations & Formulas",
+          "Q20. Nozzles & Spray Volume",
+          "Q21. Product Selection & Label",
+          "Q22. Field Variables",
+          "Q23. Global Expectations"
+        ] : [
           "Q15. Navegação e Controlos",
           "Q16. Tutoriais e Menus",
           "Q17. Eficácia Pedagógica",
@@ -1271,7 +1323,7 @@ window.ResultsDashboard = (function () {
           "Q23. Expectativas Globais"
         ],
         datasets: [{
-          label: "Média (1 a 5)",
+          label: isEn ? "Mean Score (1 to 5)" : "Média (1 a 5)",
           data: [s.q15, s.q16, s.q17, s.q18, s.q19, s.q20, s.q21, s.q22, s.q23],
           backgroundColor: "#059669",
           borderColor: "#047857",
@@ -1306,19 +1358,43 @@ window.ResultsDashboard = (function () {
   function renderDemographicsCharts() {
     if (!state.metrics?.demographics) return;
     const demo = state.metrics.demographics;
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    // Dicionário de tradução para perfis e culturas
+    const profileTranslations = {
+      "Técnico / Consultor": "Technical Advisor / Consultant",
+      "Eng. Agrónomo": "Agronomist",
+      "Produtor": "Grower / Farmer",
+      "Investigador": "Researcher / Academic",
+      "Estudante": "Student",
+      "Outro": "Other"
+    };
+
+    const cropTranslations = {
+      "Vinhedo": "Vineyard",
+      "Olivicultura": "Olive Grove",
+      "Fruticultura": "Fruit Orchards",
+      "Milho": "Maize / Corn",
+      "Hortícolas": "Vegetables / Horticulture",
+      "Grandes Culturas": "Broadacre Crops",
+      "Outras": "Other"
+    };
 
     // Gráfico de Perfis Profissionais (Donut)
     const ctxProfiles = document.getElementById("chart-demo-profiles")?.getContext("2d");
     if (ctxProfiles && window.Chart) {
       if (state.charts.demoProfiles) state.charts.demoProfiles.destroy();
 
-      const pLabels = Object.keys(demo.profiles || {});
+      const rawPLabels = Object.keys(demo.profiles || {});
+      const pLabels = rawPLabels.length 
+        ? (isEn ? rawPLabels.map(l => profileTranslations[l] || l) : rawPLabels)
+        : (isEn ? ["Technical Advisor", "Agronomist", "Farmer / Grower", "Researcher"] : ["Técnico / Consultor", "Eng. Agrónomo", "Produtor", "Investigador"]);
       const pData = Object.values(demo.profiles || {});
 
       state.charts.demoProfiles = new Chart(ctxProfiles, {
         type: "doughnut",
         data: {
-          labels: pLabels.length ? pLabels : ["Técnico / Consultor", "Eng. Agrónomo", "Produtor", "Investigador"],
+          labels: pLabels,
           datasets: [{
             data: pData.length ? pData : [7, 5, 3, 3],
             backgroundColor: ["#F5B842", "#0F172A", "#059669", "#2563EB", "#D97706", "#8B5CF6"],
@@ -1341,15 +1417,18 @@ window.ResultsDashboard = (function () {
     if (ctxCrops && window.Chart) {
       if (state.charts.demoCrops) state.charts.demoCrops.destroy();
 
-      const cLabels = Object.keys(demo.crops || {});
+      const rawCLabels = Object.keys(demo.crops || {});
+      const cLabels = rawCLabels.length
+        ? (isEn ? rawCLabels.map(l => cropTranslations[l] || l) : rawCLabels)
+        : (isEn ? ["Vineyard", "Olive Grove", "Fruit Orchards", "Maize", "Horticulture"] : ["Vinhedo", "Olivicultura", "Fruticultura", "Milho", "Hortícolas"]);
       const cData = Object.values(demo.crops || {});
 
       state.charts.demoCrops = new Chart(ctxCrops, {
         type: "bar",
         data: {
-          labels: cLabels.length ? cLabels : ["Vinhedo", "Olivicultura", "Fruticultura", "Milho", "Hortícolas"],
+          labels: cLabels,
           datasets: [{
-            label: "Participantes Envolvidos",
+            label: isEn ? "Involved Participants" : "Participantes Envolvidos",
             data: cData.length ? cData : [11, 10, 8, 6, 5],
             backgroundColor: "#2563EB",
             borderColor: "#1D4ED8",
@@ -1386,12 +1465,13 @@ window.ResultsDashboard = (function () {
 
     if (state.charts.npsGauge) state.charts.npsGauge.destroy();
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const n = state.metrics.nps;
 
     state.charts.npsGauge = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: ["Promotores (Notas 9-10)", "Passivos (Notas 7-8)", "Detratores (Notas 0-6)"],
+        labels: isEn ? ["Promoters (Scores 9-10)", "Passives (Scores 7-8)", "Detractors (Scores 0-6)"] : ["Promotores (Notas 9-10)", "Passivos (Notas 7-8)", "Detratores (Notas 0-6)"],
         datasets: [{
           data: [n.promoters || 13, n.passives || 4, n.detractors || 1],
           backgroundColor: ["#059669", "#F5B842", "#E11D48"],
@@ -1422,17 +1502,23 @@ window.ResultsDashboard = (function () {
     const containerFinal = document.getElementById("feedback-final-container");
     if (!state.metrics?.qualitativeFeedback) return;
 
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const { simSuggestions, finalSuggestions } = state.metrics.qualitativeFeedback;
+
+    const noSuggestionsText = isEn ? "No suggestions recorded yet." : "Sem sugestões registadas de momento.";
+    const participantLabel = isEn ? "Participant" : "Participante";
+    const simTag = isEn ? "Q25 Simulator" : "Q25 Simulador";
+    const finalTag = isEn ? "Q30 Consortium" : "Q30 Consórcio";
 
     if (containerSim) {
       if (!simSuggestions.length) {
-        containerSim.innerHTML = `<p class="text-xs text-slate-500 italic p-3">Sem sugestões registadas de momento.</p>`;
+        containerSim.innerHTML = `<p class="text-xs text-slate-500 italic p-3">${noSuggestionsText}</p>`;
       } else {
         containerSim.innerHTML = simSuggestions.slice(0, 6).map(item => `
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500">
-              <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">${item.code || 'Participante'}</span>
-              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> Q25 Simulador</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">${item.code || participantLabel}</span>
+              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> ${simTag}</span>
             </div>
             <p class="text-xs text-slate-800 leading-relaxed font-medium">"${item.text}"</p>
           </div>
@@ -1442,13 +1528,13 @@ window.ResultsDashboard = (function () {
 
     if (containerFinal) {
       if (!finalSuggestions.length) {
-        containerFinal.innerHTML = `<p class="text-xs text-slate-500 italic p-3">Sem sugestões registadas de momento.</p>`;
+        containerFinal.innerHTML = `<p class="text-xs text-slate-500 italic p-3">${noSuggestionsText}</p>`;
       } else {
         containerFinal.innerHTML = finalSuggestions.slice(0, 6).map(item => `
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500">
-              <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono">${item.code || 'Participante'}</span>
-              <span class="text-emerald-800 font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Q30 Consórcio</span>
+              <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono">${item.code || participantLabel}</span>
+              <span class="text-emerald-800 font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> ${finalTag}</span>
             </div>
             <p class="text-xs text-slate-800 leading-relaxed font-medium">"${item.text}"</p>
           </div>
