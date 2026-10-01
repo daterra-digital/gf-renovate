@@ -464,14 +464,14 @@ const RENOVATE_CONFIG = {
   // Configuração do Dashboard de Resultados (Google Sheets com Múltiplos Separadores)
   resultsDashboard: {
     // ID da Folha de Cálculo Google Sheets partilhada (ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)
-    spreadsheetId: "", 
+    spreadsheetId: "2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e", 
     // GID de cada separador (extraído da URL: #gid=...)
     tabGids: {
-      game: "0",        // Separador 1: Serious Game (Tallentto) + Dados Demográficos
-      sim: "",          // Separador 2: Simulador RENOVATE (Virmedex)
-      global: ""        // Separador 3: Avaliação Global (NPS + Síntese)
+      game: "1971530026", // Separador 1: Serious Game (Tallentto) + Dados Demográficos
+      sim: "1882859537",   // Separador 2: Simulador RENOVATE (Virmedex)
+      global: "914346842"  // Separador 3: Avaliação Global (NPS + Síntese)
     },
-    autoRefreshSeconds: 45,
+    autoRefreshSeconds: 30,
 
     // Conjunto de dados de demonstração representativo de 18 peritos agrícolas na ESAS
     // Exibido automaticamente antes de serem inseridos os IDs ou quando a folha tem 0 respostas

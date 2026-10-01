@@ -66,19 +66,25 @@ window.ResultsDashboard = (function () {
    * Carrega a configuração do localStorage ou de RENOVATE_CONFIG
    */
   function loadConfig() {
+    // 1. Carregar definições padrão de RENOVATE_CONFIG
+    if (window.RENOVATE_CONFIG && RENOVATE_CONFIG.resultsDashboard) {
+      const cfg = RENOVATE_CONFIG.resultsDashboard;
+      state.config.spreadsheetId = cfg.spreadsheetId || "";
+      state.config.tabGids = Object.assign({}, state.config.tabGids, cfg.tabGids || {});
+      state.config.autoRefreshSeconds = cfg.autoRefreshSeconds || 30;
+    }
+
+    // 2. Sobrepor com definições personalizadas no localStorage (se existirem)
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        state.config = Object.assign({}, state.config, parsed);
+        if (parsed.spreadsheetId) {
+          state.config = Object.assign({}, state.config, parsed);
+        }
       } catch (e) {
         console.warn("Aviso ao carregar configuração guardada do Google Sheets:", e);
       }
-    } else if (window.RENOVATE_CONFIG && RENOVATE_CONFIG.resultsDashboard) {
-      const cfg = RENOVATE_CONFIG.resultsDashboard;
-      state.config.spreadsheetId = cfg.spreadsheetId || "";
-      state.config.tabGids = Object.assign({}, state.config.tabGids, cfg.tabGids || {});
-      state.config.autoRefreshSeconds = cfg.autoRefreshSeconds || 45;
     }
   }
 
@@ -466,12 +472,14 @@ window.ResultsDashboard = (function () {
 
       // Validar se há respostas (pelo menos 1 linha além do cabeçalho)
       if (rawGameRows.length <= 1) {
-        console.info("ℹ️ Folha conectada mas sem respostas submetidas. A exibir dados pedagógicos de demonstração.");
+        console.info("ℹ️ Folha conectada com sucesso aos 3 separadores! A exibir pré-visualização até que a 1ª resposta seja submetida.");
         loadDemoData();
-        state.isLive = false;
+        state.isLive = true;
+        state.isWaitingAnswers = true;
       } else {
         processRealData(rawGameRows, rawSimRows, rawGlobalRows);
         state.isLive = true;
+        state.isWaitingAnswers = false;
       }
 
       finishFetch(isManualRefresh, true);
@@ -479,6 +487,7 @@ window.ResultsDashboard = (function () {
       console.warn("⚠️ Não foi possível obter dados em tempo real do Google Sheets. A utilizar dados de demonstração.", err);
       loadDemoData();
       state.isLive = false;
+      state.isWaitingAnswers = false;
       finishFetch(isManualRefresh, false, err.message);
     }
   }
@@ -493,12 +502,12 @@ window.ResultsDashboard = (function () {
     renderAllDashboardMetrics();
 
     if (isManual) {
-      showToast(
-        state.isLive 
-          ? `Resultados sincronizados com o Google Sheets (${state.metrics.participantCount} respostas)` 
-          : "A exibir dados de demonstração da 2ª Sessão",
-        state.isLive ? "success" : "info"
-      );
+      const msg = state.isLive && state.isWaitingAnswers
+        ? "Google Sheets conectado aos 3 separadores! A aguardar primeiras respostas dos participantes."
+        : state.isLive
+        ? `Resultados sincronizados em tempo real (${state.metrics.participantCount} respostas)`
+        : "A exibir dados de demonstração da 2ª Sessão";
+      showToast(msg, state.isLive ? "success" : "info");
     }
 
     // Agendar próximo auto-refresh
@@ -543,7 +552,13 @@ window.ResultsDashboard = (function () {
 
     if (timeEl) timeEl.textContent = `Última sincronização: ${timeStr}`;
 
-    if (state.isLive) {
+    if (state.isLive && state.isWaitingAnswers) {
+      badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs";
+      badge.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Google Sheets Conectado (Aguardando Respostas)</span>
+      `;
+    } else if (state.isLive) {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
