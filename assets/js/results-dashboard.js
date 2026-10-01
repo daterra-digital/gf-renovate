@@ -1056,7 +1056,8 @@ window.ResultsDashboard = (function () {
     // 2. Renderizar Nuvem de Palavras
     renderWordCloud();
 
-    // 3. Renderizar Gráficos Chart.js
+    // 3. Renderizar Régua e Gráficos de Usabilidade SUS
+    renderSusBenchmarkGauge();
     renderSusComparisonChart();
     renderGamePedagogyChart();
     renderSimModulesChart();
@@ -1178,6 +1179,66 @@ window.ResultsDashboard = (function () {
         }).join("")}
       </div>
     `;
+  }
+
+  /**
+   * Renderização da Régua Visual SUS com Posicionamento dos Resultados Finais
+   */
+  function renderSusBenchmarkGauge() {
+    if (!state.metrics) return;
+    const m = state.metrics;
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    const gameScore = m.susGame?.average ? parseFloat(m.susGame.average) : 78.4;
+    const simScore = m.susSim?.average ? parseFloat(m.susSim.average) : 81.6;
+
+    // 1. Atualizar Cartões de Resultado Final
+    const cardGameScore = document.getElementById("sus-card-game-score");
+    const cardGameBench = document.getElementById("sus-card-game-bench");
+    const cardGameDiff = document.getElementById("sus-card-game-diff");
+
+    const cardSimScore = document.getElementById("sus-card-sim-score");
+    const cardSimBench = document.getElementById("sus-card-sim-bench");
+    const cardSimDiff = document.getElementById("sus-card-sim-diff");
+
+    if (cardGameScore) cardGameScore.textContent = gameScore.toFixed(1);
+    if (cardGameBench) cardGameBench.textContent = m.susGame?.benchmark || (isEn ? "Good / Above Average" : "Bom / Acima da Média");
+    if (cardGameDiff) {
+      const diffGame = (gameScore - 68.0).toFixed(1);
+      const sign = diffGame >= 0 ? "+" : "";
+      cardGameDiff.textContent = `${sign}${diffGame} ${isEn ? "vs Global Avg (68.0)" : "vs Média Mundial"}`;
+    }
+
+    if (cardSimScore) cardSimScore.textContent = simScore.toFixed(1);
+    if (cardSimBench) cardSimBench.textContent = m.susSim?.benchmark || (isEn ? "Excellent (Grade A)" : "Excelente (Classe A)");
+    if (cardSimDiff) {
+      const diffSim = (simScore - 68.0).toFixed(1);
+      const sign = diffSim >= 0 ? "+" : "";
+      cardSimDiff.textContent = `${sign}${diffSim} ${isEn ? "vs Global Avg (68.0)" : "vs Média Mundial"}`;
+    }
+
+    // 2. Atualizar Pinos Indicadores na Régua
+    const pinGame = document.getElementById("sus-pin-game");
+    const pinSim = document.getElementById("sus-pin-sim");
+    const pinGameText = document.getElementById("sus-pin-game-text");
+    const pinSimText = document.getElementById("sus-pin-sim-text");
+
+    const gamePos = Math.min(Math.max(gameScore, 4), 96);
+    const simPos = Math.min(Math.max(simScore, 4), 96);
+
+    if (pinGame) {
+      pinGame.style.left = `${gamePos}%`;
+    }
+    if (pinGameText) {
+      pinGameText.textContent = `Game: ${gameScore.toFixed(1)}`;
+    }
+
+    if (pinSim) {
+      pinSim.style.left = `${simPos}%`;
+    }
+    if (pinSimText) {
+      pinSimText.textContent = `Simulador: ${simScore.toFixed(1)}`;
+    }
   }
 
   /**
