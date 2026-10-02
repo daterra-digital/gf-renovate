@@ -119,6 +119,10 @@ window.ModeratorPanel = (function () {
    * Abre a Modal de Moderação (exibe popup de senha se não autenticado, ou painel completo se autenticado)
    */
   function openModal() {
+    if (typeof window.switchTab === "function") {
+      window.switchTab("moderation");
+      return;
+    }
     const modal = document.getElementById("moderator-modal");
     if (!modal) return;
 
@@ -1213,6 +1217,7 @@ window.ModeratorPanel = (function () {
    */
   function init() {
     initEvents();
+    renderAllModeratorControls();
   }
 
   return {
@@ -1221,6 +1226,7 @@ window.ModeratorPanel = (function () {
     closeModal,
     lockPanel,
     switchTab,
+    renderAllModeratorControls,
     openQrProjection,
     closeQrProjection,
     fetchSubmissionsCount,

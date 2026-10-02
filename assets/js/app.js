@@ -114,6 +114,11 @@ function initTabNavigation() {
       renderGF1();
     }
 
+    // Garantir renderização e sincronização imediata dos controlos de moderação
+    if (targetTab === "moderation" && window.ModeratorPanel && typeof window.ModeratorPanel.renderAllModeratorControls === "function") {
+      window.ModeratorPanel.renderAllModeratorControls();
+    }
+
     // Atualizar Hash sem scroll forçado
     if (window.location.hash !== `#${targetTab}`) {
       history.replaceState(null, null, `#${targetTab}`);
