@@ -110,26 +110,32 @@ window.AuthModule = (function () {
    * Retorna: 'open' | 'closed'
    */
   function getSystemStatus() {
-    // Em produção (GitHub Pages), a plataforma está permanentemente aberta para os participantes da sessão
-    if (!isLocalhost()) {
-      return "open";
-    }
-    try {
-      const status1 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS);
-      const status2 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS_ALT);
-      const val = (status1 || status2 || "open").trim().toLowerCase();
-      if (val === "closed" || val === "maintenance" || val === "fechado") {
+    // 1. Objeto Global injetado por system-status.js ou poller em segundo plano
+    if (window.RENOVATE_SYSTEM_STATUS && typeof window.RENOVATE_SYSTEM_STATUS.status === "string") {
+      const globalVal = window.RENOVATE_SYSTEM_STATUS.status.trim().toLowerCase();
+      if (globalVal === "closed" || globalVal === "maintenance" || globalVal === "fechado") {
         return "closed";
       }
-      return "open";
-    } catch (e) {
-      return "open";
     }
+
+    // 2. Em localhost, suportar também override ou leitura em localStorage
+    if (isLocalhost()) {
+      try {
+        const status1 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS);
+        const status2 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS_ALT);
+        const val = (status1 || status2 || "").trim().toLowerCase();
+        if (val === "closed" || val === "maintenance" || val === "fechado") {
+          return "closed";
+        }
+      } catch (e) {}
+    }
+
+    return "open";
   }
 
   /**
    * Altera o estado do sistema (Aberto para Testes / Fechado para Manutenção)
-   * Reservado exclusivamente a ambiente de localhost.
+   * Reservado exclusivamente ao ambiente de localhost.
    */
   function setSystemStatus(status) {
     if (!isLocalhost()) {
@@ -143,6 +149,11 @@ window.AuthModule = (function () {
     } catch (e) {
       console.error("Erro ao guardar system_status:", e);
     }
+    if (!window.RENOVATE_SYSTEM_STATUS) {
+      window.RENOVATE_SYSTEM_STATUS = {};
+    }
+    window.RENOVATE_SYSTEM_STATUS.status = val;
+    window.RENOVATE_SYSTEM_STATUS.updated_at = new Date().toISOString();
     syncUIWithStatus();
   }
 
@@ -268,14 +279,25 @@ window.AuthModule = (function () {
     }
 
     // 1. Verificar se a plataforma está aberta ou em manutenção
-    // Moderador com Chave Mestra pode aceder mesmo se o sistema estiver em manutenção
-    if (getSystemStatus() === "closed" && !isModKey) {
-      return {
-        success: false,
-        error: isEn
-          ? "The RENOVATE platform is temporarily closed for technical maintenance. Only authorized moderators can log in."
-          : "A plataforma RENOVATE encontra-se temporariamente fechada para atualização técnica. Apenas moderadores autorizados podem aceder."
-      };
+    // Bloqueio estrito em produção (GitHub Pages): sem qualquer possibilidade de acesso com credenciais de participantes.
+    // Em localhost: apenas moderador com chave mestra pode aceder para retirar a plataforma de manutenção.
+    if (getSystemStatus() === "closed") {
+      if (!isLocalhost()) {
+        return {
+          success: false,
+          error: isEn
+            ? "The RENOVATE platform is currently closed for technical maintenance. Participant access is strictly suspended on the official website. Maintenance can only be lifted via the local environment."
+            : "A plataforma RENOVATE encontra-se atualmente em manutenção técnica. O acesso está estritamente suspenso para todos os participantes no website oficial. O desbloqueio de manutenção só pode ser realizado pela moderação em ambiente local."
+        };
+      }
+      if (!isModKey) {
+        return {
+          success: false,
+          error: isEn
+            ? "The platform is closed for technical maintenance. Only the session moderator (admin-fg2) can log in locally to manage the system."
+            : "A plataforma encontra-se fechada para manutenção técnica. Apenas o moderador da sessão (admin-fg2) pode aceder em localhost para gerir o sistema."
+        };
+      }
     }
 
     // 2. Validação do código de participante
@@ -857,8 +879,10 @@ window.AuthModule = (function () {
     if (status === "closed") {
       if (maintNotice) maintNotice.classList.remove("hidden");
 
-      // Se o utilizador com sessão iniciada for moderador, NUNCA bloquear nem expulsar da sessão!
-      if (!isModerator()) {
+      // Se a plataforma estiver fechada:
+      // Em produção (GitHub Pages): bloqueio de 100% de acessos sem exceções
+      // Em localhost: moderador com sessão ativa não é bloqueado
+      if (!isLocalhost() || !isModerator()) {
         const modal = document.getElementById("auth-login-modal");
         if (modal && modal.classList.contains("hidden")) {
           modal.classList.remove("hidden");
@@ -1083,6 +1107,65 @@ window.AuthModule = (function () {
   }
 
   /**
+   * Monitorização periódica em segundo plano do estado do sistema via system-status.json
+   */
+  function startStatusPoller() {
+    let lastKnownStatus = getSystemStatus();
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(`system-status.json?_t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.status) {
+          const fetchedStatus = (data.status === "closed" || data.status === "maintenance") ? "closed" : "open";
+          
+          if (!window.RENOVATE_SYSTEM_STATUS) {
+            window.RENOVATE_SYSTEM_STATUS = {};
+          }
+          window.RENOVATE_SYSTEM_STATUS.status = fetchedStatus;
+          window.RENOVATE_SYSTEM_STATUS.updated_at = data.updated_at;
+
+          if (fetchedStatus !== lastKnownStatus) {
+            console.log(`[AuthModule] Transição de estado detetada: ${lastKnownStatus} -> ${fetchedStatus}`);
+            lastKnownStatus = fetchedStatus;
+            syncUIWithStatus();
+            if (window.ModeratorPanel && typeof window.ModeratorPanel.renderAccessControls === "function") {
+              window.ModeratorPanel.renderAccessControls();
+            }
+
+            if (fetchedStatus === "closed") {
+              // Se a plataforma entrou em manutenção:
+              // Em GitHub Pages bloqueia imediatamente todos os acessos
+              // Em localhost bloqueia participantes normais mas mantém moderadores
+              if (!isLocalhost() || !isModerator()) {
+                lockWebsite();
+                const isEn = window.I18nManager && window.I18nManager.isEnglish();
+                if (window.showToast) {
+                  window.showToast(isEn 
+                    ? "The platform has entered technical maintenance mode." 
+                    : "A plataforma entrou em modo de manutenção técnica.");
+                }
+              }
+            } else {
+              // Se a plataforma foi reaberta:
+              const isEn = window.I18nManager && window.I18nManager.isEnglish();
+              if (window.showToast) {
+                window.showToast(isEn ? "The platform is now open for testing!" : "A plataforma está aberta para testes!");
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Silencioso em caso de indisponibilidade momentânea de rede
+      }
+    };
+
+    setTimeout(fetchStatus, 1500);
+    setInterval(fetchStatus, 12000);
+  }
+
+  /**
    * Inicialização do Módulo de Autenticação
    */
   function init() {
@@ -1091,8 +1174,8 @@ window.AuthModule = (function () {
     syncUIWithStatus();
 
     // Verificação de Acesso:
-    // Se o utilizador não tem sessão ativa OU se o sistema está fechado e NÃO é moderador, bloqueia
-    if (!isAuthenticated() || (getSystemStatus() === "closed" && !isModerator())) {
+    // Se o utilizador não tem sessão ativa OU se o sistema está fechado (e não é moderador em localhost), bloqueia
+    if (!isAuthenticated() || (getSystemStatus() === "closed" && (!isLocalhost() || !isModerator()))) {
       lockWebsite();
     } else {
       unlockWebsite();
@@ -1102,6 +1185,7 @@ window.AuthModule = (function () {
     }
 
     initEvents();
+    startStatusPoller();
 
     if (window.lucide) {
       window.lucide.createIcons();

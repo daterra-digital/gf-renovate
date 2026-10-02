@@ -1026,10 +1026,10 @@ window.ModeratorPanel = (function () {
       });
     });
 
-    // 6. Kill-Switch: Alternância do Estado da Plataforma (Exclusivo Localhost)
+    // 6. Kill-Switch: Alternância do Estado da Plataforma (Exclusivo Localhost com Git Push Automático)
     const statusToggleBtn = document.getElementById("mod-status-toggle-btn");
     if (statusToggleBtn) {
-      statusToggleBtn.addEventListener("click", () => {
+      statusToggleBtn.addEventListener("click", async () => {
         if (!window.AuthModule) return;
         const AuthModule = window.AuthModule;
         if (typeof AuthModule.isLocalhost === "function" && !AuthModule.isLocalhost()) {
@@ -1040,11 +1040,47 @@ window.ModeratorPanel = (function () {
         const next = current === "closed" ? "open" : "closed";
         AuthModule.setSystemStatus(next);
         renderAccessControls();
+
         const isEn = window.I18nManager && window.I18nManager.isEnglish();
         if (window.showToast) {
           window.showToast(next === "closed" 
-            ? (isEn ? "Platform closed (Maintenance mode active)!" : "Plataforma fechada para manutenção!")
-            : (isEn ? "Platform opened for testing!" : "Plataforma reaberta para testes!"));
+            ? (isEn ? "Platform closed locally! Syncing with GitHub Pages..." : "Plataforma fechada localmente! A sincronizar com o GitHub Pages...")
+            : (isEn ? "Platform opened locally! Syncing with GitHub Pages..." : "Plataforma reaberta localmente! A sincronizar com o GitHub Pages..."));
+        }
+
+        // Chamar API local do Node.js para gravar ficheiros e fazer Git Push para o GitHub Pages
+        try {
+          statusToggleBtn.disabled = true;
+          statusToggleBtn.classList.add("opacity-50", "pointer-events-none");
+
+          const response = await fetch("/api/system-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: next, auto_push: true })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.success) {
+              if (data.pushed) {
+                if (window.showToast) {
+                  window.showToast(next === "closed"
+                    ? (isEn ? "✅ GitHub Pages locked successfully in maintenance mode!" : "✅ GitHub Pages bloqueado em manutenção com sucesso!")
+                    : (isEn ? "✅ GitHub Pages opened successfully for participants!" : "✅ GitHub Pages reaberto para participantes com sucesso!"));
+                }
+              } else if (data.warning) {
+                if (window.showToast) {
+                  window.showToast(`⚠️ ${data.warning}`);
+                }
+              }
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("Aviso ao sincronizar via API local:", fetchErr);
+        } finally {
+          statusToggleBtn.disabled = false;
+          statusToggleBtn.classList.remove("opacity-50", "pointer-events-none");
+          renderAccessControls();
         }
       });
     }

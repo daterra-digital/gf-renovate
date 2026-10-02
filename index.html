@@ -45,10 +45,17 @@
   <!-- Estilos Customizados -->
   <link rel="stylesheet" href="assets/css/custom.css?v=20261002-0100">
 
-  <!-- Verificação Imediata de Sessão (Previne Flash de Conteúdo Não Autenticado) -->
+  <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
+  <script src="system-status.js?v=20261002-0500"></script>
+
+  <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
     try {
-      if (localStorage.getItem("renovate_session_active") !== "true") {
+      const isClosed = window.RENOVATE_SYSTEM_STATUS && window.RENOVATE_SYSTEM_STATUS.status === "closed";
+      const isAuth = localStorage.getItem("renovate_session_active") === "true";
+      const isMod = localStorage.getItem("renovate_user_role") === "moderator";
+      const isLoc = location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:";
+      if (!isAuth || (isClosed && (!isLoc || !isMod))) {
         document.documentElement.classList.add("auth-locked");
       }
     } catch(e) {}
@@ -2049,6 +2056,7 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
+  <script src="system-status.js?v=20261002-0500"></script>
   <script src="assets/js/i18n.js?v=20261002-0500"></script>
   <script src="assets/js/content-data.js?v=20261002-0500"></script>
   <script src="assets/js/auth.js?v=20261002-0500"></script>
