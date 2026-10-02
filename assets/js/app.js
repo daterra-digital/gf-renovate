@@ -846,236 +846,30 @@ function initParticipantCodeEvents() {
 }
 
 /**
- * Modal do Moderador (Opção C: PIN 2026 e Controlo de Desbloqueio)
+ * Modal do Moderador e Gestão de Sala (Painel Central de Controlo)
  */
 function initModeratorModal() {
-  const modal = document.getElementById("moderator-modal");
-  const openBtns = document.querySelectorAll(".btn-open-moderator-modal");
-  const closeBtn = document.getElementById("btn-close-moderator-modal");
-  const pinInput = document.getElementById("moderator-pin-input");
-  const verifyBtn = document.getElementById("btn-verify-moderator-pin");
-  const authSection = document.getElementById("moderator-auth-section");
-  const panelSection = document.getElementById("moderator-panel-section");
-  const pinError = document.getElementById("moderator-pin-error");
-
-  const unlockAllBtn = document.getElementById("btn-mod-unlock-all");
-  const resetBtn = document.getElementById("btn-mod-reset");
-
-  if (!modal) return;
-
-  function openModal() {
-    modal.classList.remove("hidden");
-    if (pinInput && !panelSection.classList.contains("hidden")) {
-      // Já autenticado
-    } else if (pinInput) {
-      pinInput.value = "";
-      pinInput.focus();
-      if (pinError) pinError.classList.add("hidden");
-    }
+  if (window.ModeratorPanel) {
+    window.ModeratorPanel.init();
   }
 
-  function closeModal() {
-    modal.classList.add("hidden");
-  }
-
-  openBtns.forEach(btn => btn.addEventListener("click", openModal));
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
-
-  // Fechar ao clicar fora
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  // Verificação de PIN
-  if (verifyBtn && pinInput) {
-    verifyBtn.addEventListener("click", () => {
-      checkPin();
-    });
-    pinInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") checkPin();
-    });
-  }
-
-  function checkPin() {
-    const pin = pinInput.value.trim();
-    if (LiveSession.verifyModeratorPin(pin)) {
-      authSection.classList.add("hidden");
-      panelSection.classList.remove("hidden");
-      updateModeratorControlList();
-      updateModeratorAccessControls();
-      showToast("Acesso de Moderador Confirmado!");
-      if (window.lucide) window.lucide.createIcons();
-    } else {
-      if (pinError) {
-        pinError.classList.remove("hidden");
-        pinError.textContent = "PIN incorreto. Tente novamente.";
-      }
-    }
-  }
-
-  function updateModeratorControlList() {
-    const container = document.getElementById("moderator-step-toggles");
-    if (!container) return;
-
-    const state = LiveSession.getState();
-
-    const stepNames = {
-      1: "Passo 1: Abertura & Identificação",
-      2: "Passo 2: Apresentação (Slides)",
-      3: "Passo 3: Serious Game & Form 2",
-      4: "Passo 4: Simulador PC & Form 3",
-      5: "Passo 5: Avaliação Global & Encerramento"
-    };
-
-    container.innerHTML = [1, 2, 3, 4, 5].map(step => {
-      const isUnlocked = state.unlockedSteps.includes(step);
-      return `
-        <div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white">
-          <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-slate-900 text-[#FFCC66] text-xs font-bold flex items-center justify-center">${step}</span>
-            <span class="text-xs sm:text-sm font-semibold text-slate-800">${stepNames[step] || `Passo ${step}`}</span>
-          </div>
-          <button type="button" 
-                  data-mod-step="${step}" 
-                  class="btn-mod-toggle-step px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5
-                         ${isUnlocked ? 'bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'}">
-            <i data-lucide="${isUnlocked ? 'lock' : 'unlock'}" class="w-3.5 h-3.5"></i>
-            ${isUnlocked ? 'Bloquear' : 'Desbloquear'}
-          </button>
-        </div>
-      `;
-    }).join("");
-
-    // Adicionar listeners nos toggles individuais
-    container.querySelectorAll(".btn-mod-toggle-step").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const stepNum = parseInt(btn.getAttribute("data-mod-step"), 10);
-        if (state.unlockedSteps.includes(stepNum)) {
-          LiveSession.lockStep(stepNum);
-        } else {
-          LiveSession.unlockStep(stepNum);
-        }
-        updateModeratorControlList();
-      });
-    });
-
-    if (window.lucide) window.lucide.createIcons();
-  }
-
-  // Desbloquear Tudo
-  if (unlockAllBtn) {
-    unlockAllBtn.addEventListener("click", () => {
-      LiveSession.unlockAllSteps();
-      updateModeratorControlList();
-      showToast("Todos os passos foram desbloqueados!");
-    });
-  }
-
-  // Repor Passos
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      LiveSession.lockStep(2);
-      LiveSession.lockStep(3);
-      LiveSession.lockStep(4);
-      LiveSession.lockStep(5);
-      updateModeratorControlList();
-      showToast("Passos repostos ao estado inicial.");
-    });
-  }
-
-  // Desbloquear até ao Passo X
-  document.querySelectorAll(".btn-unlock-upto").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetStep = parseInt(btn.getAttribute("data-target-step"), 10);
-      LiveSession.unlockUpToStep(targetStep);
-      updateModeratorControlList();
-      showToast(`Passos desbloqueados até ao Passo ${targetStep}!`);
-    });
-  });
-
-  // Atalho para Resultados & Google Sheets a partir da Modal
+  // Atalho para Resultados & Dashboard a partir do Painel de Moderação
   const btnModResults = document.getElementById("btn-mod-goto-results");
   if (btnModResults) {
     btnModResults.addEventListener("click", () => {
-      closeModal();
-      const resultsBtn = document.querySelector('[data-tab="results"]');
-      if (resultsBtn) resultsBtn.click();
-      const resultsSec = document.getElementById("tab-results");
+      if (window.ModeratorPanel) {
+        window.ModeratorPanel.closeModal();
+      }
+      if (typeof window.switchTab === "function") {
+        window.switchTab("results");
+      }
+      const resultsSec = document.getElementById("tab-results") || document.getElementById("content-results");
       if (resultsSec) {
         setTimeout(() => {
           resultsSec.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 150);
       }
     });
-  }
-
-  function updateModeratorAccessControls() {
-    if (!window.AuthModule) return;
-
-    // 1. Estado do Sistema (Aberto vs Fechado)
-    const statusSelect = document.getElementById("mod-system-status");
-    if (statusSelect) {
-      statusSelect.value = AuthModule.getSystemStatus();
-      statusSelect.onchange = () => {
-        const newStatus = statusSelect.value;
-        AuthModule.setSystemStatus(newStatus);
-        const isEn = window.I18nManager && window.I18nManager.isEnglish();
-        showToast(newStatus === "closed" 
-          ? (isEn ? "System status set to Maintenance (Closed)!" : "Estado alterado: Fechado para Manutenção!")
-          : (isEn ? "System status set to Open for Testing!" : "Estado alterado: Aberto para Testes!"));
-      };
-    }
-
-    // 2. Modo de Fase (auto, phase1, phase2)
-    const phaseSelect = document.getElementById("mod-access-phase");
-    if (phaseSelect) {
-      const savedPhase = localStorage.getItem(AuthModule.STORAGE_KEYS.ACCESS_PHASE) || "auto";
-      phaseSelect.value = savedPhase;
-      phaseSelect.onchange = () => {
-        const newPhase = phaseSelect.value;
-        AuthModule.setAccessPhase(newPhase);
-        const isEn = window.I18nManager && window.I18nManager.isEnglish();
-        showToast(isEn ? "Access phase updated successfully!" : "Fase de acesso atualizada com sucesso!");
-      };
-    }
-
-    // 3. Chave Personalizada
-    const keyInput = document.getElementById("mod-custom-key-input");
-    const saveKeyBtn = document.getElementById("btn-mod-save-key");
-    if (keyInput) {
-      keyInput.value = localStorage.getItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY) || "";
-    }
-    if (saveKeyBtn && keyInput) {
-      saveKeyBtn.onclick = () => {
-        const keyVal = keyInput.value.trim();
-        if (keyVal) {
-          localStorage.setItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY, keyVal);
-          showToast(`Chave de acesso guardada: ${keyVal}`);
-        } else {
-          localStorage.removeItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY);
-          showToast("Chave personalizada removida (padrão ativa: renovate2026).");
-        }
-      };
-    }
-
-    // 4. Sessão Ativa & Forçar Logout
-    const sessionLabel = document.getElementById("mod-active-session-code");
-    const forceLogoutBtn = document.getElementById("btn-mod-force-logout");
-    if (sessionLabel) {
-      const activeCode = AuthModule.getParticipantCode();
-      sessionLabel.textContent = activeCode ? `${activeCode} (${AuthModule.getParticipantType(activeCode)})` : "Nenhuma";
-    }
-    if (forceLogoutBtn) {
-      forceLogoutBtn.onclick = () => {
-        if (AuthModule.isAuthenticated()) {
-          AuthModule.logout(true);
-          if (sessionLabel) sessionLabel.textContent = "Nenhuma";
-          showToast("Sessão terminada pelo moderador.");
-        } else {
-          showToast("Não existe nenhuma sessão ativa neste navegador.");
-        }
-      };
-    }
   }
 }
 

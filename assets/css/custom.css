@@ -300,7 +300,8 @@ body.auth-locked footer {
 }
 
 #moderator-modal,
-#rgpd-info-modal {
+#rgpd-info-modal,
+#mod-qrcode-modal {
   z-index: 9999 !important;
 }
 

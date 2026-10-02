@@ -206,10 +206,12 @@ const LiveSession = (function () {
   }
 
   /**
-   * Validação de PIN do Moderador (Opção C)
+   * Validação de PIN/Palavra-passe do Moderador (renovate26 ou fallback 2026)
    */
   function verifyModeratorPin(pin) {
-    return pin === MODERATOR_PIN;
+    if (!pin) return false;
+    const clean = pin.trim().toLowerCase();
+    return clean === MODERATOR_PIN || clean === "renovate26";
   }
 
   /**

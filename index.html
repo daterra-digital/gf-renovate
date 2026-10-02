@@ -1403,155 +1403,487 @@
   </nav>
 
   <!-- ========================================== -->
-  <!-- MODAL DO MODERADOR (OPÇÃO C: PIN 2026)     -->
+  <!-- MODAL DO MODERADOR E GESTÃO DE SALA        -->
   <!-- ========================================== -->
-  <div id="moderator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-5 animate-fadeIn max-h-[92vh] overflow-y-auto">
-      
-      <!-- Cabeçalho da Modal -->
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center">
-            <i data-lucide="shield-check" class="w-4 h-4"></i>
+  <div id="moderator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs modal-backdrop hidden overflow-y-auto">
+    
+    <!-- 1. Card de Autenticação com Palavra-Passe -->
+    <div id="moderator-auth-card" class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 sm:p-7 space-y-5 animate-fadeIn my-auto text-left relative overflow-hidden">
+      <!-- Faixa de Cores RENOVATE -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 renovate-palette-bar"></div>
+
+      <!-- Topo: Ícone e Título -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 pt-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 shadow-2xs">
+            <i data-lucide="shield-check" class="w-5 h-5 text-amber-700"></i>
           </div>
           <div>
-            <h3 data-i18n="mod.title" class="text-base font-bold text-slate-900">Painel do Moderador</h3>
-            <p data-i18n="mod.subtitle" class="text-[11px] text-slate-500">Controlo de Desbloqueio das Fases</p>
+            <h3 data-i18n="mod.authModalTitle" class="text-base font-extrabold text-slate-900 leading-tight">Autenticação de Moderação</h3>
+            <p data-i18n="mod.authModalSubtitle" class="text-[11px] text-slate-500 font-medium">Acesso Restrito à Gestão de Sala</p>
           </div>
         </div>
-        <button type="button" id="btn-close-moderator-modal" class="text-slate-400 hover:text-slate-700 p-1">
+        <button type="button" id="btn-close-mod-auth" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition" title="Fechar">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Secção de Autenticação (PIN) -->
-      <div id="moderator-auth-section" class="space-y-4">
-        <p data-i18n="mod.pinDesc" class="text-xs text-slate-600">
-          Introduza o PIN de segurança para aceder aos comandos de gestão da sessão.
-        </p>
-        <div>
-          <input type="password" id="moderator-pin-input" maxlength="8" placeholder="Introduzir PIN" data-i18n-placeholder="mod.pinPlaceholder"
-                 class="w-full text-center tracking-widest text-lg font-mono font-bold px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none">
-          <p id="moderator-pin-error" class="text-xs text-rose-600 mt-1.5 hidden text-center font-semibold"></p>
+      <!-- Campo de Palavra-Passe -->
+      <div class="space-y-2">
+        <label for="mod-password-input" data-i18n="mod.authPasswordLabel" class="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Palavra-passe do Moderador
+        </label>
+        <div class="relative">
+          <input type="password" id="mod-password-input" placeholder="Introduza a palavra-passe..." data-i18n-placeholder="mod.authPasswordPlaceholder"
+                 class="w-full text-sm font-mono font-bold py-2.5 pl-3.5 pr-10 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none transition">
+          <button type="button" id="btn-toggle-mod-pass-visibility" title="Mostrar/Ocultar Palavra-passe"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
         </div>
-        <button type="button" id="btn-verify-moderator-pin" data-i18n="mod.authBtn"
-                class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
-          Autenticar Moderador
+        <p id="mod-password-error" class="text-xs text-rose-600 font-semibold hidden animate-fadeIn"></p>
+      </div>
+
+      <!-- Botão de Autenticação -->
+      <button type="button" id="btn-verify-mod-password" data-i18n="mod.authEnterBtn"
+              class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold transition shadow-md flex items-center justify-center gap-2">
+        <i data-lucide="lock" class="w-4 h-4 text-[#FFCC66]"></i>
+        <span>Entrar no Painel</span>
+      </button>
+
+      <p class="text-[11px] text-slate-400 text-center">
+        Área reservada exclusivamente aos moderadores da DATERRA & consórcio RENOVATE.
+      </p>
+    </div>
+
+    <!-- 2. Card Central Expandido do Painel de Moderação (max-w-4xl) -->
+    <div id="moderator-panel-card" class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full p-5 sm:p-7 space-y-5 animate-fadeIn max-h-[92vh] overflow-y-auto hidden text-left relative my-auto">
+      <!-- Faixa de Cores RENOVATE -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 renovate-palette-bar"></div>
+
+      <!-- Topo do Painel: Título, Projeção de QR Code, Bloquear e Fechar -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 pt-1 flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 shadow-2xs">
+            <i data-lucide="settings" class="w-5 h-5 text-amber-700"></i>
+          </div>
+          <div>
+            <h3 data-i18n="mod.panelTitle" class="text-base sm:text-lg font-black text-slate-900 leading-snug">
+              Painel de Moderação e Gestão de Sala
+            </h3>
+            <p data-i18n="mod.panelSubtitle" class="text-xs text-slate-500 font-medium">
+              Controlo em Tempo Real • 2ª Sessão do Grupo Focal RENOVATE
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Botão de Projeção Rápida de QR Code (Destaque Proeminente) -->
+          <button type="button" class="btn-open-mod-qrcode inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-black border border-slate-900 transition shadow-xs cursor-pointer">
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
+            <span data-i18n="mod.projectQrBtn">Projetar QR Code do Site</span>
+          </button>
+
+          <!-- Botão Bloquear Painel -->
+          <button type="button" id="btn-mod-lock-panel" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer" title="Bloquear Painel">
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+            <span data-i18n="mod.lockPanelBtn" class="hidden sm:inline">Bloquear</span>
+          </button>
+
+          <!-- Botão Fechar Modal -->
+          <button type="button" id="btn-close-moderator-modal" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Fechar">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Abas de Gestão (3 Abas Principais) -->
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2 overflow-x-auto">
+        <button type="button" data-mod-tab="access" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-sm transition shrink-0 cursor-pointer">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span data-i18n="mod.tabAccess">Controlo de Acesso & Fases</span>
+        </button>
+        <button type="button" data-mod-tab="participants" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition shrink-0 cursor-pointer">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span data-i18n="mod.tabParticipants">Participantes & Submissões</span>
+        </button>
+        <button type="button" data-mod-tab="timing" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition shrink-0 cursor-pointer">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+          <span data-i18n="mod.tabTiming">Gestão de Tempo & Desvios</span>
         </button>
       </div>
 
-      <!-- Secção do Painel de Controlo (Após PIN Válido) -->
-      <div id="moderator-panel-section" class="space-y-5 hidden">
-        <div class="space-y-2">
-          <div data-i18n="mod.statusHeader" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estado das Fases</div>
-          <div id="moderator-step-toggles" class="space-y-2">
-            <!-- Toggles individuais renderizados dinamicamente -->
+      <!-- ============================================== -->
+      <!-- ABA 1: CONTROLO DO ESTADO DO SISTEMA E FASES   -->
+      <!-- ============================================== -->
+      <div id="mod-tab-content-access" class="space-y-5 animate-fadeIn">
+        
+        <!-- Cartão Kill-Switch: Estado da Plataforma (system_status) -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="space-y-0.5">
+              <span class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="power" class="w-4 h-4 text-amber-600"></i>
+                Comutador de Estado do Sistema (system_status)
+              </span>
+              <p id="mod-status-desc" class="text-xs text-slate-500">
+                A plataforma está totalmente operacional para acesso aos testes com crachá e chave ativa.
+              </p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span id="mod-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                Plataforma Aberta
+              </span>
+              <button type="button" id="mod-status-toggle-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 shadow-2xs transition cursor-pointer">
+                <!-- Preenchido dinamicamente -->
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Desbloquear até ao Passo X (Opção de Desbloqueio Sequencial) -->
-        <div class="space-y-1.5 pt-2 border-t border-slate-100">
-          <div data-i18n="mod.unlockUpto" class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Desbloquear até ao Passo:</div>
-          <div class="grid grid-cols-5 gap-1.5">
-            <button type="button" data-target-step="1" data-i18n="mod.upto1" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 1</button>
-            <button type="button" data-target-step="2" data-i18n="mod.upto2" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 2</button>
-            <button type="button" data-target-step="3" data-i18n="mod.upto3" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 3</button>
-            <button type="button" data-target-step="4" data-i18n="mod.upto4" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 4</button>
-            <button type="button" data-target-step="5" data-i18n="mod.upto5" class="btn-unlock-upto py-1.5 px-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] hover:text-[#0F172A] text-slate-800 text-[11px] font-bold border border-slate-200 transition text-center">Até 5</button>
+        <!-- Comutador de Fase de Acesso (Override Manual) -->
+        <div class="space-y-2.5">
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+            Comutador de Fase de Acesso (Override Manual de Registo):
+          </span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            
+            <!-- Opção 1: Automático por Calendário -->
+            <label class="mod-phase-card p-3.5 rounded-2xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400 transition flex items-start gap-2.5">
+              <input type="radio" name="mod_phase_option" value="auto" class="mt-1 text-slate-900 focus:ring-[#FFCC66] cursor-pointer">
+              <div class="space-y-1">
+                <div class="font-extrabold text-xs text-slate-900 flex items-center gap-1">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-600"></i>
+                  Modo Automático
+                </div>
+                <p class="text-[11px] text-slate-500 leading-tight">
+                  Presencial FG2 até 06/10/2026; Remoto NS a partir de 07/10/2026.
+                </p>
+              </div>
+            </label>
+
+            <!-- Opção 2: Forçar Presencial (FG2) -->
+            <label class="mod-phase-card p-3.5 rounded-2xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400 transition flex items-start gap-2.5">
+              <input type="radio" name="mod_phase_option" value="phase1" class="mt-1 text-slate-900 focus:ring-[#FFCC66] cursor-pointer">
+              <div class="space-y-1">
+                <div class="font-extrabold text-xs text-slate-900 flex items-center gap-1">
+                  <i data-lucide="building" class="w-3.5 h-3.5 text-amber-600"></i>
+                  Forçar Presencial (FG2)
+                </div>
+                <p class="text-[11px] text-slate-500 leading-tight">
+                  Disponibiliza exclusivamente códigos FG2-PT01 a FG2-PT50.
+                </p>
+              </div>
+            </label>
+
+            <!-- Opção 3: Forçar Remoto (NS) -->
+            <label class="mod-phase-card p-3.5 rounded-2xl border border-slate-200 bg-white cursor-pointer hover:border-slate-400 transition flex items-start gap-2.5">
+              <input type="radio" name="mod_phase_option" value="phase2" class="mt-1 text-slate-900 focus:ring-[#FFCC66] cursor-pointer">
+              <div class="space-y-1">
+                <div class="font-extrabold text-xs text-slate-900 flex items-center gap-1">
+                  <i data-lucide="globe" class="w-3.5 h-3.5 text-cyan-600"></i>
+                  Forçar Remoto (NS)
+                </div>
+                <p class="text-[11px] text-slate-500 leading-tight">
+                  Abertura antecipada de acessos remotos (NS-PT01 a NS-PT50).
+                </p>
+              </div>
+            </label>
+
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-          <button type="button" id="btn-mod-unlock-all" 
-                  class="w-full py-2 px-3 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center justify-center gap-1.5">
-            <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
-            <span data-i18n="mod.unlockAll">Desbloquear Tudo</span>
-          </button>
-          <button type="button" id="btn-mod-reset" 
-                  class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-            <span data-i18n="mod.reset">Repor Padrão</span>
-          </button>
-        </div>
-
-        <!-- Secção: Controlo de Acessos & Plataforma (Fase 1, Fase 2 e Manutenção) -->
-        <div class="space-y-3 pt-3 border-t border-slate-200">
-          <div data-i18n="mod.accessControlTitle" class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
-            <span>Controlo de Acessos & Plataforma</span>
-          </div>
-
-          <!-- Estado do Sistema (system_status) -->
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
-            <label for="mod-system-status" data-i18n="mod.systemStatusLabel" class="block text-[11px] font-bold text-slate-700">
-              Estado do Sistema (system_status):
+        <!-- Chave de Acesso Personalizada e Sessão Ativa -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <!-- Chave Personalizada -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <label for="mod-custom-key-input" class="block text-[11px] font-bold text-slate-700">
+              Chave de Acesso Personalizada da Sessão:
             </label>
-            <select id="mod-system-status" class="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
-              <option value="open">🟢 Aberto para Testes</option>
-              <option value="closed">🔴 Fechado para Manutenção / Implementação</option>
-            </select>
-          </div>
-
-          <!-- Modo de Fase de Acesso (auto, phase1, phase2) -->
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
-            <label for="mod-access-phase" data-i18n="mod.phaseModeLabel" class="block text-[11px] font-bold text-slate-700">
-              Modo de Fase de Acesso:
-            </label>
-            <select id="mod-access-phase" class="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
-              <option value="auto">⚡ Automático por Calendário (06/10 presencial, 07/10+ remoto)</option>
-              <option value="phase1">🏛️ Forçar Fase 1: Presencial (FG2-PT01 a PT50)</option>
-              <option value="phase2">🌐 Forçar Fase 2: Pós-Evento / Remoto (NS-PT01 a PT50)</option>
-            </select>
-          </div>
-
-          <!-- Chave de Acesso Personalizada -->
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
-            <label for="mod-custom-key-input" data-i18n="mod.activeKeyLabel" class="block text-[11px] font-bold text-slate-700">
-              Chave de Acesso Personalizada:
-            </label>
-            <div class="flex gap-1.5">
-              <input type="text" id="mod-custom-key-input" placeholder="Padrão: renovate2026" 
-                     class="w-full text-xs font-mono px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white outline-none focus:ring-2 focus:ring-[#FFCC66]">
-              <button type="button" id="btn-mod-save-key" data-i18n="mod.saveSettings" 
-                      class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800 transition shrink-0">
+            <div class="flex gap-2">
+              <input type="text" id="mod-custom-key-input" placeholder="Padrão: renovate2026"
+                     class="w-full text-xs font-mono px-3 py-2 rounded-xl border border-slate-300 bg-white outline-none focus:ring-2 focus:ring-[#FFCC66]">
+              <button type="button" id="btn-mod-save-key" class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shrink-0 cursor-pointer">
                 Guardar
               </button>
             </div>
           </div>
 
           <!-- Sessão Ativa & Terminar Sessão -->
-          <div class="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 flex items-center justify-between gap-2">
-            <div class="text-[11px]">
-              <span data-i18n="mod.activeSessionLabel" class="text-slate-600 block">Sessão Ativa no Navegador:</span>
+          <div class="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200 flex items-center justify-between gap-2">
+            <div class="space-y-0.5">
+              <span class="text-[11px] text-slate-600 block font-medium">Sessão Ativa no Navegador:</span>
               <span id="mod-active-session-code" class="font-mono font-bold text-slate-900 text-xs">Nenhuma</span>
             </div>
-            <button type="button" id="btn-mod-force-logout" data-i18n="mod.forceLogoutBtn" 
-                    class="py-1 px-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition shrink-0">
+            <button type="button" id="btn-mod-force-logout" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shrink-0 shadow-2xs cursor-pointer">
               Terminar Sessão
             </button>
           </div>
         </div>
 
-        <!-- Atalho Rápido para Gestão de Resultados -->
-        <div class="pt-2 border-t border-slate-100">
-          <button type="button" id="btn-mod-goto-results" 
-                  class="w-full py-2 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-300 transition flex items-center justify-center gap-1.5">
-            <i data-lucide="folder-check" class="w-3.5 h-3.5 text-emerald-700"></i>
-            <span data-i18n="mod.gotoResults">Ver Dashboard de Resultados</span>
+        <!-- Desbloqueio dos Passos da Sessão ao Vivo (Passos 1 a 5) -->
+        <div class="space-y-3 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-black text-slate-800 uppercase tracking-wider">
+              Desbloqueio de Etapas da Sessão ao Vivo (Passos 1 a 5):
+            </span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" id="btn-mod-unlock-all" class="py-1 px-2.5 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-[11px] font-black border border-slate-900 transition flex items-center gap-1 cursor-pointer">
+                <i data-lucide="unlock" class="w-3 h-3"></i>
+                Desbloquear Tudo
+              </button>
+              <button type="button" id="btn-mod-reset-steps" class="py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+                <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                Repor
+              </button>
+            </div>
+          </div>
+
+          <!-- Desbloqueio Sequencial Rápido -->
+          <div class="flex items-center gap-1.5 flex-wrap text-[11px]">
+            <span class="text-slate-500 font-medium">Desbloquear até:</span>
+            <button type="button" data-target-step="1" class="btn-mod-unlock-upto px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] text-slate-800 font-bold border border-slate-200 transition cursor-pointer">Passo 1</button>
+            <button type="button" data-target-step="2" class="btn-mod-unlock-upto px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] text-slate-800 font-bold border border-slate-200 transition cursor-pointer">Passo 2</button>
+            <button type="button" data-target-step="3" class="btn-mod-unlock-upto px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] text-slate-800 font-bold border border-slate-200 transition cursor-pointer">Passo 3</button>
+            <button type="button" data-target-step="4" class="btn-mod-unlock-upto px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] text-slate-800 font-bold border border-slate-200 transition cursor-pointer">Passo 4</button>
+            <button type="button" data-target-step="5" class="btn-mod-unlock-upto px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FFCC66] text-slate-800 font-bold border border-slate-200 transition cursor-pointer">Passo 5</button>
+          </div>
+
+          <div id="mod-step-toggles-container" class="space-y-2 pt-1">
+            <!-- Toggles renderizados dinamicamente -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- ABA 2: PARTICIPANTES & MONITORES GOOGLE SHEETS -->
+      <!-- ============================================== -->
+      <div id="mod-tab-content-participants" class="space-y-5 animate-fadeIn hidden">
+        
+        <!-- Cartão Superior: Total Target e Controlo de Polling -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-4">
+          <div class="space-y-1.5">
+            <label for="mod-total-target-input" class="block text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="users" class="w-4 h-4 text-amber-600"></i>
+              Total de Participantes em Sala:
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="mod-total-target-input" min="1" max="100" value="22"
+                     class="w-24 text-center font-mono font-black text-lg py-1.5 px-2 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
+              <span class="text-xs text-slate-500 font-medium">pessoas presentes</span>
+            </div>
+            <!-- Presets Rápidos -->
+            <div class="flex items-center gap-1.5 pt-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase">Predefinições:</span>
+              <button type="button" data-target="15" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">15</button>
+              <button type="button" data-target="20" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">20</button>
+              <button type="button" data-target="22" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">22</button>
+              <button type="button" data-target="25" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">25</button>
+              <button type="button" data-target="30" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">30</button>
+            </div>
+          </div>
+
+          <!-- Estado do Polling a cada 10s & Atualizar Agora -->
+          <div class="flex flex-col items-end gap-2 text-right">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 font-medium">Auto-refresh a cada 10s:</span>
+              <span id="mod-polling-countdown" class="font-mono font-bold text-xs bg-slate-200 px-2 py-0.5 rounded-full text-slate-800">10s</span>
+              <button type="button" id="btn-mod-refresh-submissions" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition shadow-2xs cursor-pointer" title="Atualizar agora">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="text-[11px] text-slate-600 font-semibold">
+              Total Acumulado: <span id="mod-submissions-global-summary" class="font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">0 / 66 (0%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grelha dos 3 Monitores de Submissão em Tempo Real -->
+        <div id="mod-submissions-monitor-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Renderizado dinamicamente via ModeratorPanel.fetchSubmissionsCount() -->
+        </div>
+
+        <!-- Atalho para Dashboard Geral -->
+        <div class="pt-2 flex justify-between items-center text-xs flex-wrap gap-2">
+          <span class="text-slate-500 text-[11px]">
+            Os dados são consultados diretamente a partir dos separadores públicos do Google Sheets.
+          </span>
+          <button type="button" id="btn-mod-goto-results" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold transition cursor-pointer">
+            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+            Abrir Gráficos & Estatísticas
           </button>
         </div>
 
+      </div>
 
-        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-[11px] text-amber-900 space-y-1">
-          <div class="font-bold flex items-center gap-1">
-            <i data-lucide="link-2" class="w-3.5 h-3.5"></i>
-            <span data-i18n="mod.qrShortcut">Atalho de Desbloqueio via URL:</span>
+      <!-- ============================================== -->
+      <!-- ABA 3: GESTÃO DE TEMPO E DESVIOS (DELAY TRACKER)-->
+      <!-- ============================================== -->
+      <div id="mod-tab-content-timing" class="space-y-5 animate-fadeIn hidden">
+        
+        <!-- Cartão Superior: Cronómetro Progressivo Digital -->
+        <div class="p-5 sm:p-6 rounded-3xl border border-slate-200 bg-slate-950 text-white flex items-center justify-between flex-wrap gap-4 shadow-md">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+              <i data-lucide="timer" class="w-4 h-4"></i>
+              Cronómetro de Etapa Ativa
+            </span>
+            <div id="mod-stopwatch-display" class="font-mono font-black text-4xl sm:text-5xl text-white tracking-wider">
+              00:00:00
+            </div>
+            <p class="text-xs text-slate-400">
+              Contagem progressiva do tempo decorrido na dinâmica em curso.
+            </p>
           </div>
-          <p class="text-slate-600">
-            <span data-i18n="mod.qrDesc">Pode projetar ou partilhar com os participantes um QR code com o parâmetro:</span>
-            <code class="bg-white px-1.5 py-0.5 rounded border border-amber-300 font-mono font-bold text-slate-900">?unlock=all</code>
-          </p>
+
+          <div class="flex items-center gap-2">
+            <!-- Botão Iniciar -->
+            <button type="button" id="btn-mod-timer-start" class="px-5 py-3 rounded-2xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] font-black text-sm flex items-center gap-2 shadow-lg transition cursor-pointer">
+              <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+              <span>Iniciar</span>
+            </button>
+            <!-- Botão Pausar (inicialmente oculto) -->
+            <button type="button" id="btn-mod-timer-pause" class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm flex items-center gap-2 shadow-lg transition hidden cursor-pointer">
+              <i data-lucide="pause" class="w-4 h-4 fill-current"></i>
+              <span>Pausar</span>
+            </button>
+            <!-- Botão Reset -->
+            <button type="button" id="btn-mod-timer-reset" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center gap-1.5 transition cursor-pointer" title="Repor Cronómetro">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span>Reset</span>
+            </button>
+          </div>
         </div>
+
+        <!-- Seletor de Etapa da Agenda & Calculador de Desvio -->
+        <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-4">
+          <div class="space-y-1">
+            <label for="mod-delay-stage-select" class="block text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-4 h-4 text-amber-600"></i>
+              Etapa Selecionada no Programa Oficial:
+            </label>
+            <select id="mod-delay-stage-select" class="w-full text-xs font-bold py-2.5 px-3 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none cursor-pointer">
+              <!-- Povoado com as 11 etapas do programa -->
+            </select>
+          </div>
+
+          <!-- Grelha de Horários e Duração -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Início Agendado</span>
+              <span id="mod-sched-start-display" class="font-mono font-black text-slate-900 text-base">10:30</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Fim Agendado</span>
+              <span id="mod-sched-end-display" class="font-mono font-black text-slate-900 text-base">11:10</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Duração Prevista</span>
+              <span id="mod-sched-duration-display" class="font-mono font-black text-slate-900 text-base">40 min</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-0.5">
+              <span class="text-[10px] text-amber-700 font-bold uppercase block">Nova Estimativa</span>
+              <span id="mod-estimated-end-display" class="font-mono font-black text-amber-800 text-base">11:10</span>
+            </div>
+          </div>
+
+          <!-- Hora Real de Início & Selo de Desvio -->
+          <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <label for="mod-real-start-input" class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="play-circle" class="w-4 h-4 text-emerald-600"></i>
+                Hora Real de Início da Etapa:
+              </label>
+              <div class="flex items-center gap-2">
+                <input type="time" id="mod-real-start-input" value="10:30"
+                       class="font-mono font-black text-sm px-2.5 py-1 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
+                <button type="button" id="btn-mod-set-real-now" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">
+                  Hora Atual
+                </button>
+              </div>
+            </div>
+
+            <!-- Selo Visual de Desvio -->
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+              <span class="text-xs font-bold text-slate-700">Estado do Desvio:</span>
+              <div id="mod-drift-badge">
+                <!-- Selo Verde, Laranja ou Vermelho -->
+              </div>
+            </div>
+
+            <!-- Caixa de Conselho de Moderação Dinâmica -->
+            <div id="mod-drift-advice" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium space-y-1">
+              <!-- Injetado dinamicamente -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL FULLSCREEN DE PROJEÇÃO RÁPIDA DE QR CODE DO SITE   -->
+  <!-- ======================================================== -->
+  <div id="mod-qrcode-modal" class="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-8 bg-slate-950/95 backdrop-blur-md hidden animate-fadeIn">
+    <div class="max-w-2xl w-full flex flex-col items-center justify-center text-center space-y-5 my-auto">
+      
+      <!-- Topo: Barra de Controlo da Projeção -->
+      <div class="w-full flex items-center justify-between border-b border-white/10 pb-3 text-white">
+        <div class="flex items-center gap-2 text-left">
+          <span class="px-2.5 py-1 rounded-full bg-[#FFCC66] text-[#0F172A] font-black text-[10px] tracking-wider uppercase">
+            Projeção em Sala
+          </span>
+          <span class="text-xs font-bold text-slate-300">
+            2ª Sessão do Grupo Focal RENOVATE
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-toggle-mod-fs" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition text-xs font-bold flex items-center gap-1.5 cursor-pointer" title="Ecrã Inteiro">
+            <i data-lucide="maximize" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Ecrã Inteiro</span>
+          </button>
+          <button type="button" id="btn-close-mod-qrcode" class="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-white transition cursor-pointer" title="Fechar Projeção (Esc)">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Título de Projeção -->
+      <div class="space-y-1">
+        <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
+          Acesso à Plataforma RENOVATE — Grupo Focal 2
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 font-medium">
+          Área Reservada de Testes & Avaliação • Sessão ao Vivo
+        </p>
+      </div>
+
+      <!-- Caixa Branca com QR Code Gigante -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-white shadow-2xl border-4 border-[#FFCC66] flex flex-col items-center justify-center space-y-4">
+        <img id="mod-projector-qr-img" src="" alt="QR Code de Acesso ao Website RENOVATE" 
+             class="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 object-contain rounded-xl shadow-inner">
+        <div class="flex items-center gap-2 text-slate-800 text-xs font-bold">
+          <i data-lucide="camera" class="w-4 h-4 text-amber-600"></i>
+          <span>Aponte a câmara do telemóvel para aceder diretamente</span>
+        </div>
+      </div>
+
+      <!-- Link Direto Legível & Botão de Copiar -->
+      <div class="flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/20 text-white text-xs sm:text-sm font-mono max-w-full">
+        <i data-lucide="link" class="w-4 h-4 text-[#FFCC66] shrink-0"></i>
+        <span class="truncate">https://daterra-digital.github.io/gf-renovate/#live</span>
+        <button type="button" id="btn-copy-mod-qrlink" class="ml-2 px-3 py-1 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-slate-950 font-black text-xs shrink-0 transition cursor-pointer">
+          Copiar Link
+        </button>
+      </div>
+
+      <!-- Aviso para quem fechar o browser no telemóvel / PC -->
+      <div class="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 text-xs max-w-lg leading-relaxed text-center">
+        💡 <strong>Se fechou o browser no telemóvel ou PC:</strong> Leia o QR Code novamente para restaurar instantaneamente a sua Sessão ao Vivo sem perder o progresso.
       </div>
 
     </div>
@@ -1806,8 +2138,9 @@
   <script src="assets/js/content-data.js?v=20261002-0100"></script>
   <script src="assets/js/auth.js?v=20261002-0100"></script>
   <script src="assets/js/live-session.js?v=20261002-0100"></script>
-  <script src="assets/js/results-dashboard.js?v=20261002-0100"></script>
-  <script src="assets/js/app.js?v=20261002-0100"></script>
+  <script src="assets/js/results-dashboard.js?v=20261002-0200"></script>
+  <script src="assets/js/moderator-panel.js?v=20261002-0200"></script>
+  <script src="assets/js/app.js?v=20261002-0200"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
