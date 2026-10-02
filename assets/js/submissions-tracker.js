@@ -233,6 +233,11 @@ window.SubmissionsTracker = (function () {
       recalculateTotalParticipants();
       updateAllCounters();
 
+      // Atualizar dropdown de login com os códigos em uso em tempo real
+      if (window.AuthModule && typeof window.AuthModule.renderCodesDropdown === "function") {
+        window.AuthModule.renderCodesDropdown();
+      }
+
       // Notificar Dashboard de Resultados se disponível
       if (state.isLive && window.ResultsDashboard && typeof window.ResultsDashboard.setLiveParticipantCount === "function") {
         window.ResultsDashboard.setLiveParticipantCount(state.totalParticipants);

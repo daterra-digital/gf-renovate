@@ -8,6 +8,8 @@ window.AuthModule = (function () {
   const STORAGE_KEYS = {
     SESSION_ACTIVE: "renovate_session_active",
     PARTICIPANT_CODE: "renovate_participant_code",
+    USER_ROLE: "renovate_user_role",
+    REGISTERED_PARTICIPANTS: "renovate_registered_participants",
     SYSTEM_STATUS: "system_status",
     SYSTEM_STATUS_ALT: "renovate_system_status",
     ACCESS_PHASE: "renovate_access_phase",
@@ -15,6 +17,15 @@ window.AuthModule = (function () {
     CONSENT_TIMESTAMP: "renovate_consent_timestamp",
     SESSION_PHASE: "renovate_session_phase"
   };
+
+  // Palavras-passe Mestras de Moderador (insensíveis a maiúsculas)
+  const MODERATOR_MASTER_KEYS = [
+    "renovate2026-admin",
+    "renovate26",
+    "renovate-admin",
+    "admin2026",
+    "2026"
+  ];
 
   // Datas de Referência do Grupo Focal 2
   const DATES = {
@@ -149,10 +160,38 @@ window.AuthModule = (function () {
   }
 
   /**
-   * Obtém o tipo de participante ('FG2' | 'NS' | 'GENERIC')
+   * Obtém o perfil de utilizador guardado ('moderator' | 'participant')
+   */
+  function getUserRole() {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.USER_ROLE) || "participant";
+    } catch (e) {
+      return "participant";
+    }
+  }
+
+  /**
+   * Verifica se o utilizador autenticado tem perfil de moderador
+   */
+  function isModerator() {
+    return isAuthenticated() && getUserRole() === "moderator";
+  }
+
+  /**
+   * Verifica se a chave fornecida é a Palavra-passe Mestra de Moderador
+   */
+  function isModeratorMasterKey(inputKey) {
+    if (!inputKey) return false;
+    const cleanKey = inputKey.trim().toLowerCase();
+    return MODERATOR_MASTER_KEYS.includes(cleanKey);
+  }
+
+  /**
+   * Obtém o tipo de participante ('MOD' | 'FG2' | 'NS' | 'PARTICIPANT')
    */
   function getParticipantType(code) {
     const c = (code || getParticipantCode()).toUpperCase();
+    if (c.includes("-MD") || getUserRole() === "moderator") return "MOD";
     if (c.startsWith("FG2")) return "FG2";
     if (c.startsWith("NS")) return "NS";
     return "PARTICIPANT";
@@ -184,9 +223,12 @@ window.AuthModule = (function () {
    */
   function login(code, key, consent) {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const cleanCode = (code || "").trim().toUpperCase();
+    const isModKey = isModeratorMasterKey(key);
 
     // 1. Verificar se a plataforma está aberta ou em manutenção
-    if (getSystemStatus() === "closed") {
+    // Moderador com Chave Mestra pode aceder mesmo se o sistema estiver em manutenção
+    if (getSystemStatus() === "closed" && !isModKey) {
       return {
         success: false,
         error: isEn
@@ -196,7 +238,6 @@ window.AuthModule = (function () {
     }
 
     // 2. Validação do código de participante
-    const cleanCode = (code || "").trim().toUpperCase();
     if (!cleanCode) {
       return {
         success: false,
@@ -206,10 +247,12 @@ window.AuthModule = (function () {
       };
     }
 
-    // Validar se o código pertence à fase ativa
+    // Validar se o código pertence à fase ativa ou se é código de moderação
     const phase = getEffectivePhase();
     const validCodes = phase === "phase2" ? REMOTE_CODES : PRESENTIAL_CODES;
-    if (!validCodes.includes(cleanCode)) {
+    const isModOption = cleanCode === "MOD-PT01" || cleanCode.startsWith("MOD-");
+
+    if (!validCodes.includes(cleanCode) && !isModOption) {
       return {
         success: false,
         error: phase === "phase2"
@@ -222,13 +265,56 @@ window.AuthModule = (function () {
       };
     }
 
-    // 3. Validação da Chave de Acesso
-    if (!validateAccessKey(key)) {
+    // 3. Validação da Chave de Acesso e Atribuição do Perfil e Sufixo -MD
+    let userRole = "participant";
+    let finalCode = cleanCode;
+
+    if (isModKey) {
+      // 1. Atribuição de privilégios de moderador
+      userRole = "moderator";
+      // 2. Adição automática do sufixo "-MD" ao código selecionado (exemplo: "FG2-PT03-MD")
+      finalCode = cleanCode.endsWith("-MD") ? cleanCode : `${cleanCode}-MD`;
+    } else {
+      if (isModOption) {
+        return {
+          success: false,
+          error: isEn
+            ? "The MOD option requires the Master Moderator Password (e.g. renovate2026-admin)."
+            : "A opção de moderação requer a introdução da Palavra-passe Mestra de Moderador (ex.: renovate2026-admin)."
+        };
+      }
+      if (!validateAccessKey(key)) {
+        return {
+          success: false,
+          error: isEn
+            ? "Incorrect Access Key. Please check the session key and try again."
+            : "Chave de Acesso incorreta. Por favor verifique a chave do evento e tente novamente."
+        };
+      }
+    }
+
+    // 3.1 Verificação estrita de código em uso (para utilizadores sem chave mestra)
+    const registeredCodes = new Set();
+    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getRegisteredCodes === "function") {
+      window.SubmissionsTracker.getRegisteredCodes().forEach(c => {
+        if (c) registeredCodes.add(String(c).trim().toUpperCase());
+      });
+    }
+    try {
+      const savedList = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS) || "[]");
+      if (Array.isArray(savedList)) {
+        savedList.forEach(c => {
+          if (c) registeredCodes.add(String(c).trim().toUpperCase());
+        });
+      }
+    } catch (e) {}
+
+    if (!isModKey && (registeredCodes.has(cleanCode) || registeredCodes.has(`${cleanCode}-MD`))) {
       return {
         success: false,
         error: isEn
-          ? "Incorrect Access Key. Please check the session key and try again."
-          : "Chave de Acesso incorreta. Por favor verifique a chave do evento e tente novamente."
+          ? `Code ${cleanCode} is already registered. Please select an available code.`
+          : `O código ${cleanCode} já se encontra em uso. Por favor selecione outro código disponível.`
       };
     }
 
@@ -245,31 +331,39 @@ window.AuthModule = (function () {
     // Gravação segura no localStorage
     try {
       localStorage.setItem(STORAGE_KEYS.SESSION_ACTIVE, "true");
-      localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, cleanCode);
+      localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, finalCode);
+      localStorage.setItem(STORAGE_KEYS.USER_ROLE, userRole);
       localStorage.setItem(STORAGE_KEYS.SESSION_PHASE, phase);
       localStorage.setItem(STORAGE_KEYS.CONSENT_TIMESTAMP, new Date().toISOString());
+      if (userRole === "moderator") {
+        sessionStorage.setItem("renovate_mod_authenticated", "true");
+      }
     } catch (e) {
       console.error("Erro ao gravar sessão no localStorage:", e);
     }
 
-    // Injeção de dados nos Google Forms e sincronização com LiveSession
-    injectParticipantCodeToForms(cleanCode);
+    // 3. Injeção nos formulários de avaliação com o código final (incluindo sufixo -MD se moderador)
+    injectParticipantCodeToForms(finalCode);
     if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
-      window.LiveSession.setParticipantCode(cleanCode);
+      window.LiveSession.setParticipantCode(finalCode);
     }
 
     // Registo do código no rastreador automático de participantes e contadores
     if (window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
-      window.SubmissionsTracker.registerParticipantCode(cleanCode);
+      window.SubmissionsTracker.registerParticipantCode(finalCode);
     }
 
     // Atualização da UI
     unlockWebsite();
     renderHeaderUserBadge();
+    if (window.updateNavVisibility) {
+      window.updateNavVisibility();
+    }
 
     return {
       success: true,
-      code: cleanCode
+      code: finalCode,
+      role: userRole
     };
   }
 
@@ -290,8 +384,12 @@ window.AuthModule = (function () {
     try {
       localStorage.removeItem(STORAGE_KEYS.SESSION_ACTIVE);
       localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_CODE);
+      localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
       localStorage.removeItem(STORAGE_KEYS.SESSION_PHASE);
       localStorage.removeItem(STORAGE_KEYS.CONSENT_TIMESTAMP);
+      try {
+        sessionStorage.removeItem("renovate_mod_authenticated");
+      } catch (e) {}
     } catch (e) {
       console.error("Erro ao limpar sessão:", e);
     }
@@ -302,6 +400,9 @@ window.AuthModule = (function () {
     // Bloquear website e reabrir tela de login
     lockWebsite();
     renderHeaderUserBadge();
+    if (window.updateNavVisibility) {
+      window.updateNavVisibility();
+    }
 
     if (window.showToast) {
       window.showToast(isEn ? "Session ended. Access locked." : "Sessão terminada. Acesso reservado bloqueado.");
@@ -464,12 +565,53 @@ window.AuthModule = (function () {
       } catch (e) {}
     }
 
+    // Obter códigos registados via Google Sheets e localStorage
+    const registeredCodes = new Set();
+    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getRegisteredCodes === "function") {
+      window.SubmissionsTracker.getRegisteredCodes().forEach(c => {
+        if (c) {
+          const raw = String(c).trim().toUpperCase();
+          registeredCodes.add(raw);
+          const base = raw.replace(/-MD$/, "");
+          registeredCodes.add(base);
+        }
+      });
+    }
+    try {
+      const savedList = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS) || "[]");
+      if (Array.isArray(savedList)) {
+        savedList.forEach(c => {
+          if (c) {
+            const raw = String(c).trim().toUpperCase();
+            registeredCodes.add(raw);
+            const base = raw.replace(/-MD$/, "");
+            registeredCodes.add(base);
+          }
+        });
+      }
+    } catch (e) {}
+
+    const inUseLabel = isEn ? "In use" : "Em uso";
+
     let html = `<option value="" disabled ${!currentSaved ? 'selected' : ''}>${placeholderText}</option>`;
     html += `<optgroup label="${groupLabel}">`;
     codes.forEach(code => {
-      const isSelected = code === currentSaved;
-      html += `<option value="${code}" ${isSelected ? 'selected' : ''}>${code}</option>`;
+      const isRegistered = registeredCodes.has(code) || registeredCodes.has(`${code}-MD`);
+      const isSelected = code === currentSaved && !isRegistered;
+      if (isRegistered) {
+        // ESTRITAMENTE DESATIVADO: atributo HTML disabled impede seleção; texto a cinzento com "(Em uso)"
+        html += `<option value="${code}" disabled class="text-slate-400 bg-slate-100 cursor-not-allowed" style="color: #94a3b8;">${code} (${inUseLabel})</option>`;
+      } else {
+        html += `<option value="${code}" ${isSelected ? 'selected' : ''}>${code}</option>`;
+      }
     });
+    html += `</optgroup>`;
+
+    // Opção de Moderação & Coordenação
+    const modLabel = isEn ? "MOD-PT01 (Moderator Access)" : "MOD-PT01 (Acesso de Moderador)";
+    const modGroup = isEn ? "Moderação & Coordenação" : "Moderação & Coordenação";
+    html += `<optgroup label="${modGroup}">`;
+    html += `<option value="MOD-PT01">${modLabel}</option>`;
     html += `</optgroup>`;
 
     select.innerHTML = html;
@@ -586,16 +728,21 @@ window.AuthModule = (function () {
     const type = getParticipantType(code);
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
+    const isMOD = type === "MOD" || getUserRole() === "moderator";
     const isFG2 = type === "FG2";
-    const typeLabel = isFG2 ? (isEn ? "In-Person" : "Presencial") : (isEn ? "Remote" : "Remoto");
-    const avatarBg = isFG2 ? "bg-[#FFCC66] text-[#0F172A]" : "bg-emerald-400 text-slate-950";
+    let typeLabel = isFG2 ? (isEn ? "In-Person" : "Presencial") : (isEn ? "Remote" : "Remoto");
+    let avatarBg = isFG2 ? "bg-[#FFCC66] text-[#0F172A]" : "bg-emerald-400 text-slate-950";
+    if (isMOD) {
+      typeLabel = isEn ? "Moderator" : "Moderador";
+      avatarBg = "bg-amber-500 text-slate-950 ring-2 ring-amber-400";
+    }
 
     container.className = "flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 animate-fadeIn";
     container.innerHTML = `
-      <div class="flex items-center gap-2 bg-slate-900 text-white pl-1.5 pr-2.5 py-1 rounded-xl shadow-xs border border-slate-800" title="${isEn ? 'Authenticated Participant' : 'Participante Autenticado'}">
-        <!-- Avatar Circular com Tag de Tipo (FG2 ou NS) -->
+      <div class="flex items-center gap-2 bg-slate-900 text-white pl-1.5 pr-2.5 py-1 rounded-xl shadow-xs border border-slate-800" title="${isMOD ? (isEn ? 'Authenticated Moderator' : 'Moderador Autenticado') : (isEn ? 'Authenticated Participant' : 'Participante Autenticado')}">
+        <!-- Avatar Circular com Tag de Tipo (FG2, NS ou MOD) -->
         <div class="w-7 h-7 rounded-full ${avatarBg} font-black text-[10px] tracking-tight flex items-center justify-center shadow-xs ring-2 ring-slate-800 shrink-0">
-          ${type}
+          ${isMOD ? 'MOD' : type}
         </div>
         <!-- Identificador do Participante -->
         <div class="flex flex-col text-left leading-tight">
@@ -751,6 +898,9 @@ window.AuthModule = (function () {
     login,
     logout,
     isAuthenticated,
+    getUserRole,
+    isModerator,
+    isModeratorMasterKey,
     getParticipantCode,
     getParticipantType,
     getEffectivePhase,

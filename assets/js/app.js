@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Gestão de Tabs da SPA com suporte a Hash na URL (#live, #program, #fg1, #results)
  */
 function initTabNavigation() {
-  const tabs = ["live", "program", "fg1", "results"];
+  const tabs = ["live", "program", "fg1", "results", "moderation"];
   const navButtons = document.querySelectorAll(".nav-tab-btn");
   const tabPanes = document.querySelectorAll(".tab-pane");
 
@@ -63,6 +63,15 @@ function initTabNavigation() {
     let targetTab = (rawTab || "").trim().toLowerCase();
     // Normalizar aliases (ex: gf1 -> fg1)
     if (targetTab === "gf1") targetTab = "fg1";
+
+    // Se o utilizador tentar aceder à aba de moderação sem perfil de moderador, redirecionar para live
+    if (targetTab === "moderation") {
+      const isMod = window.AuthModule && typeof window.AuthModule.isModerator === "function" && window.AuthModule.isModerator();
+      if (!isMod) {
+        targetTab = "live";
+      }
+    }
+
     if (!tabs.includes(targetTab)) targetTab = "live";
 
     // Atualizar Botões de Navegação
@@ -165,6 +174,19 @@ function initTabNavigation() {
     });
   }
 
+  // Botão "Projetar QR Code" na Aba de Moderação
+  const modProjectorBtn = document.getElementById("btn-mod-tab-projector");
+  if (modProjectorBtn) {
+    modProjectorBtn.addEventListener("click", () => {
+      if (window.ModeratorPanel && typeof window.ModeratorPanel.openQrProjection === "function") {
+        window.ModeratorPanel.openQrProjection();
+      }
+    });
+  }
+
+  // Sincronizar visibilidade do separador de Moderação consoante o perfil
+  updateNavVisibility();
+
   // Ler hash inicial ou usar ?tab=X
   const urlParams = new URLSearchParams(window.location.search);
   const tabParam = urlParams.get("tab");
@@ -188,6 +210,58 @@ function initTabNavigation() {
     }
   });
 }
+
+/**
+ * Atualiza a visibilidade dos separadores e menus de Moderação consoante o perfil do utilizador
+ */
+function updateNavVisibility() {
+  const isMod = window.AuthModule && typeof window.AuthModule.isModerator === "function" && window.AuthModule.isModerator();
+  const desktopModTab = document.getElementById("nav-tab-moderation");
+  const mobileModTab = document.getElementById("mobile-nav-tab-moderation");
+  const mobileNavGrid = document.getElementById("mobile-nav-grid");
+
+  if (desktopModTab) {
+    if (isMod) {
+      desktopModTab.classList.remove("hidden");
+      desktopModTab.classList.add("inline-flex");
+    } else {
+      desktopModTab.classList.add("hidden");
+      desktopModTab.classList.remove("inline-flex");
+    }
+  }
+
+  if (mobileModTab) {
+    if (isMod) {
+      mobileModTab.classList.remove("hidden");
+      mobileModTab.classList.add("flex");
+    } else {
+      mobileModTab.classList.add("hidden");
+      mobileModTab.classList.remove("flex");
+    }
+  }
+
+  if (mobileNavGrid) {
+    if (isMod) {
+      mobileNavGrid.classList.remove("grid-cols-4");
+      mobileNavGrid.classList.add("grid-cols-5");
+    } else {
+      mobileNavGrid.classList.remove("grid-cols-5");
+      mobileNavGrid.classList.add("grid-cols-4");
+    }
+  }
+
+  // Se o utilizador deixou de ser moderador e estava na aba de moderação, redirecionar para live
+  if (!isMod && (window.location.hash === "#moderation" || window.location.hash.toLowerCase() === "#moderation")) {
+    if (typeof window.switchTab === "function") {
+      window.switchTab("live");
+    }
+  }
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+window.updateNavVisibility = updateNavVisibility;
 
 /**
  * Renderização da Tabela do Programa Oficial em Acordeões Interativos (11 Etapas)

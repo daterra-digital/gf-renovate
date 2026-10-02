@@ -20,15 +20,19 @@ window.I18nManager = (function () {
       // Header & Navigation
       "header.title": "2ª Sessão do Grupo Focal",
       "header.subtitle": "06 Outubro 2026 • ESAS - Santarém",
-      "header.moderation": "Moderação",
       "nav.live": "Sessão ao Vivo",
       "nav.program": "Programa & Slides",
       "nav.fg1": "Grupo Focal 1 (Lisboa)",
       "nav.results": "Resultados & Media",
+      "nav.moderation": "🔒 Moderação",
       "nav.mobile.live": "Ao Vivo",
       "nav.mobile.program": "Programa",
       "nav.mobile.fg1": "GF1",
       "nav.mobile.results": "Resultados",
+      "nav.mobile.moderation": "Moderação",
+      "mod.badgeRole": "Perfil Moderador Ativo",
+      "mod.viewTitle": "Painel de Moderação e Gestão de Sala",
+      "mod.viewSubtitle": "Controlo em tempo real da sessão do Grupo Focal RENOVATE • ESAS Santarém",
 
       // Live Session (Tab 1)
       "live.guidedFlow": "Fluxo Guiado Interativo",
@@ -362,15 +366,19 @@ window.I18nManager = (function () {
       // Header & Navigation
       "header.title": "2nd Focus Group Session",
       "header.subtitle": "06 October 2026 • ESAS - Santarém",
-      "header.moderation": "Moderation",
       "nav.live": "Live Session",
       "nav.program": "Programme & Slides",
       "nav.fg1": "Focus Group 1 (Lisbon)",
       "nav.results": "Results & Media",
+      "nav.moderation": "🔒 Moderation",
       "nav.mobile.live": "Live",
       "nav.mobile.program": "Programme",
       "nav.mobile.fg1": "FG1",
       "nav.mobile.results": "Results",
+      "nav.mobile.moderation": "Moderation",
+      "mod.badgeRole": "Moderator Role Active",
+      "mod.viewTitle": "Moderation & Room Management Panel",
+      "mod.viewSubtitle": "Real-time session controls for RENOVATE Focus Group • ESAS Santarém",
 
       // Live Session (Tab 1)
       "live.guidedFlow": "Interactive Guided Flow",
