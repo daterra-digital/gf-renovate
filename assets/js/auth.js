@@ -853,21 +853,18 @@ window.AuthModule = (function () {
     const maintNotice = document.getElementById("auth-maintenance-notice");
     const formContainer = document.getElementById("auth-form-fields");
     const submitBtn = document.getElementById("btn-auth-submit");
-
-    // O formulário de login e o botão de submit NUNCA são desativados nem bloqueados com pointer-events-none,
-    // garantindo que moderadores conseguem sempre escrever "admin-fg2" e a sua palavra-passe de moderador
-    if (formContainer) {
-      formContainer.classList.remove("opacity-50", "pointer-events-none");
-    }
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("cursor-not-allowed", "opacity-50");
-    }
+    const codeInput = document.getElementById("auth-participant-code");
+    const keyInput = document.getElementById("auth-access-key");
+    const rgpdInput = document.getElementById("auth-consent-rgpd");
+    const phaseBadge = document.getElementById("auth-phase-badge");
+    const phase2Notice = document.getElementById("auth-phase2-notice");
+    const isLocal = isLocalhost();
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
     // O botão de atalho "Entrar como Moderador (admin-fg2)" só deve estar disponível em localhost
     const bypassContainer = document.getElementById("auth-maint-mod-bypass-container");
     if (bypassContainer) {
-      if (isLocalhost() && status === "closed") {
+      if (isLocal && status === "closed") {
         bypassContainer.classList.remove("hidden");
         bypassContainer.style.display = "";
       } else {
@@ -879,10 +876,55 @@ window.AuthModule = (function () {
     if (status === "closed") {
       if (maintNotice) maintNotice.classList.remove("hidden");
 
+      // Em produção (GitHub Pages):
+      // Quando em manutenção, não deve mostrar "Código de Participante", "Chave de Acesso" e a checkbox do RGPD.
+      // O botão "Entrar na Área Reservada" deverá ser "Sair".
+      if (!isLocal) {
+        if (formContainer) {
+          formContainer.classList.add("hidden");
+          formContainer.style.display = "none";
+        }
+        if (phaseBadge) phaseBadge.classList.add("hidden");
+        if (phase2Notice) phase2Notice.classList.add("hidden");
+
+        // Remover obrigatoriedade dos campos para permitir clique no botão Sair
+        if (codeInput) codeInput.removeAttribute("required");
+        if (keyInput) keyInput.removeAttribute("required");
+        if (rgpdInput) rgpdInput.removeAttribute("required");
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.className = "w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-sm font-extrabold border border-slate-800 transition flex items-center justify-center gap-2 shadow-md cursor-pointer";
+          submitBtn.innerHTML = `
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span data-i18n="auth.exitBtn">${isEn ? "Exit" : "Sair"}</span>
+          `;
+        }
+      } else {
+        // Em Localhost: moderador precisa de poder introduzir as credenciais para gerir e reabrir
+        if (formContainer) {
+          formContainer.classList.remove("hidden");
+          formContainer.style.display = "";
+          formContainer.classList.remove("opacity-50", "pointer-events-none");
+        }
+        if (codeInput) codeInput.setAttribute("required", "required");
+        if (keyInput) keyInput.setAttribute("required", "required");
+        if (rgpdInput) rgpdInput.setAttribute("required", "required");
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.className = "w-full py-3 px-4 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] active:scale-[0.99] text-[#0F172A] text-sm font-extrabold border border-slate-900 transition flex items-center justify-center gap-2 shadow-md cursor-pointer";
+          submitBtn.innerHTML = `
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span data-i18n="auth.enterBtn">${isEn ? "Enter Restricted Area" : "Entrar na Área Reservada"}</span>
+          `;
+        }
+      }
+
       // Se a plataforma estiver fechada:
       // Em produção (GitHub Pages): bloqueio de 100% de acessos sem exceções
       // Em localhost: moderador com sessão ativa não é bloqueado
-      if (!isLocalhost() || !isModerator()) {
+      if (!isLocal || !isModerator()) {
         const modal = document.getElementById("auth-login-modal");
         if (modal && modal.classList.contains("hidden")) {
           modal.classList.remove("hidden");
@@ -891,7 +933,30 @@ window.AuthModule = (function () {
         }
       }
     } else {
+      // Plataforma Aberta
       if (maintNotice) maintNotice.classList.add("hidden");
+      if (formContainer) {
+        formContainer.classList.remove("hidden");
+        formContainer.style.display = "";
+        formContainer.classList.remove("opacity-50", "pointer-events-none");
+      }
+      if (phaseBadge) phaseBadge.classList.remove("hidden");
+      if (codeInput) codeInput.setAttribute("required", "required");
+      if (keyInput) keyInput.setAttribute("required", "required");
+      if (rgpdInput) rgpdInput.setAttribute("required", "required");
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.className = "w-full py-3 px-4 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] active:scale-[0.99] text-[#0F172A] text-sm font-extrabold border border-slate-900 transition flex items-center justify-center gap-2 shadow-md cursor-pointer";
+        submitBtn.innerHTML = `
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span data-i18n="auth.enterBtn">${isEn ? "Enter Restricted Area" : "Entrar na Área Reservada"}</span>
+        `;
+      }
+    }
+
+    if (window.lucide) {
+      window.lucide.createIcons();
     }
   }
 
@@ -960,9 +1025,26 @@ window.AuthModule = (function () {
   function initEvents() {
     // 1. Submissão do Formulário de Login
     const form = document.getElementById("auth-login-form");
+    const submitBtnEl = document.getElementById("btn-auth-submit");
+
+    if (submitBtnEl) {
+      submitBtnEl.addEventListener("click", (e) => {
+        if (getSystemStatus() === "closed" && !isLocalhost()) {
+          e.preventDefault();
+          window.location.href = "https://renovateproject.eu/";
+        }
+      });
+    }
+
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
+
+        // Em produção (GitHub Pages) durante manutenção, o botão é "Sair" e redireciona para o site oficial
+        if (getSystemStatus() === "closed" && !isLocalhost()) {
+          window.location.href = "https://renovateproject.eu/";
+          return;
+        }
         const codeInput = document.getElementById("auth-participant-code");
         const keyInput = document.getElementById("auth-access-key");
         const rgpdChk = document.getElementById("auth-consent-rgpd");
