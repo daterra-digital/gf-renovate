@@ -518,12 +518,12 @@ function renderSchedule() {
         return !window.LiveSession.isStepUnlocked(stepNum);
       }
       try {
-        const saved = JSON.parse(localStorage.getItem("renovate_unlocked_steps") || "[1]");
+        const saved = JSON.parse(localStorage.getItem("renovate_unlocked_steps") || "[1, 2, 3, 4, 5]");
         if (Array.isArray(saved)) {
           return !saved.includes(Number(stepNum));
         }
       } catch (e) {}
-      return Number(stepNum) > 1;
+      return false;
     };
 
     const isLocked = item.step ? checkStepLocked(item.step) : false;

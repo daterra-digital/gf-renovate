@@ -7,7 +7,8 @@ const LiveSession = (function () {
   const STORAGE_KEYS = {
     PARTICIPANT_CODE: "renovate_participant_code",
     UNLOCKED_STEPS: "renovate_unlocked_steps",
-    COMPLETED_STEPS: "renovate_completed_steps"
+    COMPLETED_STEPS: "renovate_completed_steps",
+    ALL_UNLOCKED_MIGRATION: "renovate_all_unlocked_v2"
   };
 
   const MODERATOR_PIN = "2026";
@@ -17,7 +18,7 @@ const LiveSession = (function () {
   // Estado interno
   let state = {
     participantCode: "",
-    unlockedSteps: [1], // Passo 1 sempre desbloqueado por defeito
+    unlockedSteps: [1, 2, 3, 4, 5], // Todos os passos desbloqueados por defeito para os participantes
     completedSteps: []
   };
 
@@ -71,11 +72,22 @@ const LiveSession = (function () {
         state.participantCode = savedCode.trim();
       }
 
-      const savedUnlocked = localStorage.getItem(STORAGE_KEYS.UNLOCKED_STEPS);
-      if (savedUnlocked) {
-        const parsed = JSON.parse(savedUnlocked);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          state.unlockedSteps = Array.from(new Set([...state.unlockedSteps, ...parsed]));
+      // Desbloqueio total predefinido para todos os participantes (passos 1 a 5)
+      if (localStorage.getItem(STORAGE_KEYS.ALL_UNLOCKED_MIGRATION) !== "true") {
+        state.unlockedSteps = [1, 2, 3, 4, 5];
+        localStorage.setItem(STORAGE_KEYS.UNLOCKED_STEPS, JSON.stringify([1, 2, 3, 4, 5]));
+        localStorage.setItem(STORAGE_KEYS.ALL_UNLOCKED_MIGRATION, "true");
+      } else {
+        const savedUnlocked = localStorage.getItem(STORAGE_KEYS.UNLOCKED_STEPS);
+        if (savedUnlocked) {
+          const parsed = JSON.parse(savedUnlocked);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            state.unlockedSteps = parsed;
+          } else {
+            state.unlockedSteps = [1, 2, 3, 4, 5];
+          }
+        } else {
+          state.unlockedSteps = [1, 2, 3, 4, 5];
         }
       }
 
