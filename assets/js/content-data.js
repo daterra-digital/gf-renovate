@@ -206,7 +206,7 @@ const RENOVATE_CONFIG = {
   // Links Externos e Formulários da Sessão ao Vivo
   // Links Externos e Formulários da Sessão ao Vivo
   externalLinks: {
-    seriousGameTallentto: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
+    seriousGameTallentto: "https://www.cordalgpt.ai/renovate/register.php?pilot=calibration-pilot&lang=pt",
     simulatorVirmedex: "https://simulator.renovateproject.eu/auth/login",
     googleFormPreSession: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
     googleFormGameTallentto: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
@@ -263,7 +263,7 @@ const RENOVATE_CONFIG = {
       badgeEn: "Smartphone / Tablet",
       badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
       icon: "gamepad-2",
-      url: "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt",
+      url: "https://www.cordalgpt.ai/renovate/register.php?pilot=calibration-pilot&lang=pt",
       description: "Teste prático individual do Serious Game. Dinâmica lúdica interativa focada em calibração, diagnóstico e boas práticas de proteção fitossanitária.",
       descriptionEn: "Individual hands-on testing of the Serious Game. Interactive gamified dynamics focusing on sprayer calibration, diagnosis, and crop protection best practices.",
       type: "game"

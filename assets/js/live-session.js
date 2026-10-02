@@ -51,6 +51,14 @@ const LiveSession = (function () {
     updateLiveCalendar();
     renderLiveSessionUI();
     bindAutomaticStepTriggers();
+
+    // Sincronização em tempo real entre separadores do browser
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEYS.UNLOCKED_STEPS || e.key === STORAGE_KEYS.COMPLETED_STEPS) {
+        loadStorageState();
+        renderLiveSessionUI();
+      }
+    });
   }
 
   /**
@@ -192,7 +200,7 @@ const LiveSession = (function () {
 
     // Garantir que todos os botões do Serious Game apontam para o link oficial da Tallentto
     const gameUrl = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) 
-      || "https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt";
+      || "https://www.cordalgpt.ai/renovate/register.php?pilot=calibration-pilot&lang=pt";
     document.querySelectorAll(".game-link-tallentto, #btn-game-tallentto, #btn-schedule-tallentto").forEach(el => {
       el.href = gameUrl;
     });
@@ -521,10 +529,36 @@ const LiveSession = (function () {
 
       // Sincronizar também com os acordeões do Programa (Tab 2)
       document.querySelectorAll(`.accordion-step-${step}`).forEach(acc => {
+        const summary = acc.querySelector("summary");
         if (isUnlocked) {
-          acc.classList.remove("opacity-60", "grayscale");
+          acc.classList.remove("accordion-locked", "opacity-60", "grayscale-[30%]");
+          acc.classList.add("hover:border-[#F5B842]");
+          acc.removeAttribute("data-locked");
+          if (summary) {
+            summary.classList.remove("cursor-not-allowed", "opacity-75");
+            summary.classList.add("cursor-pointer", "hover:bg-slate-50");
+            summary.removeAttribute("title");
+          }
         } else {
-          acc.classList.add("opacity-60");
+          // Bloqueio estrito: fechar imediatamente o acordeão e marcar como bloqueado
+          acc.open = false;
+          acc.classList.add("accordion-locked", "opacity-60", "grayscale-[30%]");
+          acc.classList.remove("hover:border-[#F5B842]");
+          acc.setAttribute("data-locked", "true");
+          if (summary) {
+            summary.classList.add("cursor-not-allowed", "opacity-75");
+            summary.classList.remove("cursor-pointer", "hover:bg-slate-50");
+            summary.setAttribute("title", isEn ? "Activity locked by moderator" : "Atividade bloqueada pelo moderador");
+          }
+        }
+      });
+
+      // Indicadores visuais de cadeado no cabeçalho do acordeão
+      document.querySelectorAll(`.accordion-header-lock-${step}`).forEach(ind => {
+        if (isUnlocked) {
+          ind.classList.add("hidden");
+        } else {
+          ind.classList.remove("hidden");
         }
       });
 
@@ -537,13 +571,24 @@ const LiveSession = (function () {
       });
 
       document.querySelectorAll(`.accordion-actions-${step}`).forEach(container => {
-        const links = container.querySelectorAll("a, button:not(.btn-unlock-trigger)");
-        links.forEach(el => {
-          // No Programa & Slides, manter os links sempre clicáveis para permitir teste das ferramentas
-          el.removeAttribute("disabled");
-          el.classList.remove("pointer-events-none");
+        const interactiveElements = container.querySelectorAll("a, button:not(.btn-unlock-trigger)");
+        interactiveElements.forEach(el => {
           if (isUnlocked) {
-            el.classList.remove("opacity-60");
+            el.removeAttribute("disabled");
+            el.removeAttribute("tabindex");
+            el.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            if (el.dataset.origHref) {
+              el.href = el.dataset.origHref;
+              delete el.dataset.origHref;
+            }
+          } else {
+            // Bloqueio estrito: desativar botões e links dos testes práticos e questionários
+            el.setAttribute("disabled", "true");
+            el.setAttribute("tabindex", "-1");
+            el.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            if (el.tagName === "A" && el.href && !el.dataset.origHref) {
+              el.dataset.origHref = el.href;
+            }
           }
         });
       });
@@ -570,6 +615,8 @@ const LiveSession = (function () {
     unlockAllSteps,
     unlockUpToStep,
     lockStep,
+    isStepUnlocked: (stepNumber) => state.unlockedSteps.includes(parseInt(stepNumber, 10)),
+    getUnlockedSteps: () => [...state.unlockedSteps],
     toggleStepCompleted,
     markStepCompleted,
     updateLiveCalendar,

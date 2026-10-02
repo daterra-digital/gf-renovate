@@ -346,7 +346,7 @@ function renderSchedule() {
           </p>
 
           <div class="flex flex-wrap gap-2 pt-1">
-            <a id="btn-schedule-tallentto" href="${item.url || (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) || 'https://www.cordalgpt.ai/renovate/pruebas.php?pilot=calibration-pilot&lang=pt'}" target="_blank" rel="noopener noreferrer" 
+            <a id="btn-schedule-tallentto" href="${item.url || (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) || 'https://www.cordalgpt.ai/renovate/register.php?pilot=calibration-pilot&lang=pt'}" target="_blank" rel="noopener noreferrer" 
                class="game-link-tallentto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-sm">
               <i data-lucide="gamepad-2" class="w-4 h-4"></i>
               <span>${isEn ? "Play Tallentto" : "Jogar Tallentto"}</span>
@@ -512,11 +512,30 @@ function renderSchedule() {
       `;
     }
 
-    const isOpen = item.id === savedOpenSlot ? "open" : "";
+    const checkStepLocked = (stepNum) => {
+      if (!stepNum) return false;
+      if (window.LiveSession && typeof window.LiveSession.isStepUnlocked === "function") {
+        return !window.LiveSession.isStepUnlocked(stepNum);
+      }
+      try {
+        const saved = JSON.parse(localStorage.getItem("renovate_unlocked_steps") || "[1]");
+        if (Array.isArray(saved)) {
+          return !saved.includes(Number(stepNum));
+        }
+      } catch (e) {}
+      return Number(stepNum) > 1;
+    };
+
+    const isLocked = item.step ? checkStepLocked(item.step) : false;
+    const isOpen = (!isLocked && item.id === savedOpenSlot) ? "open" : "";
+    const lockedClasses = isLocked ? "accordion-locked opacity-60 grayscale-[30%]" : "hover:border-[#F5B842]";
+    const lockedSummaryClasses = isLocked ? "cursor-not-allowed opacity-75" : "hover:bg-slate-50 cursor-pointer";
+    const lockedDataAttr = isLocked ? 'data-locked="true"' : '';
+    const lockedTitleAttr = isLocked ? `title="${isEn ? "Activity locked by moderator" : "Atividade bloqueada pela moderação"}"` : '';
 
     return `
-      <details id="${item.id}-details" class="schedule-accordion accordion-step-${item.step || ''} group bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm hover:border-[#F5B842] transition-all" ${isOpen}>
-        <summary class="flex items-center justify-between gap-3 p-4 sm:p-5 select-none bg-white hover:bg-slate-50 transition-colors">
+      <details id="${item.id}-details" ${lockedDataAttr} class="schedule-accordion accordion-step-${item.step || ''} group bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm transition-all ${lockedClasses}" ${isOpen}>
+        <summary class="flex items-center justify-between gap-3 p-4 sm:p-5 select-none bg-white transition-colors ${lockedSummaryClasses}" ${lockedTitleAttr}>
           <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <span class="inline-flex items-center gap-1 text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 shrink-0">
               <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>
@@ -536,6 +555,16 @@ function renderSchedule() {
                 : item.id === "slot-9" 
                 ? '<div id="submission-counter-slot-9"></div>' 
                 : ''
+            }
+            ${
+              item.step ? `
+                <span class="accordion-header-lock-${item.step} ${isLocked ? '' : 'hidden'}">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300 shrink-0">
+                    <i data-lucide="lock" class="w-3 h-3 text-slate-600"></i>
+                    <span class="hidden sm:inline">${isEn ? "Locked" : "Bloqueado"}</span>
+                  </span>
+                </span>
+              ` : ''
             }
             <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
               <i data-lucide="${item.icon || 'circle'}" class="w-3 h-3"></i>
@@ -569,7 +598,14 @@ function renderSchedule() {
   if (expandBtn) {
     expandBtn.onclick = () => {
       isBulkToggle = true;
-      document.querySelectorAll(".schedule-accordion").forEach(d => d.open = true);
+      document.querySelectorAll(".schedule-accordion").forEach(d => {
+        // Expandir apenas acordeões desbloqueados pela moderação
+        if (!d.classList.contains("accordion-locked") && d.getAttribute("data-locked") !== "true") {
+          d.open = true;
+        } else {
+          d.open = false;
+        }
+      });
       setTimeout(() => { isBulkToggle = false; }, 100);
     };
   }
@@ -585,7 +621,29 @@ function renderSchedule() {
   // Gestão e memorização do último acordeão aberto (comportamento de foco único)
   const accordions = document.querySelectorAll(".schedule-accordion");
   accordions.forEach(detailsEl => {
+    const summary = detailsEl.querySelector("summary");
+    if (summary) {
+      summary.addEventListener("click", (e) => {
+        if (detailsEl.classList.contains("accordion-locked") || detailsEl.getAttribute("data-locked") === "true") {
+          e.preventDefault();
+          e.stopPropagation();
+          detailsEl.open = false;
+          const isEn = window.I18nManager && window.I18nManager.isEnglish();
+          if (window.showToast) {
+            window.showToast(isEn 
+              ? "🔒 Activity locked by the moderator. Please wait for it to be unlocked." 
+              : "🔒 Atividade bloqueada pela moderação. Aguarde que o moderador a desbloqueie na sessão.");
+          }
+          return false;
+        }
+      });
+    }
+
     detailsEl.addEventListener("toggle", () => {
+      if ((detailsEl.classList.contains("accordion-locked") || detailsEl.getAttribute("data-locked") === "true") && detailsEl.open) {
+        detailsEl.open = false;
+        return;
+      }
       if (isBulkToggle) return;
       if (detailsEl.open) {
         const slotId = detailsEl.id.replace("-details", "");
@@ -604,7 +662,7 @@ function renderSchedule() {
 
   // Atualizar ícones e sincronizar com o estado da sessão ao vivo
   if (window.lucide) window.lucide.createIcons();
-  if (window.LiveSession) {
+  if (window.LiveSession && typeof window.LiveSession.render === "function") {
     window.LiveSession.render();
   }
 
