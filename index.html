@@ -1890,6 +1890,13 @@
         <p data-i18n="auth.maintenanceNotice" class="text-xs leading-relaxed text-rose-800 font-medium">
           A plataforma RENOVATE encontra-se temporariamente fechada para atualização de conteúdos e implementação técnica. O acesso será reaberto na próxima janela de testes.
         </p>
+        <div class="pt-1.5 border-t border-rose-200/80 flex items-center justify-between flex-wrap gap-2">
+          <span class="text-[11px] text-rose-700 font-semibold">É moderador ou coordenador da sessão?</span>
+          <button type="button" id="btn-auth-maint-mod-bypass" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-200/80 hover:bg-rose-200 text-rose-950 text-xs font-bold transition border border-rose-300 shadow-2xs cursor-pointer">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-rose-800"></i>
+            <span>Entrar como Moderador (admin-fg2)</span>
+          </button>
+        </div>
       </div>
 
       <!-- FASE 2: Mensagem Pós-Grupo Focal (A partir de 07/10/2026 ou Remoto) -->
@@ -1907,23 +1914,26 @@
       <form id="auth-login-form" class="space-y-4 text-left">
         <div id="auth-form-fields" class="space-y-4">
           
-          <!-- Campo 1 — Código de Participante (Dropdown Dinâmico) -->
+          <!-- Campo 1 — Código de Participante (Combobox Pesquisável + Dropdown Dinâmico) -->
           <div class="space-y-1">
             <label for="auth-participant-code" data-i18n="auth.codeLabel" class="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
               <span>Código de Participante</span>
               <span class="text-[10px] text-slate-400 font-normal lowercase">(obrigatório)</span>
             </label>
-            <div class="relative">
-              <select id="auth-participant-code" required
-                      class="w-full text-xs font-mono font-bold py-2.5 pl-3 pr-8 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none appearance-none cursor-pointer transition">
-                <option value="" disabled selected>Selecione o seu Código de Participante...</option>
-              </select>
-              <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            <div class="relative" id="auth-code-combobox-wrapper">
+              <input type="text" id="auth-participant-code" required autocomplete="off" autocapitalize="characters" spellcheck="false"
+                     class="w-full text-xs font-mono font-bold py-2.5 pl-3.5 pr-10 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none uppercase transition"
+                     placeholder="Escreva ou selecione o código (ex: FG2-PT01 ou admin-fg2)..."
+                     data-i18n-placeholder="auth.codePlaceholder">
+              <button type="button" id="btn-toggle-codes-dropdown" tabindex="-1" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 p-1.5 rounded-lg transition cursor-pointer" title="Ver Lista de Códigos">
+                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" id="auth-code-chevron"></i>
+              </button>
+              <div id="auth-codes-dropdown-panel" class="hidden absolute top-full left-0 right-0 mt-1.5 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-xs font-mono py-1.5 divide-y divide-slate-100 animate-fadeIn">
+                <!-- Preenchido dinamicamente via renderCodesDropdown() -->
               </div>
             </div>
             <p id="auth-code-helper" class="text-[11px] text-slate-500">
-              Selecione o código individual do seu crachá (FG2-PT).
+              Escreva ou selecione o código individual do seu crachá (FG2-PT) ou admin-fg2.
             </p>
           </div>
 

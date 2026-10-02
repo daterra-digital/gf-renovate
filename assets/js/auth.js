@@ -191,7 +191,7 @@ window.AuthModule = (function () {
    */
   function getParticipantType(code) {
     const c = (code || getParticipantCode()).toUpperCase();
-    if (c.includes("-MD") || getUserRole() === "moderator") return "MOD";
+    if (c.includes("-MD") || c.includes("ADMIN") || getUserRole() === "moderator") return "MOD";
     if (c.startsWith("FG2")) return "FG2";
     if (c.startsWith("NS")) return "NS";
     return "PARTICIPANT";
@@ -226,14 +226,27 @@ window.AuthModule = (function () {
     const cleanCode = (code || "").trim().toUpperCase();
     const isModKey = isModeratorMasterKey(key);
 
+    // Identificar códigos de moderação especiais
+    const isAdminCode = cleanCode === "ADMIN-FG2" || cleanCode === "ADMIN" || cleanCode === "ADMINFG2" || cleanCode === "MOD-PT01" || cleanCode.startsWith("MOD-");
+
+    // Validação específica para códigos de moderação com palavra-passe incorreta
+    if (isAdminCode && !isModKey) {
+      return {
+        success: false,
+        error: isEn
+          ? "The moderation code requires the Master Moderator Password (e.g. renovate2026-admin)."
+          : "O código de moderação requer a introdução da Palavra-passe Mestra de Moderador (ex.: renovate2026-admin)."
+      };
+    }
+
     // 1. Verificar se a plataforma está aberta ou em manutenção
     // Moderador com Chave Mestra pode aceder mesmo se o sistema estiver em manutenção
     if (getSystemStatus() === "closed" && !isModKey) {
       return {
         success: false,
         error: isEn
-          ? "The RENOVATE platform is temporarily closed for technical maintenance."
-          : "A plataforma RENOVATE encontra-se temporariamente fechada para atualização de conteúdos e implementação técnica."
+          ? "The RENOVATE platform is temporarily closed for technical maintenance. Only authorized moderators can log in."
+          : "A plataforma RENOVATE encontra-se temporariamente fechada para atualização técnica. Apenas moderadores autorizados podem aceder."
       };
     }
 
@@ -242,54 +255,58 @@ window.AuthModule = (function () {
       return {
         success: false,
         error: isEn
-          ? "Please select your Participant Code from the list."
-          : "Por favor selecione o seu Código de Participante da lista."
+          ? "Please type or select your Participant Code from the list."
+          : "Por favor escreva ou selecione o seu Código de Participante da lista."
       };
     }
 
     // Validar se o código pertence à fase ativa ou se é código de moderação
     const phase = getEffectivePhase();
     const validCodes = phase === "phase2" ? REMOTE_CODES : PRESENTIAL_CODES;
-    const isModOption = cleanCode === "MOD-PT01" || cleanCode.startsWith("MOD-");
 
-    if (!validCodes.includes(cleanCode) && !isModOption) {
-      return {
-        success: false,
-        error: phase === "phase2"
-          ? (isEn 
-              ? "In-person codes (FG2-PT) are closed for new logins. Please select an assigned remote code (NS-PT)." 
-              : "Os códigos presenciais (FG2-PT) estão encerrados para novos registos. Selecione o seu código remoto (NS-PT).")
-          : (isEn 
-              ? "Please select a valid in-person code (FG2-PT01 to FG2-PT50)." 
-              : "Por favor selecione um código presencial válido (FG2-PT01 a FG2-PT50).")
-      };
-    }
-
-    // 3. Validação da Chave de Acesso e Atribuição do Perfil e Sufixo -MD
     let userRole = "participant";
     let finalCode = cleanCode;
 
-    if (isModKey) {
-      // 1. Atribuição de privilégios de moderador
-      userRole = "moderator";
-      // 2. Adição automática do sufixo "-MD" ao código selecionado (exemplo: "FG2-PT03-MD")
-      finalCode = cleanCode.endsWith("-MD") ? cleanCode : `${cleanCode}-MD`;
-    } else {
-      if (isModOption) {
+    if (isAdminCode) {
+      if (!isModKey) {
         return {
           success: false,
           error: isEn
-            ? "The MOD option requires the Master Moderator Password (e.g. renovate2026-admin)."
-            : "A opção de moderação requer a introdução da Palavra-passe Mestra de Moderador (ex.: renovate2026-admin)."
+            ? "The moderation code requires the Master Moderator Password (e.g. renovate2026-admin)."
+            : "O código de moderação requer a introdução da Palavra-passe Mestra de Moderador (ex.: renovate2026-admin)."
         };
       }
-      if (!validateAccessKey(key)) {
+      userRole = "moderator";
+      finalCode = (cleanCode === "ADMIN" || cleanCode === "ADMINFG2" || cleanCode === "ADMIN-FG2")
+        ? "ADMIN-FG2"
+        : (cleanCode.endsWith("-MD") ? cleanCode : `${cleanCode}-MD`);
+    } else {
+      if (!validCodes.includes(cleanCode)) {
         return {
           success: false,
-          error: isEn
-            ? "Incorrect Access Key. Please check the session key and try again."
-            : "Chave de Acesso incorreta. Por favor verifique a chave do evento e tente novamente."
+          error: phase === "phase2"
+            ? (isEn 
+                ? "In-person codes (FG2-PT) are closed for new logins. Please enter an assigned remote code (NS-PT) or admin-fg2." 
+                : "Os códigos presenciais (FG2-PT) estão encerrados para novos registos. Introduza o seu código remoto (NS-PT) ou admin-fg2.")
+            : (isEn 
+                ? "Please enter a valid in-person code (FG2-PT01 to FG2-PT50) or admin-fg2." 
+                : "Por favor introduza um código presencial válido (FG2-PT01 a FG2-PT50) ou admin-fg2.")
         };
+      }
+
+      if (isModKey) {
+        // Se utilizou código de participante normal mas introduziu a palavra-passe mestra
+        userRole = "moderator";
+        finalCode = cleanCode.endsWith("-MD") ? cleanCode : `${cleanCode}-MD`;
+      } else {
+        if (!validateAccessKey(key)) {
+          return {
+            success: false,
+            error: isEn
+              ? "Incorrect Access Key. Please check the session key and try again."
+              : "Chave de Acesso incorreta. Por favor verifique a chave do evento e tente novamente."
+          };
+        }
       }
     }
 
@@ -309,7 +326,7 @@ window.AuthModule = (function () {
       }
     } catch (e) {}
 
-    if (!isModKey && (registeredCodes.has(cleanCode) || registeredCodes.has(`${cleanCode}-MD`))) {
+    if (!isModKey && !isAdminCode && (registeredCodes.has(cleanCode) || registeredCodes.has(`${cleanCode}-MD`))) {
       return {
         success: false,
         error: isEn
@@ -348,8 +365,8 @@ window.AuthModule = (function () {
       window.LiveSession.setParticipantCode(finalCode);
     }
 
-    // Registo do código no rastreador automático de participantes e contadores
-    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
+    // Registo do código no rastreador automático de participantes (não contabiliza códigos de moderação genéricos como admin-fg2)
+    if (!isAdminCode && window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
       window.SubmissionsTracker.registerParticipantCode(finalCode);
     }
 
@@ -532,38 +549,26 @@ window.AuthModule = (function () {
     const homeLogo = document.getElementById("nav-logo-home");
     if (homeLogo) {
       homeLogo.href = "#live";
-      homeLogo.removeAttribute("target");
-      homeLogo.removeAttribute("rel");
+      if (typeof homeLogo.removeAttribute === "function") {
+        homeLogo.removeAttribute("target");
+        homeLogo.removeAttribute("rel");
+      }
       homeLogo.title = "Página Inicial - Sessão ao Vivo";
     }
   }
 
   /**
-   * Renderiza a lista de opções do dropdown dinâmico de códigos
+   * Renderiza a lista de opções do painel dropdown do combobox de códigos
    */
-  function renderCodesDropdown() {
-    const select = document.getElementById("auth-participant-code");
-    if (!select) return;
+  function renderCodesDropdown(filterText = "") {
+    const input = document.getElementById("auth-participant-code");
+    const panel = document.getElementById("auth-codes-dropdown-panel");
+    if (!panel) return;
 
     const phase = getEffectivePhase();
     const codes = phase === "phase2" ? REMOTE_CODES : PRESENTIAL_CODES;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-
-    const placeholderText = isEn ? "Select your Participant Code..." : "Selecione o seu Código de Participante...";
-    const groupLabel = phase === "phase2"
-      ? (isEn ? "External / Remote Stakeholders (NS-PT)" : "Participantes Remotos / Stakeholders (NS-PT)")
-      : (isEn ? "In-Person Focus Group Badges (FG2-PT)" : "Crachás Presenciais Grupo Focal (FG2-PT)");
-
-    let currentSaved = getParticipantCode();
-    if (!currentSaved && typeof window !== "undefined" && window.location && window.location.search) {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlCode = (urlParams.get("code") || urlParams.get("id") || "").trim().toUpperCase();
-        if (codes.includes(urlCode)) {
-          currentSaved = urlCode;
-        }
-      } catch (e) {}
-    }
+    const filter = (filterText || "").trim().toUpperCase();
 
     // Obter códigos registados via Google Sheets e localStorage
     const registeredCodes = new Set();
@@ -592,29 +597,138 @@ window.AuthModule = (function () {
     } catch (e) {}
 
     const inUseLabel = isEn ? "In use" : "Em uso";
+    const availableLabel = isEn ? "Available" : "Disponível";
+    const modTitle = isEn ? "Moderation & Coordination" : "Moderação & Coordenação";
+    const phaseTitle = phase === "phase2"
+      ? (isEn ? "External / Remote Stakeholders (NS-PT)" : "Participantes Remotos / Stakeholders (NS-PT)")
+      : (isEn ? "In-Person Badges (FG2-PT)" : "Crachás Presenciais (FG2-PT)");
 
-    let html = `<option value="" disabled ${!currentSaved ? 'selected' : ''}>${placeholderText}</option>`;
-    html += `<optgroup label="${groupLabel}">`;
-    codes.forEach(code => {
-      const isRegistered = registeredCodes.has(code) || registeredCodes.has(`${code}-MD`);
-      const isSelected = code === currentSaved && !isRegistered;
-      if (isRegistered) {
-        // ESTRITAMENTE DESATIVADO: atributo HTML disabled impede seleção; texto a cinzento com "(Em uso)"
-        html += `<option value="${code}" disabled class="text-slate-400 bg-slate-100 cursor-not-allowed" style="color: #94a3b8;">${code} (${inUseLabel})</option>`;
-      } else {
-        html += `<option value="${code}" ${isSelected ? 'selected' : ''}>${code}</option>`;
-      }
+    let html = "";
+
+    // 1. Grupo Moderação & Coordenação
+    const modCodes = [
+      { code: "admin-fg2", label: isEn ? "admin-fg2 (Moderator Access)" : "admin-fg2 (Acesso de Moderador)" },
+      { code: "MOD-PT01", label: isEn ? "MOD-PT01 (Coordination)" : "MOD-PT01 (Coordenação)" }
+    ];
+    const filteredModCodes = modCodes.filter(m => !filter || m.code.toUpperCase().includes(filter) || "ADMIN".includes(filter) || "MOD".includes(filter));
+
+    if (filteredModCodes.length > 0) {
+      html += `<div class="px-3 py-1.5 bg-amber-50 text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center justify-between border-b border-amber-100">`;
+      html += `  <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-3 h-3 text-amber-700"></i> ${modTitle}</span>`;
+      html += `  <span class="text-[9px] font-mono font-bold text-amber-800">Master Pass</span>`;
+      html += `</div>`;
+      html += `<div class="py-1">`;
+      filteredModCodes.forEach(m => {
+        html += `
+          <div class="code-dropdown-item px-3 py-2 hover:bg-amber-100/70 cursor-pointer flex items-center justify-between transition text-xs font-mono font-bold text-amber-950" data-code="${m.code}">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              ${m.label}
+            </span>
+            <span class="text-[10px] font-sans font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-300">Moderação</span>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    // 2. Grupo Participantes Ativos
+    const filteredCodes = codes.filter(c => !filter || c.toUpperCase().includes(filter));
+    html += `<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-700 flex items-center justify-between border-t border-b border-slate-200">`;
+    html += `  <span>${phaseTitle}</span>`;
+    html += `  <span class="text-[9px] font-mono text-slate-500">${filteredCodes.length} ${isEn ? "items" : "códigos"}</span>`;
+    html += `</div>`;
+    html += `<div class="py-1">`;
+
+    if (filteredCodes.length === 0 && filteredModCodes.length === 0) {
+      html += `
+        <div class="px-4 py-4 text-center text-slate-500 font-sans text-xs space-y-1">
+          <p class="font-bold">${isEn ? `No codes match "${filterText}"` : `Nenhum código corresponde a "${filterText}"`}</p>
+          <p class="text-[11px] text-slate-400">${isEn ? 'You can keep typing your code or choose another.' : 'Pode continuar a escrever o código livremente.'}</p>
+        </div>
+      `;
+    } else {
+      filteredCodes.forEach(code => {
+        const isRegistered = registeredCodes.has(code) || registeredCodes.has(`${code}-MD`);
+        if (isRegistered) {
+          // Desativado e estilizado a cinzento, não selecionável
+          html += `
+            <div class="code-dropdown-item px-3 py-2 bg-slate-50/80 text-slate-400 cursor-not-allowed flex items-center justify-between select-none border-b border-slate-50 opacity-60" data-disabled="true" data-code="${code}">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                <span class="line-through">${code}</span>
+              </span>
+              <span class="text-[10px] font-sans font-semibold text-slate-400">(${inUseLabel})</span>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="code-dropdown-item px-3 py-2 hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-900 transition border-b border-slate-50 text-xs font-mono font-bold" data-code="${code}">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                ${code}
+              </span>
+              <span class="text-[10px] font-sans font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">${availableLabel}</span>
+            </div>
+          `;
+        }
+      });
+    }
+    html += `</div>`;
+
+    panel.innerHTML = html;
+
+    // Vincular clique aos itens selecionáveis
+    panel.querySelectorAll(".code-dropdown-item").forEach(item => {
+      if (item.getAttribute("data-disabled") === "true") return;
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const codeVal = item.getAttribute("data-code");
+        if (input && codeVal) {
+          input.value = codeVal;
+        }
+        hideCodesDropdown();
+        // Focar no campo de senha/chave
+        const keyInput = document.getElementById("auth-access-key");
+        if (keyInput) keyInput.focus();
+      });
     });
-    html += `</optgroup>`;
 
-    // Opção de Moderação & Coordenação
-    const modLabel = isEn ? "MOD-PT01 (Moderator Access)" : "MOD-PT01 (Acesso de Moderador)";
-    const modGroup = isEn ? "Moderação & Coordenação" : "Moderação & Coordenação";
-    html += `<optgroup label="${modGroup}">`;
-    html += `<option value="MOD-PT01">${modLabel}</option>`;
-    html += `</optgroup>`;
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
 
-    select.innerHTML = html;
+  function showCodesDropdown() {
+    const panel = document.getElementById("auth-codes-dropdown-panel");
+    const chevron = document.getElementById("auth-code-chevron");
+    const input = document.getElementById("auth-participant-code");
+    if (!panel) return;
+    renderCodesDropdown(input ? input.value : "");
+    panel.classList.remove("hidden");
+    if (chevron) {
+      chevron.classList.add("rotate-180");
+    }
+  }
+
+  function hideCodesDropdown() {
+    const panel = document.getElementById("auth-codes-dropdown-panel");
+    const chevron = document.getElementById("auth-code-chevron");
+    if (panel) {
+      panel.classList.add("hidden");
+    }
+    if (chevron) {
+      chevron.classList.remove("rotate-180");
+    }
+  }
+
+  function toggleCodesDropdown() {
+    const panel = document.getElementById("auth-codes-dropdown-panel");
+    if (panel && panel.classList.contains("hidden")) {
+      showCodesDropdown();
+    } else {
+      hideCodesDropdown();
+    }
   }
 
   /**
@@ -644,17 +758,17 @@ window.AuthModule = (function () {
       }
     }
 
-    // Texto de apoio ao código de participante (estritamente condicionado à fase definida pelo moderador)
+    // Texto de apoio ao código de participante
     const authCodeHelper = document.getElementById("auth-code-helper");
     if (authCodeHelper) {
       if (phase === "phase2") {
         authCodeHelper.textContent = isEn
-          ? "Select your assigned code received via email (NS-PT)."
-          : "Selecione o código individual atribuído por e-mail (NS-PT).";
+          ? "Type or select your assigned code received via email (NS-PT) or admin-fg2."
+          : "Escreva ou selecione o código atribuído por e-mail (NS-PT) ou admin-fg2.";
       } else {
         authCodeHelper.textContent = isEn
-          ? "Select the individual code from your physical badge (FG2-PT)."
-          : "Selecione o código individual do seu crachá (FG2-PT).";
+          ? "Type or select your physical badge code (FG2-PT) or admin-fg2."
+          : "Escreva ou selecione o código individual do seu crachá (FG2-PT) ou admin-fg2.";
       }
     }
 
@@ -678,36 +792,34 @@ window.AuthModule = (function () {
    */
   function syncUIWithStatus() {
     const status = getSystemStatus();
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const maintNotice = document.getElementById("auth-maintenance-notice");
     const formContainer = document.getElementById("auth-form-fields");
     const submitBtn = document.getElementById("btn-auth-submit");
 
+    // O formulário de login e o botão de submit NUNCA são desativados nem bloqueados com pointer-events-none,
+    // garantindo que moderadores conseguem sempre escrever "admin-fg2" e a sua palavra-passe de moderador
+    if (formContainer) {
+      formContainer.classList.remove("opacity-50", "pointer-events-none");
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("cursor-not-allowed", "opacity-50");
+    }
+
     if (status === "closed") {
       if (maintNotice) maintNotice.classList.remove("hidden");
-      if (formContainer) {
-        formContainer.classList.add("opacity-50", "pointer-events-none");
-      }
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add("cursor-not-allowed", "opacity-50");
-      }
-      // Se a plataforma está em manutenção e o modal não está aberto, bloquear
-      const modal = document.getElementById("auth-login-modal");
-      if (modal && modal.classList.contains("hidden")) {
-        modal.classList.remove("hidden");
-        document.body.classList.add("auth-locked");
-        document.documentElement.classList.add("auth-locked");
+
+      // Se o utilizador com sessão iniciada for moderador, NUNCA bloquear nem expulsar da sessão!
+      if (!isModerator()) {
+        const modal = document.getElementById("auth-login-modal");
+        if (modal && modal.classList.contains("hidden")) {
+          modal.classList.remove("hidden");
+          document.body.classList.add("auth-locked");
+          document.documentElement.classList.add("auth-locked");
+        }
       }
     } else {
       if (maintNotice) maintNotice.classList.add("hidden");
-      if (formContainer) {
-        formContainer.classList.remove("opacity-50", "pointer-events-none");
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.classList.remove("cursor-not-allowed", "opacity-50");
-      }
     }
   }
 
@@ -752,7 +864,7 @@ window.AuthModule = (function () {
       </div>
       <!-- Botão Sair (Logout) -->
       <button type="button" id="btn-header-logout" 
-              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold transition shadow-2xs" 
+              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold transition shadow-2xs cursor-pointer" 
               title="${isEn ? 'Log out of Restricted Area' : 'Terminar Sessão na Área Reservada'}">
         <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
         <span class="hidden sm:inline">${isEn ? 'Sair' : 'Sair'}</span>
@@ -779,12 +891,12 @@ window.AuthModule = (function () {
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const codeSelect = document.getElementById("auth-participant-code");
+        const codeInput = document.getElementById("auth-participant-code");
         const keyInput = document.getElementById("auth-access-key");
         const rgpdChk = document.getElementById("auth-consent-rgpd");
         const errBox = document.getElementById("auth-error-box");
 
-        const code = codeSelect ? codeSelect.value : "";
+        const code = codeInput ? codeInput.value : "";
         const key = keyInput ? keyInput.value : "";
         const consent = rgpdChk ? rgpdChk.checked : false;
 
@@ -806,6 +918,61 @@ window.AuthModule = (function () {
             alert(result.error);
           }
         }
+      });
+    }
+
+    // 1.1 Combobox do Código de Participante (Input Pesquisável + Dropdown)
+    const codeInput = document.getElementById("auth-participant-code");
+    const toggleDropdownBtn = document.getElementById("btn-toggle-codes-dropdown");
+    const comboboxWrapper = document.getElementById("auth-code-combobox-wrapper");
+
+    if (codeInput) {
+      codeInput.addEventListener("focus", () => {
+        showCodesDropdown();
+      });
+      codeInput.addEventListener("input", (e) => {
+        showCodesDropdown();
+        renderCodesDropdown(e.target.value);
+      });
+      codeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          hideCodesDropdown();
+        }
+      });
+    }
+
+    if (toggleDropdownBtn) {
+      toggleDropdownBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleCodesDropdown();
+        if (codeInput) codeInput.focus();
+      });
+    }
+
+    // Fechar dropdown ao clicar fora do combobox
+    document.addEventListener("click", (e) => {
+      if (comboboxWrapper && !comboboxWrapper.contains(e.target)) {
+        hideCodesDropdown();
+      }
+    });
+
+    // 1.2 Botão Fast-Track de Moderador no Aviso de Manutenção
+    const modBypassBtn = document.getElementById("btn-auth-maint-mod-bypass");
+    if (modBypassBtn) {
+      modBypassBtn.addEventListener("click", () => {
+        if (codeInput) {
+          codeInput.value = "admin-fg2";
+        }
+        const rgpdChk = document.getElementById("auth-consent-rgpd");
+        if (rgpdChk) rgpdChk.checked = true;
+        const keyInput = document.getElementById("auth-access-key");
+        if (keyInput) {
+          keyInput.focus();
+          keyInput.classList.add("ring-2", "ring-[#FFCC66]");
+          setTimeout(() => keyInput.classList.remove("ring-2", "ring-[#FFCC66]"), 1200);
+        }
+        hideCodesDropdown();
       });
     }
 
@@ -876,8 +1043,8 @@ window.AuthModule = (function () {
     syncUIWithStatus();
 
     // Verificação de Acesso:
-    // Se o utilizador não tem sessão ativa ou o sistema está em manutenção, bloqueia imediatamente
-    if (!isAuthenticated() || getSystemStatus() === "closed") {
+    // Se o utilizador não tem sessão ativa OU se o sistema está fechado e NÃO é moderador, bloqueia
+    if (!isAuthenticated() || (getSystemStatus() === "closed" && !isModerator())) {
       lockWebsite();
     } else {
       unlockWebsite();
