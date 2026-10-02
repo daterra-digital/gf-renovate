@@ -250,8 +250,25 @@ window.ModeratorPanel = (function () {
    */
   function renderAccessControls() {
     if (!window.AuthModule) return;
+    const AuthModule = window.AuthModule;
 
-    // 1. Kill-Switch: Estado da Plataforma (system_status)
+    // 1. Kill-Switch: Estado da Plataforma (system_status) — Exclusivo Localhost
+    const killswitchCard = document.getElementById("mod-killswitch-card");
+    const isLocal = window.AuthModule && typeof window.AuthModule.isLocalhost === "function"
+      ? window.AuthModule.isLocalhost()
+      : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "[::1]" || window.location.protocol === "file:");
+
+    if (killswitchCard) {
+      if (!isLocal) {
+        // Em produção / GitHub Pages, a opção de comutador de estado é estritamente ocultada
+        killswitchCard.style.display = "none";
+        killswitchCard.classList.add("hidden");
+      } else {
+        killswitchCard.style.display = "";
+        killswitchCard.classList.remove("hidden");
+      }
+    }
+
     const isClosed = AuthModule.getSystemStatus() === "closed";
     const statusToggleBtn = document.getElementById("mod-status-toggle-btn");
     const statusBadge = document.getElementById("mod-status-badge");
@@ -342,7 +359,7 @@ window.ModeratorPanel = (function () {
     const container = document.getElementById("mod-step-toggles-container");
     if (!container || !window.LiveSession) return;
 
-    const stateLS = LiveSession.getState();
+    const stateLS = window.LiveSession.getState();
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
     const stepNames = {
@@ -354,7 +371,7 @@ window.ModeratorPanel = (function () {
     };
 
     container.innerHTML = [1, 2, 3, 4, 5].map(step => {
-      const isUnlocked = stateLS.unlockedSteps.includes(step);
+      const isUnlocked = stateLS && stateLS.unlockedSteps && stateLS.unlockedSteps.includes(step);
       return `
         <div class="flex items-center justify-between p-3 rounded-xl border ${isUnlocked ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-slate-50'} transition">
           <div class="flex items-center gap-2.5">
@@ -377,10 +394,10 @@ window.ModeratorPanel = (function () {
     container.querySelectorAll(".btn-mod-toggle-step").forEach(btn => {
       btn.addEventListener("click", () => {
         const step = parseInt(btn.getAttribute("data-step"), 10);
-        if (stateLS.unlockedSteps.includes(step)) {
-          LiveSession.lockStep(step);
+        if (stateLS && stateLS.unlockedSteps && stateLS.unlockedSteps.includes(step)) {
+          window.LiveSession.lockStep(step);
         } else {
-          LiveSession.unlockStep(step);
+          window.LiveSession.unlockStep(step);
         }
         renderStepToggles();
       });
@@ -1009,11 +1026,16 @@ window.ModeratorPanel = (function () {
       });
     });
 
-    // 6. Kill-Switch: Alternância do Estado da Plataforma
+    // 6. Kill-Switch: Alternância do Estado da Plataforma (Exclusivo Localhost)
     const statusToggleBtn = document.getElementById("mod-status-toggle-btn");
     if (statusToggleBtn) {
       statusToggleBtn.addEventListener("click", () => {
         if (!window.AuthModule) return;
+        const AuthModule = window.AuthModule;
+        if (typeof AuthModule.isLocalhost === "function" && !AuthModule.isLocalhost()) {
+          console.warn("Comutador de Estado do Sistema desativado em produção.");
+          return;
+        }
         const current = AuthModule.getSystemStatus();
         const next = current === "closed" ? "open" : "closed";
         AuthModule.setSystemStatus(next);
@@ -1031,6 +1053,7 @@ window.ModeratorPanel = (function () {
     document.querySelectorAll('input[name="mod_phase_option"]').forEach(radio => {
       radio.addEventListener("change", (e) => {
         if (!window.AuthModule) return;
+        const AuthModule = window.AuthModule;
         const phaseMode = e.target.value;
         AuthModule.setAccessPhase(phaseMode);
         renderAccessControls();
@@ -1047,6 +1070,7 @@ window.ModeratorPanel = (function () {
     if (saveKeyBtn && customKeyInput) {
       saveKeyBtn.addEventListener("click", () => {
         if (!window.AuthModule) return;
+        const AuthModule = window.AuthModule;
         const val = customKeyInput.value.trim();
         if (val) {
           localStorage.setItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY, val);
@@ -1062,8 +1086,8 @@ window.ModeratorPanel = (function () {
     const forceLogoutBtn = document.getElementById("btn-mod-force-logout");
     if (forceLogoutBtn) {
       forceLogoutBtn.addEventListener("click", () => {
-        if (window.AuthModule && AuthModule.isAuthenticated()) {
-          AuthModule.logout(true);
+        if (window.AuthModule && window.AuthModule.isAuthenticated()) {
+          window.AuthModule.logout(true);
           renderAccessControls();
           if (window.showToast) window.showToast("Sessão terminada pelo moderador.");
         } else {

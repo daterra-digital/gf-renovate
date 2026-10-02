@@ -87,10 +87,33 @@ window.AuthModule = (function () {
   }
 
   /**
+   * Determina se a aplicação está a correr em ambiente de desenvolvimento local (localhost)
+   */
+  function isLocalhost() {
+    try {
+      const host = window.location.hostname;
+      return (
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "[::1]" ||
+        host === "" ||
+        window.location.protocol === "file:"
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Obtém o estado do sistema (system_status)
+   * Em produção (GitHub Pages), a plataforma está permanentemente aberta para o Grupo Focal.
    * Retorna: 'open' | 'closed'
    */
   function getSystemStatus() {
+    // Em produção (GitHub Pages), a plataforma está permanentemente aberta para os participantes da sessão
+    if (!isLocalhost()) {
+      return "open";
+    }
     try {
       const status1 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS);
       const status2 = localStorage.getItem(STORAGE_KEYS.SYSTEM_STATUS_ALT);
@@ -106,8 +129,13 @@ window.AuthModule = (function () {
 
   /**
    * Altera o estado do sistema (Aberto para Testes / Fechado para Manutenção)
+   * Reservado exclusivamente a ambiente de localhost.
    */
   function setSystemStatus(status) {
+    if (!isLocalhost()) {
+      console.warn("🔒 Controlo de manutenção e kill-switch desativados em produção (GitHub Pages).");
+      return;
+    }
     const val = status === "closed" || status === "maintenance" ? "closed" : "open";
     try {
       localStorage.setItem(STORAGE_KEYS.SYSTEM_STATUS, val);
@@ -606,11 +634,19 @@ window.AuthModule = (function () {
     let html = "";
 
     // 1. Grupo Moderação & Coordenação
+    // Em localhost: sempre disponível na lista para testes de desenvolvimento.
+    // Em produção (GitHub Pages): apenas surge se o utilizador pesquisar explicitamente "admin" ou "mod",
+    // para garantir que participantes comuns vejam exclusivamente crachás de participantes ao abrir a lista.
+    const isLocal = isLocalhost();
+    const shouldShowModGroup = isLocal || filter.includes("ADMIN") || filter.includes("MOD");
+
     const modCodes = [
       { code: "admin-fg2", label: isEn ? "admin-fg2 (Moderator Access)" : "admin-fg2 (Acesso de Moderador)" },
       { code: "MOD-PT01", label: isEn ? "MOD-PT01 (Coordination)" : "MOD-PT01 (Coordenação)" }
     ];
-    const filteredModCodes = modCodes.filter(m => !filter || m.code.toUpperCase().includes(filter) || "ADMIN".includes(filter) || "MOD".includes(filter));
+    const filteredModCodes = shouldShowModGroup
+      ? modCodes.filter(m => !filter || m.code.toUpperCase().includes(filter) || "ADMIN".includes(filter) || "MOD".includes(filter))
+      : [];
 
     if (filteredModCodes.length > 0) {
       html += `<div class="px-3 py-1.5 bg-amber-50 text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center justify-between border-b border-amber-100">`;
@@ -804,6 +840,18 @@ window.AuthModule = (function () {
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.classList.remove("cursor-not-allowed", "opacity-50");
+    }
+
+    // O botão de atalho "Entrar como Moderador (admin-fg2)" só deve estar disponível em localhost
+    const bypassContainer = document.getElementById("auth-maint-mod-bypass-container");
+    if (bypassContainer) {
+      if (isLocalhost() && status === "closed") {
+        bypassContainer.classList.remove("hidden");
+        bypassContainer.style.display = "";
+      } else {
+        bypassContainer.classList.add("hidden");
+        bypassContainer.style.display = "none";
+      }
     }
 
     if (status === "closed") {
@@ -1074,6 +1122,7 @@ window.AuthModule = (function () {
     setAccessPhase,
     getSystemStatus,
     setSystemStatus,
+    isLocalhost,
     validateAccessKey,
     injectParticipantCodeToForms,
     lockWebsite,
