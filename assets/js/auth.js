@@ -15,8 +15,69 @@ window.AuthModule = (function () {
     ACCESS_PHASE: "renovate_access_phase",
     CUSTOM_KEY: "renovate_custom_key",
     CONSENT_TIMESTAMP: "renovate_consent_timestamp",
-    SESSION_PHASE: "renovate_session_phase"
+    SESSION_PHASE: "renovate_session_phase",
+    ACTIVE_CODES: "renovate_active_codes"
   };
+
+  /**
+   * Obtém o conjunto de códigos de participante atualmente em uso por utilizadores com sessão ativa.
+   * Quando o utilizador sai (logout), o código volta a ficar disponível.
+   */
+  function getInUseCodes() {
+    const inUse = new Set();
+    try {
+      // 1. Sessão ativa no browser/dispositivo local
+      const isSessionActive = localStorage.getItem(STORAGE_KEYS.SESSION_ACTIVE) === "true";
+      const currentCode = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE);
+      if (isSessionActive && currentCode) {
+        const clean = currentCode.trim().toUpperCase();
+        const base = clean.replace(/-MD$/, "");
+        inUse.add(clean);
+        inUse.add(base);
+      }
+      // 2. Lista de códigos com sessão ativa em uso
+      const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
+      if (Array.isArray(activeList)) {
+        activeList.forEach(c => {
+          if (c) {
+            const raw = String(c).trim().toUpperCase();
+            inUse.add(raw);
+            inUse.add(raw.replace(/-MD$/, ""));
+          }
+        });
+      }
+    } catch (e) {}
+    return inUse;
+  }
+
+  function addActiveCode(code) {
+    if (!code) return;
+    try {
+      const clean = String(code).trim().toUpperCase();
+      const base = clean.replace(/-MD$/, "");
+      const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
+      const list = Array.isArray(activeList) ? activeList : [];
+      if (!list.includes(clean)) list.push(clean);
+      if (!list.includes(base)) list.push(base);
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_CODES, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function removeActiveCode(code) {
+    if (!code) return;
+    try {
+      const clean = String(code).trim().toUpperCase();
+      const base = clean.replace(/-MD$/, "");
+      const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
+      if (Array.isArray(activeList)) {
+        const updated = activeList.filter(c => {
+          const upper = String(c).trim().toUpperCase();
+          return upper !== clean && upper !== base;
+        });
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_CODES, JSON.stringify(updated));
+      }
+    } catch (e) {}
+  }
 
   // Palavras-passe Mestras de Moderador (insensíveis a maiúsculas)
   const MODERATOR_MASTER_KEYS = [
@@ -360,28 +421,14 @@ window.AuthModule = (function () {
       }
     }
 
-    // 3.1 Verificação estrita de código em uso (para utilizadores sem chave mestra)
-    const registeredCodes = new Set();
-    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getRegisteredCodes === "function") {
-      window.SubmissionsTracker.getRegisteredCodes().forEach(c => {
-        if (c) registeredCodes.add(String(c).trim().toUpperCase());
-      });
-    }
-    try {
-      const savedList = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS) || "[]");
-      if (Array.isArray(savedList)) {
-        savedList.forEach(c => {
-          if (c) registeredCodes.add(String(c).trim().toUpperCase());
-        });
-      }
-    } catch (e) {}
-
-    if (!isModKey && !isAdminCode && (registeredCodes.has(cleanCode) || registeredCodes.has(`${cleanCode}-MD`))) {
+    // 3.1 Verificação de código atualmente em uso por utilizador com sessão ativa
+    const inUseCodes = getInUseCodes();
+    if (!isModKey && !isAdminCode && (inUseCodes.has(cleanCode) || inUseCodes.has(`${cleanCode}-MD`))) {
       return {
         success: false,
         error: isEn
-          ? `Code ${cleanCode} is already registered. Please select an available code.`
-          : `O código ${cleanCode} já se encontra em uso. Por favor selecione outro código disponível.`
+          ? `Code ${cleanCode} is currently in use. When the user logs out, it will become available again.`
+          : `O código ${cleanCode} já se encontra em uso. Quando o utilizador sair, o código voltará a ficar disponível.`
       };
     }
 
@@ -408,6 +455,9 @@ window.AuthModule = (function () {
     } catch (e) {
       console.error("Erro ao gravar sessão no localStorage:", e);
     }
+
+    // Marcar código como ativo em uso
+    addActiveCode(finalCode);
 
     // 3. Injeção nos formulários de avaliação com o código final (incluindo sufixo -MD se moderador)
     injectParticipantCodeToForms(finalCode);
@@ -448,6 +498,12 @@ window.AuthModule = (function () {
       }
     }
 
+    // Libertar código de participante para voltar a ficar disponível
+    const currentCode = getParticipantCode();
+    if (currentCode) {
+      removeActiveCode(currentCode);
+    }
+
     try {
       localStorage.removeItem(STORAGE_KEYS.SESSION_ACTIVE);
       localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_CODE);
@@ -466,6 +522,7 @@ window.AuthModule = (function () {
 
     // Bloquear website e reabrir tela de login
     lockWebsite();
+    renderCodesDropdown();
     renderHeaderUserBadge();
     if (window.updateNavVisibility) {
       window.updateNavVisibility();
@@ -620,31 +677,8 @@ window.AuthModule = (function () {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const filter = (filterText || "").trim().toUpperCase();
 
-    // Obter códigos registados via Google Sheets e localStorage
-    const registeredCodes = new Set();
-    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getRegisteredCodes === "function") {
-      window.SubmissionsTracker.getRegisteredCodes().forEach(c => {
-        if (c) {
-          const raw = String(c).trim().toUpperCase();
-          registeredCodes.add(raw);
-          const base = raw.replace(/-MD$/, "");
-          registeredCodes.add(base);
-        }
-      });
-    }
-    try {
-      const savedList = JSON.parse(localStorage.getItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS) || "[]");
-      if (Array.isArray(savedList)) {
-        savedList.forEach(c => {
-          if (c) {
-            const raw = String(c).trim().toUpperCase();
-            registeredCodes.add(raw);
-            const base = raw.replace(/-MD$/, "");
-            registeredCodes.add(base);
-          }
-        });
-      }
-    } catch (e) {}
+    // Obter códigos atualmente em uso por utilizadores com sessão ativa
+    const inUseCodes = getInUseCodes();
 
     const inUseLabel = isEn ? "In use" : "Em uso";
     const availableLabel = isEn ? "Available" : "Disponível";
@@ -707,9 +741,9 @@ window.AuthModule = (function () {
       `;
     } else {
       filteredCodes.forEach(code => {
-        const isRegistered = registeredCodes.has(code) || registeredCodes.has(`${code}-MD`);
-        if (isRegistered) {
-          // Desativado e estilizado a cinzento, não selecionável
+        const isInUse = inUseCodes.has(code) || inUseCodes.has(`${code}-MD`);
+        if (isInUse) {
+          // Desativado e estilizado a cinzento, não selecionável enquanto em uso por utilizador ativo
           html += `
             <div class="code-dropdown-item px-3 py-2 bg-slate-50/80 text-slate-400 cursor-not-allowed flex items-center justify-between select-none border-b border-slate-50 opacity-60" data-disabled="true" data-code="${code}">
               <span class="flex items-center gap-2">
@@ -813,20 +847,6 @@ window.AuthModule = (function () {
       } else {
         phaseBadge.textContent = isEn ? "Phase 1: In-Person Session" : "Fase 1: Sessão Presencial";
         phaseBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-900/60 text-amber-200 border border-amber-500/40 shadow-xs";
-      }
-    }
-
-    // Texto de apoio ao código de participante
-    const authCodeHelper = document.getElementById("auth-code-helper");
-    if (authCodeHelper) {
-      if (phase === "phase2") {
-        authCodeHelper.textContent = isEn
-          ? "Type or select your assigned code received via email (NS-PT) or admin-fg2."
-          : "Escreva ou selecione o código atribuído por e-mail (NS-PT) ou admin-fg2.";
-      } else {
-        authCodeHelper.textContent = isEn
-          ? "Type or select your physical badge code (FG2-PT) or admin-fg2."
-          : "Escreva ou selecione o código individual do seu crachá (FG2-PT) ou admin-fg2.";
       }
     }
 
@@ -1251,6 +1271,11 @@ window.AuthModule = (function () {
    * Inicialização do Módulo de Autenticação
    */
   function init() {
+    // Limpar listas legadas de bloqueio permanente para garantir que códigos não fiquem retidos
+    try {
+      localStorage.removeItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS);
+    } catch (e) {}
+
     renderCodesDropdown();
     syncUIWithPhase();
     syncUIWithStatus();
