@@ -259,7 +259,62 @@ window.I18nManager = (function () {
       "mod.reset": "Repor Padrão",
       "mod.gotoResults": "Ver Dashboard de Resultados",
       "mod.qrShortcut": "Atalho de Desbloqueio via URL:",
-      "mod.qrDesc": "Pode projetar ou partilhar com os participantes um QR code com o parâmetro:"
+      "mod.qrDesc": "Pode projetar ou partilhar com os participantes um QR code com o parâmetro:",
+
+      // Módulo de Autenticação & Área Reservada
+      "auth.modalTitle": "RENOVATE — Plataforma de Avaliação de Ferramentas Digitais",
+      "auth.modalSubtitle": "Área Reservada de Testes & Avaliação",
+      "auth.euBadge": "Horizonte Europa | Projeto RENOVATE",
+      "auth.phase1Badge": "Fase 1: Sessão Presencial",
+      "auth.phase2Badge": "Fase 2: Testes Remotos",
+      "auth.selectCode": "Selecione o seu Código de Participante...",
+      "auth.codeHelpPresential": "Selecione o código individual do seu crachá (FG2-PT).",
+      "auth.codeHelpRemote": "Selecione o código individual atribuído por e-mail (NS-PT).",
+      "auth.phase2Notice": "A sessão presencial do Grupo Focal está concluída. Se solicitou acesso para teste remoto via e-mail, selecione o seu código atribuído.",
+      "auth.keyLabel": "Chave de Acesso ao Evento / Chave Convidado",
+      "auth.keyPlaceholder": "Fornecida pela Organização.",
+      "auth.keyToggle": "Mostrar ou ocultar chave",
+      "auth.rgpdConsent": "Declaro que li o Consentimento Informado e aceito a participação na avaliação destas ferramentas digitais, bem como o tratamento estritamente anónimo dos dados recolhidos para efeitos do projeto europeu RENOVATE, em conformidade com o RGPD (Regulamento (UE) 2016/679).",
+      "auth.rgpdReadTerms": "Consultar Termos & RGPD",
+      "auth.enterBtn": "Entrar na Área Reservada",
+      "auth.maintenanceTitle": "Plataforma em Manutenção Técnica",
+      "auth.maintenanceNotice": "A plataforma RENOVATE encontra-se temporariamente fechada para atualização de conteúdos e implementação técnica. O acesso será reaberto na próxima janela de testes.",
+      "auth.errorSelectCode": "Por favor selecione o seu Código de Participante.",
+      "auth.errorInvalidKey": "Chave de acesso incorreta. Por favor verifique e tente novamente.",
+      "auth.errorRgpd": "É obrigatório aceitar os termos de consentimento RGPD para aceder.",
+      "auth.errorMaintenance": "A plataforma encontra-se temporariamente fechada para atualização de conteúdos e implementação técnica.",
+      "auth.successWelcome": "Bem-vindo à Área Reservada RENOVATE!",
+      "auth.logout": "Sair",
+      "auth.logoutConfirm": "Deseja realmente terminar a sessão e bloquear o acesso?",
+      "auth.badgePresential": "Presencial (FG2)",
+      "auth.rgpdModalTitle": "Consentimento Informado & Proteção de Dados (RGPD)",
+      "auth.rgpdModalSubtitle": "Projeto Europeu RENOVATE • Horizonte Europa",
+      "auth.rgpdSec1Title": "1. Enquadramento e Objetivos",
+      "auth.rgpdSec1Text": "O projeto europeu RENOVATE visa capacitar e modernizar a formação agrícola através de ferramentas digitais inovadoras, designadamente simuladores virtuais 3D e Serious Games pedagógicos focados na proteção sustentável das culturas e aplicação responsável de produtos fitossanitários.",
+      "auth.rgpdSec2Title": "2. Anonimização Total e Tratamento de Dados",
+      "auth.rgpdSec2TextPrefix": "Todas as respostas aos questionários e interações na plataforma são <strong>estritamente anónimas</strong>. A identificação é efetuada única e exclusivamente ",
+      "auth.rgpdSec2TextSuffix": ". Não é recolhido nem armazenado nenhum nome, morada, endereço de correio eletrónico pessoal ou dado biométrico nos relatórios científicos.",
+      "auth.rgpdSec3Title": "3. Conformidade com o RGPD (Regulamento UE 2016/679)",
+      "auth.rgpdSec3Text": "Os dados recolhidos destinam-se exclusivamente à avaliação estatística, científica e pedagógica no âmbito dos entregáveis oficiais do consórcio RENOVATE financiado pelo programa Horizonte Europa da Comissão Europeia. Os resultados agregados serão publicados em relatórios técnicos de livre acesso.",
+      "auth.rgpdSec4Title": "4. Caráter Voluntário",
+      "auth.rgpdSec4Text": "A sua participação é inteiramente voluntária, podendo interromper a qualquer momento o preenchimento dos formulários ou teste das ferramentas sem qualquer prejuízo.",
+      "auth.rgpdModalClose": "Compreendi e Fechar",
+      "auth.activeSession": "Sessão Ativa",
+      "auth.lockedBanner": "Acesso Restrito",
+
+      // Painel do Moderador - Controlo de Acessos
+      "mod.accessControlTitle": "Controlo de Acessos & Plataforma",
+      "mod.systemStatusLabel": "Estado do Sistema (system_status):",
+      "mod.statusOpen": "Aberto para Testes",
+      "mod.statusMaintenance": "Fechado para Manutenção",
+      "mod.phaseModeLabel": "Modo de Fase de Acesso:",
+      "mod.phaseAuto": "Automático por Calendário (06/10 presencial, 07/10+ remoto)",
+      "mod.phase1Manual": "Forçar Fase 1: Presencial (FG2-PT01 a PT50)",
+      "mod.phase2Manual": "Forçar Fase 2: Pós-Evento / Remoto (NS-PT01 a PT50)",
+      "mod.activeKeyLabel": "Chave de Acesso Personalizada:",
+      "mod.activeSessionLabel": "Sessão Ativa no Navegador:",
+      "mod.forceLogoutBtn": "Terminar Sessão Atual (Logout)",
+      "mod.saveSettings": "Aplicar Configurações"
     },
 
     "en-GB": {
@@ -508,7 +563,62 @@ window.I18nManager = (function () {
       "mod.reset": "Reset to Default",
       "mod.gotoResults": "View Results Dashboard",
       "mod.qrShortcut": "URL Unlock Shortcut:",
-      "mod.qrDesc": "You can project or share with participants a QR code with parameter:"
+      "mod.qrDesc": "You can project or share with participants a QR code with parameter:",
+
+      // Authentication & Reserved Area Module
+      "auth.modalTitle": "RENOVATE — Digital Tools Evaluation Platform",
+      "auth.modalSubtitle": "Restricted Area for Testing & Evaluation",
+      "auth.euBadge": "Horizon Europe | RENOVATE Project",
+      "auth.phase1Badge": "Phase 1: In-Person Session",
+      "auth.phase2Badge": "Phase 2: Remote Testing",
+      "auth.selectCode": "Select your Participant Code...",
+      "auth.codeHelpPresential": "Select the individual code from your physical badge (FG2-PT).",
+      "auth.codeHelpRemote": "Select your assigned code received via email (NS-PT).",
+      "auth.phase2Notice": "The in-person Focus Group session is completed. If you requested access for remote testing via email, please select your assigned code.",
+      "auth.keyLabel": "Event Access Key / Guest Key",
+      "auth.keyPlaceholder": "Provided by the Organisation.",
+      "auth.keyToggle": "Show or hide key",
+      "auth.rgpdConsent": "I declare that I have read the Informed Consent and agree to participate in the evaluation of these digital tools, as well as the strictly anonymous processing of data collected for the European project RENOVATE, in compliance with the GDPR (Regulation (EU) 2016/679).",
+      "auth.rgpdReadTerms": "Read Terms & GDPR",
+      "auth.enterBtn": "Enter Restricted Area",
+      "auth.maintenanceTitle": "Platform Under Technical Maintenance",
+      "auth.maintenanceNotice": "The RENOVATE platform is temporarily closed for content updates and technical implementation. Access will reopen during the next testing window.",
+      "auth.errorSelectCode": "Please select your Participant Code.",
+      "auth.errorInvalidKey": "Incorrect access key. Please verify and try again.",
+      "auth.errorRgpd": "You must accept the GDPR informed consent terms to access.",
+      "auth.errorMaintenance": "The platform is temporarily closed for content updates and technical implementation.",
+      "auth.successWelcome": "Welcome to the RENOVATE Restricted Area!",
+      "auth.logout": "Log Out",
+      "auth.logoutConfirm": "Do you really want to log out and lock access?",
+      "auth.badgePresential": "In-Person (FG2)",
+      "auth.rgpdModalTitle": "Informed Consent & Data Protection (GDPR)",
+      "auth.rgpdModalSubtitle": "European Project RENOVATE • Horizon Europe",
+      "auth.rgpdSec1Title": "1. Background and Objectives",
+      "auth.rgpdSec1Text": "The European RENOVATE project aims to empower and modernise agricultural training through innovative digital tools, namely 3D virtual simulators and educational Serious Games focused on sustainable crop protection and responsible pesticide application.",
+      "auth.rgpdSec2Title": "2. Total Anonymisation and Data Processing",
+      "auth.rgpdSec2TextPrefix": "All responses to questionnaires and platform interactions are <strong>strictly anonymous</strong>. Identification is carried out solely and exclusively ",
+      "auth.rgpdSec2TextSuffix": ". No names, physical addresses, personal email addresses, or biometric data are collected or stored in scientific reports.",
+      "auth.rgpdSec3Title": "3. GDPR Compliance (Regulation EU 2016/679)",
+      "auth.rgpdSec3Text": "The data collected is intended solely for statistical, scientific, and educational evaluation within the official deliverables of the RENOVATE consortium funded by the European Commission's Horizon Europe programme. Aggregated results will be published in open-access technical reports.",
+      "auth.rgpdSec4Title": "4. Voluntary Participation",
+      "auth.rgpdSec4Text": "Your participation is entirely voluntary, and you may discontinue questionnaire completion or tool testing at any time without any disadvantage.",
+      "auth.rgpdModalClose": "Understood & Close",
+      "auth.activeSession": "Active Session",
+      "auth.lockedBanner": "Restricted Access",
+
+      // Moderator Panel - Access Control
+      "mod.accessControlTitle": "Access Control & Platform Status",
+      "mod.systemStatusLabel": "System Status (system_status):",
+      "mod.statusOpen": "Open for Testing",
+      "mod.statusMaintenance": "Closed for Maintenance",
+      "mod.phaseModeLabel": "Access Phase Mode:",
+      "mod.phaseAuto": "Automatic by Calendar (06/10 in-person, 07/10+ remote)",
+      "mod.phase1Manual": "Force Phase 1: In-Person (FG2-PT01 to PT50)",
+      "mod.phase2Manual": "Force Phase 2: Post-Event / Remote (NS-PT01 to PT50)",
+      "mod.activeKeyLabel": "Custom Access Key:",
+      "mod.activeSessionLabel": "Active Browser Session:",
+      "mod.forceLogoutBtn": "End Current Session (Log Out)",
+      "mod.saveSettings": "Apply Settings"
     }
   };
 
@@ -582,17 +692,24 @@ window.I18nManager = (function () {
   }
 
   /**
-   * Configura o elemento <select id="lang-select">
+   * Configura os elementos de seleção de idioma (<select id="lang-select"> e <select id="auth-lang-select">)
    */
   function setupDropdown() {
-    const select = document.getElementById("lang-select");
-    if (!select) return;
+    const headerSelect = document.getElementById("lang-select");
+    if (headerSelect) {
+      headerSelect.value = currentLang;
+      headerSelect.addEventListener("change", (e) => {
+        setLanguage(e.target.value);
+      });
+    }
 
-    select.value = currentLang;
-    select.addEventListener("change", (e) => {
-      const targetLang = e.target.value;
-      setLanguage(targetLang);
-    });
+    const authSelect = document.getElementById("auth-lang-select");
+    if (authSelect) {
+      authSelect.value = currentLang;
+      authSelect.addEventListener("change", (e) => {
+        setLanguage(e.target.value);
+      });
+    }
   }
 
   /**
@@ -603,9 +720,14 @@ window.I18nManager = (function () {
     currentLang = newLang;
     saveLanguage(newLang);
 
-    const select = document.getElementById("lang-select");
-    if (select && select.value !== newLang) {
-      select.value = newLang;
+    const headerSelect = document.getElementById("lang-select");
+    if (headerSelect && headerSelect.value !== newLang) {
+      headerSelect.value = newLang;
+    }
+
+    const authSelect = document.getElementById("auth-lang-select");
+    if (authSelect && authSelect.value !== newLang) {
+      authSelect.value = newLang;
     }
 
     // Atualizar atributo html lang
@@ -627,6 +749,12 @@ window.I18nManager = (function () {
     }
     if (window.ResultsDashboard && typeof window.ResultsDashboard.fetchData === "function") {
       window.ResultsDashboard.fetchData(false);
+    }
+    if (window.AuthModule) {
+      if (typeof window.AuthModule.renderCodesDropdown === "function") window.AuthModule.renderCodesDropdown();
+      if (typeof window.AuthModule.syncUIWithPhase === "function") window.AuthModule.syncUIWithPhase();
+      if (typeof window.AuthModule.syncUIWithStatus === "function") window.AuthModule.syncUIWithStatus();
+      if (typeof window.AuthModule.renderHeaderUserBadge === "function") window.AuthModule.renderHeaderUserBadge();
     }
 
     if (window.lucide) {

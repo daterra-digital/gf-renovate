@@ -65,7 +65,7 @@ header {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
-  z-index: 40 !important;
+  z-index: 55 !important;
   background-color: #FFFFFF !important;
 }
 
@@ -272,4 +272,62 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     break-inside: avoid;
   }
 }
+
+/* ========================================================== */
+/* MÓDULO DE AUTENTICAÇÃO & ÁREA RESERVADA (ACESSO BLOQUEADO)  */
+/* ========================================================== */
+html.auth-locked,
+body.auth-locked {
+  overflow: hidden !important;
+  height: 100vh !important;
+  touch-action: none !important;
+}
+
+/* Ocultar menus de navegação, botão de moderação e conteúdos na tela de login (sem transparência, nada visível por baixo) */
+body.auth-locked header nav,
+body.auth-locked .mobile-bottom-nav,
+body.auth-locked .btn-open-moderator-modal,
+body.auth-locked main,
+body.auth-locked footer {
+  display: none !important;
+}
+
+#auth-login-modal {
+  z-index: 50 !important;
+  background-color: #0F172A !important; /* 100% Sólido e Opaco, sem transparência */
+  opacity: 1 !important;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+
+#moderator-modal,
+#rgpd-info-modal {
+  z-index: 9999 !important;
+}
+
+#auth-login-modal.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.auth-modal-card {
+  animation: authCardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes authCardPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Glow effects para o ecrã de login da Área Reservada */
+.auth-glow-amber {
+  box-shadow: 0 0 50px -10px rgba(255, 204, 102, 0.25);
+}
+
 

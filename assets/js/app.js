@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
     window.I18nManager.init();
   }
 
+  // 0.1 Inicializar Módulo de Autenticação & Controlo de Acessos
+  if (window.AuthModule) {
+    window.AuthModule.init();
+  }
+
   // 1. Inicializar LiveSession
   LiveSession.init();
 
@@ -19,6 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
   renderGF1();
   renderResultsAndMedia();
   renderPartners();
+
+  // Injetar código nos links dinâmicos do programa
+  if (window.AuthModule) {
+    window.AuthModule.injectParticipantCodeToForms();
+  }
 
   // 4. Inicializar Dashboard de Resultados (Google Sheets, Chart.js & WordCloud)
   if (window.ResultsDashboard) {
@@ -114,8 +124,15 @@ function initTabNavigation() {
   const homeLogo = document.getElementById("nav-logo-home");
   if (homeLogo) {
     homeLogo.addEventListener("click", (e) => {
+      const isAuth = window.AuthModule && window.AuthModule.isAuthenticated();
+      if (!isAuth) {
+        // Antes do utilizador fazer login, o clique no logótipo abre o website oficial https://renovateproject.eu/
+        return; // Permite a navegação normal externa (target="_blank")
+      }
+      // Depois do utilizador fazer login, leva o utilizador para a home do website
       e.preventDefault();
       switchTab("live");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 
@@ -796,19 +813,23 @@ function initParticipantCodeEvents() {
   const input = document.getElementById("participant-code-input");
 
   if (saveBtn && input) {
-    saveBtn.addEventListener("click", () => {
-      const code = input.value.trim();
+    const handleCodeUpdate = () => {
+      const code = input.value.trim().toUpperCase();
       if (LiveSession.setParticipantCode(code)) {
+        if (window.AuthModule) {
+          localStorage.setItem(window.AuthModule.STORAGE_KEYS.PARTICIPANT_CODE, code);
+          window.AuthModule.renderHeaderUserBadge();
+          window.AuthModule.injectParticipantCodeToForms(code);
+        }
         showToast("Código de Participante atualizado com sucesso!");
       }
-    });
+    };
+
+    saveBtn.addEventListener("click", handleCodeUpdate);
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        const code = input.value.trim();
-        if (LiveSession.setParticipantCode(code)) {
-          showToast("Código de Participante atualizado com sucesso!");
-        }
+        handleCodeUpdate();
       }
     });
   }
@@ -881,6 +902,7 @@ function initModeratorModal() {
       authSection.classList.add("hidden");
       panelSection.classList.remove("hidden");
       updateModeratorControlList();
+      updateModeratorAccessControls();
       showToast("Acesso de Moderador Confirmado!");
       if (window.lucide) window.lucide.createIcons();
     } else {
@@ -985,6 +1007,75 @@ function initModeratorModal() {
         }, 150);
       }
     });
+  }
+
+  function updateModeratorAccessControls() {
+    if (!window.AuthModule) return;
+
+    // 1. Estado do Sistema (Aberto vs Fechado)
+    const statusSelect = document.getElementById("mod-system-status");
+    if (statusSelect) {
+      statusSelect.value = AuthModule.getSystemStatus();
+      statusSelect.onchange = () => {
+        const newStatus = statusSelect.value;
+        AuthModule.setSystemStatus(newStatus);
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        showToast(newStatus === "closed" 
+          ? (isEn ? "System status set to Maintenance (Closed)!" : "Estado alterado: Fechado para Manutenção!")
+          : (isEn ? "System status set to Open for Testing!" : "Estado alterado: Aberto para Testes!"));
+      };
+    }
+
+    // 2. Modo de Fase (auto, phase1, phase2)
+    const phaseSelect = document.getElementById("mod-access-phase");
+    if (phaseSelect) {
+      const savedPhase = localStorage.getItem(AuthModule.STORAGE_KEYS.ACCESS_PHASE) || "auto";
+      phaseSelect.value = savedPhase;
+      phaseSelect.onchange = () => {
+        const newPhase = phaseSelect.value;
+        AuthModule.setAccessPhase(newPhase);
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        showToast(isEn ? "Access phase updated successfully!" : "Fase de acesso atualizada com sucesso!");
+      };
+    }
+
+    // 3. Chave Personalizada
+    const keyInput = document.getElementById("mod-custom-key-input");
+    const saveKeyBtn = document.getElementById("btn-mod-save-key");
+    if (keyInput) {
+      keyInput.value = localStorage.getItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY) || "";
+    }
+    if (saveKeyBtn && keyInput) {
+      saveKeyBtn.onclick = () => {
+        const keyVal = keyInput.value.trim();
+        if (keyVal) {
+          localStorage.setItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY, keyVal);
+          showToast(`Chave de acesso guardada: ${keyVal}`);
+        } else {
+          localStorage.removeItem(AuthModule.STORAGE_KEYS.CUSTOM_KEY);
+          showToast("Chave personalizada removida (padrão ativa: renovate2026).");
+        }
+      };
+    }
+
+    // 4. Sessão Ativa & Forçar Logout
+    const sessionLabel = document.getElementById("mod-active-session-code");
+    const forceLogoutBtn = document.getElementById("btn-mod-force-logout");
+    if (sessionLabel) {
+      const activeCode = AuthModule.getParticipantCode();
+      sessionLabel.textContent = activeCode ? `${activeCode} (${AuthModule.getParticipantType(activeCode)})` : "Nenhuma";
+    }
+    if (forceLogoutBtn) {
+      forceLogoutBtn.onclick = () => {
+        if (AuthModule.isAuthenticated()) {
+          AuthModule.logout(true);
+          if (sessionLabel) sessionLabel.textContent = "Nenhuma";
+          showToast("Sessão terminada pelo moderador.");
+        } else {
+          showToast("Não existe nenhuma sessão ativa neste navegador.");
+        }
+      };
+    }
   }
 }
 

@@ -43,7 +43,16 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261001-1800">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261002-0100">
+
+  <!-- Verificação Imediata de Sessão (Previne Flash de Conteúdo Não Autenticado) -->
+  <script>
+    try {
+      if (localStorage.getItem("renovate_session_active") !== "true") {
+        document.documentElement.classList.add("auth-locked");
+      }
+    } catch(e) {}
+  </script>
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col antialiased body-mobile-padding">
 
@@ -53,8 +62,8 @@
       
       <!-- Bloco de Logótipos Institucionais na Raiz (Responsivos para todos os ecrãs) -->
       <div class="flex items-center gap-2 sm:gap-4 md:gap-5">
-        <!-- Logótipo RENOVATE (Botão Página Inicial / Home) -->
-        <a href="#live" id="nav-logo-home" title="Página Inicial - Sessão ao Vivo" class="shrink-0 flex items-center cursor-pointer transition hover:opacity-90">
+        <!-- Logótipo RENOVATE (Link Oficial antes de login / Home pós-login) -->
+        <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" id="nav-logo-home" title="Website Oficial do Projeto RENOVATE (renovateproject.eu)" class="shrink-0 flex items-center cursor-pointer transition hover:opacity-90">
           <img src="logo-renovate.png" alt="Logótipo RENOVATE" class="h-7 sm:h-9 md:h-11 w-auto max-w-[95px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-2 py-0.5 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-xs sm:text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
         </a>
@@ -100,6 +109,9 @@
           <i data-lucide="settings" class="w-4 h-4 text-slate-700"></i>
           <span data-i18n="header.moderation" class="hidden sm:inline">Moderação</span>
         </button>
+
+        <!-- Área Reservada do Utilizador no Topo Direito (Avatar, Código e Logout) -->
+        <div id="header-user-badge" class="hidden"></div>
       </div>
 
     </div>
@@ -154,25 +166,16 @@
             </p>
           </div>
 
-          <!-- Caixa de Gestão do Código de Participante -->
-          <div class="bg-white p-3.5 rounded-xl border border-amber-300 shadow-sm w-full lg:w-auto shrink-0">
-            <label for="participant-code-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span data-i18n="live.banner.title">Código de Participante</span>
-              <span id="current-participant-code" class="text-slate-400 italic font-mono">Não definido</span>
-            </label>
-            <div class="flex gap-2">
-              <input type="text" id="participant-code-input" data-i18n-placeholder="live.banner.placeholder" placeholder="Ex: P01 a P50" 
-                     class="uppercase px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none w-36">
-              <button type="button" id="btn-save-participant-code" 
-                      class="px-3 py-1.5 rounded-lg bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition flex items-center gap-1">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                <span data-i18n="live.banner.saveBtn">Guardar</span>
-              </button>
+          <!-- Ícone de Calendário em Tempo Real (Estilo iOS / pt-PT) -->
+          <div class="shrink-0 flex items-center justify-center self-center lg:self-auto">
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl border-2 border-slate-200/90 shadow-md flex flex-col items-center justify-between p-2 select-none hover:shadow-lg transition-transform hover:scale-105" title="Data da Sessão (Tempo Real)">
+              <span id="live-calendar-weekday" class="text-xs sm:text-sm font-black text-[#FF3B30] tracking-wider uppercase leading-none pt-1">
+                SEX
+              </span>
+              <span id="live-calendar-day" class="text-3xl sm:text-4xl font-semibold text-slate-900 leading-none pb-1 font-sans">
+                02
+              </span>
             </div>
-            <p id="participant-code-notice" class="text-[11px] text-amber-700 mt-1.5 flex items-center gap-1">
-              <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
-              <span data-i18n="live.banner.notice">Introduza o seu código para associar as respostas.</span>
-            </p>
           </div>
         </div>
       </div>
@@ -1471,6 +1474,64 @@
           </button>
         </div>
 
+        <!-- Secção: Controlo de Acessos & Plataforma (Fase 1, Fase 2 e Manutenção) -->
+        <div class="space-y-3 pt-3 border-t border-slate-200">
+          <div data-i18n="mod.accessControlTitle" class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
+            <span>Controlo de Acessos & Plataforma</span>
+          </div>
+
+          <!-- Estado do Sistema (system_status) -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+            <label for="mod-system-status" data-i18n="mod.systemStatusLabel" class="block text-[11px] font-bold text-slate-700">
+              Estado do Sistema (system_status):
+            </label>
+            <select id="mod-system-status" class="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
+              <option value="open">🟢 Aberto para Testes</option>
+              <option value="closed">🔴 Fechado para Manutenção / Implementação</option>
+            </select>
+          </div>
+
+          <!-- Modo de Fase de Acesso (auto, phase1, phase2) -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+            <label for="mod-access-phase" data-i18n="mod.phaseModeLabel" class="block text-[11px] font-bold text-slate-700">
+              Modo de Fase de Acesso:
+            </label>
+            <select id="mod-access-phase" class="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
+              <option value="auto">⚡ Automático por Calendário (06/10 presencial, 07/10+ remoto)</option>
+              <option value="phase1">🏛️ Forçar Fase 1: Presencial (FG2-PT01 a PT50)</option>
+              <option value="phase2">🌐 Forçar Fase 2: Pós-Evento / Remoto (NS-PT01 a PT50)</option>
+            </select>
+          </div>
+
+          <!-- Chave de Acesso Personalizada -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+            <label for="mod-custom-key-input" data-i18n="mod.activeKeyLabel" class="block text-[11px] font-bold text-slate-700">
+              Chave de Acesso Personalizada:
+            </label>
+            <div class="flex gap-1.5">
+              <input type="text" id="mod-custom-key-input" placeholder="Padrão: renovate2026" 
+                     class="w-full text-xs font-mono px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white outline-none focus:ring-2 focus:ring-[#FFCC66]">
+              <button type="button" id="btn-mod-save-key" data-i18n="mod.saveSettings" 
+                      class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800 transition shrink-0">
+                Guardar
+              </button>
+            </div>
+          </div>
+
+          <!-- Sessão Ativa & Terminar Sessão -->
+          <div class="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 flex items-center justify-between gap-2">
+            <div class="text-[11px]">
+              <span data-i18n="mod.activeSessionLabel" class="text-slate-600 block">Sessão Ativa no Navegador:</span>
+              <span id="mod-active-session-code" class="font-mono font-bold text-slate-900 text-xs">Nenhuma</span>
+            </div>
+            <button type="button" id="btn-mod-force-logout" data-i18n="mod.forceLogoutBtn" 
+                    class="py-1 px-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition shrink-0">
+              Terminar Sessão
+            </button>
+          </div>
+        </div>
+
         <!-- Atalho Rápido para Gestão de Resultados -->
         <div class="pt-2 border-t border-slate-100">
           <button type="button" id="btn-mod-goto-results" 
@@ -1536,12 +1597,217 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- MODAL DE LOGIN EM ECRÃ INTEIRO (ÁREA RESERVADA BLOQUEADA) -->
+  <!-- ======================================================== -->
+  <div id="auth-login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0F172A] overflow-y-auto pt-16 sm:pt-20">
+    <div class="auth-modal-card relative max-w-lg w-full bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-5 my-auto auth-glow-amber">
+      
+      <!-- Faixa de Cores Oficial RENOVATE -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 renovate-palette-bar"></div>
+
+      <!-- Topo: Logótipos Institucionais e Badge UE -->
+      <div class="flex items-center justify-between gap-2 pt-1 border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Website Oficial do Projeto RENOVATE (renovateproject.eu)" class="shrink-0 flex items-center hover:opacity-85 transition">
+            <img src="logo-renovate.png" alt="RENOVATE" class="h-7 sm:h-8 w-auto object-contain">
+          </a>
+          <div class="h-4 w-[1px] bg-slate-200"></div>
+          <img src="logo-daterra.png" alt="DATERRA" class="h-6 sm:h-7 w-auto object-contain">
+          <div class="h-4 w-[1px] bg-slate-200"></div>
+          <img src="logo-esas.png" alt="ESAS" class="h-6 sm:h-7 w-auto object-contain">
+        </div>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100/80 text-amber-900 font-extrabold text-[10px] uppercase tracking-wider border border-amber-200">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-700"></i>
+          <span data-i18n="auth.lockedBanner">Acesso Restrito</span>
+        </span>
+      </div>
+
+      <!-- Cabeçalho do Modal: Título e Subtítulo Obrigatórios -->
+      <div class="text-center space-y-1.5">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold mb-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span data-i18n="auth.euBadge">Horizonte Europa | Projeto RENOVATE</span>
+        </div>
+        <h2 data-i18n="auth.modalTitle" class="text-lg sm:text-xl font-black text-slate-900 leading-snug">
+          RENOVATE — Plataforma de Avaliação de Ferramentas Digitais
+        </h2>
+        <p data-i18n="auth.modalSubtitle" class="text-xs sm:text-sm font-bold text-amber-700 uppercase tracking-wide">
+          Área Reservada de Testes & Avaliação
+        </p>
+        <div class="pt-1 flex items-center justify-center">
+          <span id="auth-phase-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-900/60 text-amber-200 border border-amber-500/40 shadow-xs">
+            Fase 1: Sessão Presencial
+          </span>
+        </div>
+      </div>
+
+      <!-- FASE 3: Aviso de Manutenção Técnica (Acesso Fechado) -->
+      <div id="auth-maintenance-notice" class="hidden p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 space-y-2 text-left animate-fadeIn">
+        <div class="flex items-center gap-2 font-black text-xs sm:text-sm">
+          <div class="w-7 h-7 rounded-full bg-rose-200 text-rose-800 flex items-center justify-center shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+          </div>
+          <span data-i18n="auth.maintenanceTitle">Plataforma em Manutenção Técnica</span>
+        </div>
+        <p data-i18n="auth.maintenanceNotice" class="text-xs leading-relaxed text-rose-800 font-medium">
+          A plataforma RENOVATE encontra-se temporariamente fechada para atualização de conteúdos e implementação técnica. O acesso será reaberto na próxima janela de testes.
+        </p>
+      </div>
+
+      <!-- FASE 2: Mensagem Pós-Grupo Focal (A partir de 07/10/2026 ou Remoto) -->
+      <div id="auth-phase2-notice" class="hidden p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-950 space-y-1 text-left animate-fadeIn">
+        <div class="flex items-center gap-2 font-bold text-xs">
+          <i data-lucide="info" class="w-4 h-4 text-cyan-700 shrink-0"></i>
+          <span data-i18n="auth.phase2Badge" class="font-extrabold text-cyan-900">Fase 2: Testes Remotos</span>
+        </div>
+        <p data-i18n="auth.phase2Notice" class="text-xs leading-relaxed text-cyan-800 font-medium">
+          A sessão presencial do Grupo Focal está concluída. Se solicitou acesso para teste remoto via e-mail, selecione o seu código atribuído.
+        </p>
+      </div>
+
+      <!-- Formulário da Tela de Login -->
+      <form id="auth-login-form" class="space-y-4 text-left">
+        <div id="auth-form-fields" class="space-y-4">
+          
+          <!-- Campo 1 — Código de Participante (Dropdown Dinâmico) -->
+          <div class="space-y-1">
+            <label for="auth-participant-code" data-i18n="auth.codeLabel" class="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
+              <span>Código de Participante</span>
+              <span class="text-[10px] text-slate-400 font-normal lowercase">(obrigatório)</span>
+            </label>
+            <div class="relative">
+              <select id="auth-participant-code" required
+                      class="w-full text-xs font-mono font-bold py-2.5 pl-3 pr-8 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none appearance-none cursor-pointer transition">
+                <option value="" disabled selected>Selecione o seu Código de Participante...</option>
+              </select>
+              <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <p id="auth-code-helper" class="text-[11px] text-slate-500">
+              Selecione o código individual do seu crachá (FG2-PT).
+            </p>
+          </div>
+
+          <!-- Campo 2 — Chave de Acesso ao Evento / Chave Convidado -->
+          <div class="space-y-1">
+            <label for="auth-access-key" data-i18n="auth.keyLabel" class="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
+              <span>Chave de Acesso ao Evento / Chave Convidado</span>
+              <span class="text-[10px] text-slate-400 font-normal lowercase">(obrigatório)</span>
+            </label>
+            <div class="relative">
+              <input type="password" id="auth-access-key" required placeholder="Fornecida pela Organização." data-i18n-placeholder="auth.keyPlaceholder"
+                     class="w-full text-xs font-mono font-bold py-2.5 pl-3 pr-10 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#FFCC66] focus:border-slate-900 outline-none transition">
+              <button type="button" id="btn-toggle-key-visibility" title="Mostrar/Ocultar Chave" data-i18n-title="auth.keyToggle"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Campo 3 — Consentimento RGPD (Caixa de Seleção Obrigatória) -->
+          <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="auth-consent-rgpd" required
+                     class="mt-1 w-4 h-4 rounded text-amber-600 focus:ring-[#FFCC66] border-slate-300 cursor-pointer shrink-0">
+              <span data-i18n="auth.rgpdConsent" class="text-[11px] text-slate-700 leading-relaxed font-medium">
+                Declaro que li o Consentimento Informado e aceito a participação na avaliação destas ferramentas digitais, bem como o tratamento estritamente anónimo dos dados recolhidos para efeitos do projeto europeu RENOVATE, em conformidade com o RGPD (Regulamento (UE) 2016/679).
+              </span>
+            </label>
+            <div class="text-right">
+              <button type="button" id="btn-open-rgpd-modal" data-i18n="auth.rgpdReadTerms"
+                      class="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline decoration-amber-400 hover:decoration-amber-700 transition">
+                Consultar Termos & RGPD
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Caixa de Erro de Validação -->
+        <div id="auth-error-box" class="p-3 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 text-xs font-semibold hidden animate-fadeIn">
+        </div>
+
+        <!-- Botão de Submissão -->
+        <button type="submit" id="btn-auth-submit" 
+                class="w-full py-3 px-4 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] active:scale-[0.99] text-[#0F172A] text-sm font-extrabold border border-slate-900 transition flex items-center justify-center gap-2 shadow-md">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span data-i18n="auth.enterBtn">Entrar na Área Reservada</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL DE CONSENTIMENTO INFORMADO COMPLETO (RGPD)          -->
+  <!-- ======================================================== -->
+  <div id="rgpd-info-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-sm hidden animate-fadeIn">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto text-left">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 data-i18n="auth.rgpdModalTitle" class="text-sm sm:text-base font-extrabold text-slate-900">
+              Consentimento Informado & Proteção de Dados (RGPD)
+            </h3>
+            <p data-i18n="auth.rgpdModalSubtitle" class="text-[11px] text-slate-500 font-medium">Projeto Europeu RENOVATE • Horizonte Europa</p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-rgpd-modal" class="text-slate-400 hover:text-slate-700 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <h4 data-i18n="auth.rgpdSec1Title" class="font-bold text-slate-900 mb-1">1. Enquadramento e Objetivos</h4>
+          <p data-i18n="auth.rgpdSec1Text">
+            O projeto europeu RENOVATE visa capacitar e modernizar a formação agrícola através de ferramentas digitais inovadoras, designadamente simuladores virtuais 3D e Serious Games pedagógicos focados na proteção sustentável das culturas e aplicação responsável de produtos fitossanitários.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <h4 data-i18n="auth.rgpdSec2Title" class="font-bold text-slate-900 mb-1">2. Anonimização Total e Tratamento de Dados</h4>
+          <p>
+            <span data-i18n="auth.rgpdSec2TextPrefix">Todas as respostas aos questionários e interações na plataforma são <strong>estritamente anónimas</strong>. A identificação é efetuada única e exclusivamente </span><span id="rgpd-code-mention">através do Código de Participante individual atribuído no seu crachá (FG2-PTxx)</span><span data-i18n="auth.rgpdSec2TextSuffix">. Não é recolhido nem armazenado nenhum nome, morada, endereço de correio eletrónico pessoal ou dado biométrico nos relatórios científicos.</span>
+          </p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <h4 data-i18n="auth.rgpdSec3Title" class="font-bold text-slate-900 mb-1">3. Conformidade com o RGPD (Regulamento UE 2016/679)</h4>
+          <p data-i18n="auth.rgpdSec3Text">
+            Os dados recolhidos destinam-se exclusivamente à avaliação estatística, científica e pedagógica no âmbito dos entregáveis oficiais do consórcio RENOVATE financiado pelo programa Horizonte Europa da Comissão Europeia. Os resultados agregados serão publicados em relatórios técnicos de livre acesso.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <h4 data-i18n="auth.rgpdSec4Title" class="font-bold text-slate-900 mb-1">4. Caráter Voluntário</h4>
+          <p data-i18n="auth.rgpdSec4Text">
+            A sua participação é inteiramente voluntária, podendo interromper a qualquer momento o preenchimento dos formulários ou teste das ferramentas sem qualquer prejuízo.
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 flex justify-end">
+        <button type="button" id="btn-close-rgpd-confirm" 
+                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs">
+          <span data-i18n="auth.rgpdModalClose">Compreendi e Fechar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261002-0030"></script>
-  <script src="assets/js/content-data.js?v=20261002-0030"></script>
-  <script src="assets/js/live-session.js?v=20261002-0030"></script>
-  <script src="assets/js/results-dashboard.js?v=20261002-0030"></script>
-  <script src="assets/js/app.js?v=20261002-0030"></script>
+  <script src="assets/js/i18n.js?v=20261002-0100"></script>
+  <script src="assets/js/content-data.js?v=20261002-0100"></script>
+  <script src="assets/js/auth.js?v=20261002-0100"></script>
+  <script src="assets/js/live-session.js?v=20261002-0100"></script>
+  <script src="assets/js/results-dashboard.js?v=20261002-0100"></script>
+  <script src="assets/js/app.js?v=20261002-0100"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

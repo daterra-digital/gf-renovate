@@ -12,6 +12,7 @@ const LiveSession = (function () {
 
   const MODERATOR_PIN = "2026";
   const TOTAL_STEPS = 5;
+  const PT_WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
   // Estado interno
   let state = {
@@ -19,6 +20,22 @@ const LiveSession = (function () {
     unlockedSteps: [1], // Passo 1 sempre desbloqueado por defeito
     completedSteps: []
   };
+
+  /**
+   * Atualiza o ícone de calendário em tempo real com iniciais em pt-PT
+   */
+  function updateLiveCalendar() {
+    const weekdayEl = document.getElementById("live-calendar-weekday");
+    const dayEl = document.getElementById("live-calendar-day");
+    if (!weekdayEl && !dayEl) return;
+
+    const now = new Date();
+    const dayOfWeek = PT_WEEKDAYS[now.getDay()] || "SEX";
+    const dayOfMonth = String(now.getDate()).padStart(2, "0");
+
+    if (weekdayEl) weekdayEl.textContent = dayOfWeek;
+    if (dayEl) dayEl.textContent = dayOfMonth;
+  }
 
   /**
    * Inicializa o estado a partir do localStorage e parâmetros de URL
@@ -31,6 +48,7 @@ const LiveSession = (function () {
       state.completedSteps.push(1);
       saveStorageState();
     }
+    updateLiveCalendar();
     renderLiveSessionUI();
     bindAutomaticStepTriggers();
   }
@@ -108,12 +126,16 @@ const LiveSession = (function () {
     }
   }
 
-  /**
-   * Define e valida o código do participante
-   */
   function setParticipantCode(newCode) {
-    if (!newCode || newCode.trim().length === 0) {
-      alert("Por favor introduza um Código de Participante válido (ex: P01, EXP-04).");
+    if (newCode === "" || newCode === null || newCode === undefined) {
+      state.participantCode = "";
+      state.completedSteps = state.completedSteps.filter(s => s !== 1);
+      saveStorageState();
+      renderLiveSessionUI();
+      return true;
+    }
+    if (!newCode.trim()) {
+      alert("Por favor introduza um Código de Participante válido (ex: FG2-PT01, NS-PT01).");
       return false;
     }
     state.participantCode = newCode.trim().toUpperCase();
@@ -340,7 +362,10 @@ const LiveSession = (function () {
       }
     }
 
-    // 1. Atualizar display do Código do Participante
+    // 1. Atualizar ícone de calendário em tempo real (pt-PT)
+    updateLiveCalendar();
+
+    // 2. Atualizar display do Código do Participante
     const codeDisplay = document.getElementById("current-participant-code");
     const codeInput = document.getElementById("participant-code-input");
     const codeNotice = document.getElementById("participant-code-notice");
@@ -545,6 +570,7 @@ const LiveSession = (function () {
     lockStep,
     toggleStepCompleted,
     markStepCompleted,
+    updateLiveCalendar,
     render: renderLiveSessionUI,
     renderSteps: renderLiveSessionUI
   };
