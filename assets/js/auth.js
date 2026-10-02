@@ -1126,20 +1126,20 @@ window.AuthModule = (function () {
           window.RENOVATE_SYSTEM_STATUS.status = fetchedStatus;
           window.RENOVATE_SYSTEM_STATUS.updated_at = data.updated_at;
 
-          if (fetchedStatus !== lastKnownStatus) {
-            console.log(`[AuthModule] Transição de estado detetada: ${lastKnownStatus} -> ${fetchedStatus}`);
-            lastKnownStatus = fetchedStatus;
-            syncUIWithStatus();
-            if (window.ModeratorPanel && typeof window.ModeratorPanel.renderAccessControls === "function") {
-              window.ModeratorPanel.renderAccessControls();
-            }
+          const changed = fetchedStatus !== lastKnownStatus;
+          lastKnownStatus = fetchedStatus;
 
-            if (fetchedStatus === "closed") {
-              // Se a plataforma entrou em manutenção:
-              // Em GitHub Pages bloqueia imediatamente todos os acessos
-              // Em localhost bloqueia participantes normais mas mantém moderadores
-              if (!isLocalhost() || !isModerator()) {
-                lockWebsite();
+          syncUIWithStatus();
+          if (window.ModeratorPanel && typeof window.ModeratorPanel.renderAccessControls === "function") {
+            window.ModeratorPanel.renderAccessControls();
+          }
+
+          if (fetchedStatus === "closed") {
+            // Em GitHub Pages bloqueia imediatamente sem exceção
+            // Em localhost bloqueia participantes mas mantém moderadores
+            if (!isLocalhost() || !isModerator()) {
+              lockWebsite();
+              if (changed) {
                 const isEn = window.I18nManager && window.I18nManager.isEnglish();
                 if (window.showToast) {
                   window.showToast(isEn 
@@ -1147,12 +1147,11 @@ window.AuthModule = (function () {
                     : "A plataforma entrou em modo de manutenção técnica.");
                 }
               }
-            } else {
-              // Se a plataforma foi reaberta:
-              const isEn = window.I18nManager && window.I18nManager.isEnglish();
-              if (window.showToast) {
-                window.showToast(isEn ? "The platform is now open for testing!" : "A plataforma está aberta para testes!");
-              }
+            }
+          } else if (changed) {
+            const isEn = window.I18nManager && window.I18nManager.isEnglish();
+            if (window.showToast) {
+              window.showToast(isEn ? "The platform is now open for testing!" : "A plataforma está aberta para testes!");
             }
           }
         }
@@ -1161,8 +1160,9 @@ window.AuthModule = (function () {
       }
     };
 
-    setTimeout(fetchStatus, 1500);
-    setInterval(fetchStatus, 12000);
+    // Verificação instantânea logo no arranque sem atraso
+    fetchStatus();
+    setInterval(fetchStatus, 8000);
   }
 
   /**

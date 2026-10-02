@@ -95,7 +95,7 @@ const server = http.createServer((req, res) => {
                 return;
               }
 
-              const commitMsg = `chore(status): alterar system_status para ${nextStatus} [skip ci]`;
+              const commitMsg = `chore(status): alterar system_status para ${nextStatus}`;
               const gitCmd = `git add system-status.js system-status.json && git commit -m "${commitMsg}" && git push origin main`;
               console.log(`[API /api/system-status] A publicar no GitHub Pages via Git Push...`);
 
