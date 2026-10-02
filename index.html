@@ -283,6 +283,7 @@
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                   <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> <span data-i18n="live.step3.badge">Smartphone / Tablet</span>
                 </span>
+                <div id="submission-counter-step-3"></div>
                 <div id="step-lock-badge-3"></div>
               </div>
             </div>
@@ -336,6 +337,7 @@
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
                   <i data-lucide="monitor" class="w-3.5 h-3.5"></i> <span data-i18n="live.step4.badge">Computador PC / Portátil</span>
                 </span>
+                <div id="submission-counter-step-4"></div>
                 <div id="step-lock-badge-4"></div>
               </div>
             </div>
@@ -384,11 +386,12 @@
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-900 font-extrabold text-sm border border-slate-300">5</span>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <!-- Badge Identificativa: Formulário de Encerramento -->
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> <span data-i18n="live.step5.badge">Formulário Final</span>
                 </span>
+                <div id="submission-counter-step-5"></div>
                 <div id="step-lock-badge-5"></div>
               </div>
             </div>
@@ -688,6 +691,7 @@
               <span id="kpi-responses-count" class="text-2xl sm:text-3xl font-extrabold text-slate-900">18</span>
               <span data-i18n="results.kpi.participants" class="text-xs text-slate-500 font-medium">participantes</span>
             </div>
+            <div id="kpi-total-submissions-badge" class="mt-2.5"></div>
             <p data-i18n="results.kpi.venue" class="text-[10px] text-slate-600 mt-1">Sessão Prática na ESAS Santarém</p>
           </div>
 
@@ -1497,15 +1501,11 @@
         </div>
       </div>
 
-      <!-- Abas de Gestão (3 Abas Principais) -->
+      <!-- Abas de Gestão (2 Abas Principais) -->
       <div class="flex items-center gap-2 border-b border-slate-100 pb-2 overflow-x-auto">
         <button type="button" data-mod-tab="access" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-sm transition shrink-0 cursor-pointer">
           <i data-lucide="sliders" class="w-4 h-4"></i>
           <span data-i18n="mod.tabAccess">Controlo de Acesso & Fases</span>
-        </button>
-        <button type="button" data-mod-tab="participants" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition shrink-0 cursor-pointer">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span data-i18n="mod.tabParticipants">Participantes & Submissões</span>
         </button>
         <button type="button" data-mod-tab="timing" class="mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition shrink-0 cursor-pointer">
           <i data-lucide="clock" class="w-4 h-4"></i>
@@ -1658,68 +1658,7 @@
       </div>
 
       <!-- ============================================== -->
-      <!-- ABA 2: PARTICIPANTES & MONITORES GOOGLE SHEETS -->
-      <!-- ============================================== -->
-      <div id="mod-tab-content-participants" class="space-y-5 animate-fadeIn hidden">
-        
-        <!-- Cartão Superior: Total Target e Controlo de Polling -->
-        <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-4">
-          <div class="space-y-1.5">
-            <label for="mod-total-target-input" class="block text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="users" class="w-4 h-4 text-amber-600"></i>
-              Total de Participantes em Sala:
-            </label>
-            <div class="flex items-center gap-2">
-              <input type="number" id="mod-total-target-input" min="1" max="100" value="22"
-                     class="w-24 text-center font-mono font-black text-lg py-1.5 px-2 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#FFCC66] outline-none">
-              <span class="text-xs text-slate-500 font-medium">pessoas presentes</span>
-            </div>
-            <!-- Presets Rápidos -->
-            <div class="flex items-center gap-1.5 pt-1">
-              <span class="text-[10px] text-slate-400 font-bold uppercase">Predefinições:</span>
-              <button type="button" data-target="15" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">15</button>
-              <button type="button" data-target="20" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">20</button>
-              <button type="button" data-target="22" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">22</button>
-              <button type="button" data-target="25" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">25</button>
-              <button type="button" data-target="30" class="btn-mod-target-preset px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 cursor-pointer">30</button>
-            </div>
-          </div>
-
-          <!-- Estado do Polling a cada 10s & Atualizar Agora -->
-          <div class="flex flex-col items-end gap-2 text-right">
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-slate-500 font-medium">Auto-refresh a cada 10s:</span>
-              <span id="mod-polling-countdown" class="font-mono font-bold text-xs bg-slate-200 px-2 py-0.5 rounded-full text-slate-800">10s</span>
-              <button type="button" id="btn-mod-refresh-submissions" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition shadow-2xs cursor-pointer" title="Atualizar agora">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-              </button>
-            </div>
-            <div class="text-[11px] text-slate-600 font-semibold">
-              Total Acumulado: <span id="mod-submissions-global-summary" class="font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">0 / 66 (0%)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grelha dos 3 Monitores de Submissão em Tempo Real -->
-        <div id="mod-submissions-monitor-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Renderizado dinamicamente via ModeratorPanel.fetchSubmissionsCount() -->
-        </div>
-
-        <!-- Atalho para Dashboard Geral -->
-        <div class="pt-2 flex justify-between items-center text-xs flex-wrap gap-2">
-          <span class="text-slate-500 text-[11px]">
-            Os dados são consultados diretamente a partir dos separadores públicos do Google Sheets.
-          </span>
-          <button type="button" id="btn-mod-goto-results" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold transition cursor-pointer">
-            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
-            Abrir Gráficos & Estatísticas
-          </button>
-        </div>
-
-      </div>
-
-      <!-- ============================================== -->
-      <!-- ABA 3: GESTÃO DE TEMPO E DESVIOS (DELAY TRACKER)-->
+      <!-- ABA 2: GESTÃO DE TEMPO E DESVIOS (DELAY TRACKER)-->
       <!-- ============================================== -->
       <div id="mod-tab-content-timing" class="space-y-5 animate-fadeIn hidden">
         
@@ -2134,13 +2073,14 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="assets/js/i18n.js?v=20261002-0100"></script>
-  <script src="assets/js/content-data.js?v=20261002-0100"></script>
-  <script src="assets/js/auth.js?v=20261002-0100"></script>
-  <script src="assets/js/live-session.js?v=20261002-0100"></script>
-  <script src="assets/js/results-dashboard.js?v=20261002-0200"></script>
-  <script src="assets/js/moderator-panel.js?v=20261002-0200"></script>
-  <script src="assets/js/app.js?v=20261002-0200"></script>
+  <script src="assets/js/i18n.js?v=20261002-0300"></script>
+  <script src="assets/js/content-data.js?v=20261002-0300"></script>
+  <script src="assets/js/auth.js?v=20261002-0300"></script>
+  <script src="assets/js/live-session.js?v=20261002-0300"></script>
+  <script src="assets/js/results-dashboard.js?v=20261002-0300"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261002-0300"></script>
+  <script src="assets/js/moderator-panel.js?v=20261002-0300"></script>
+  <script src="assets/js/app.js?v=20261002-0300"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

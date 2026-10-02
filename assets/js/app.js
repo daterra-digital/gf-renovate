@@ -35,6 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     ResultsDashboard.init();
   }
 
+  // 4.1 Inicializar Rastreador de Submissões e Contadores Automáticos em Tempo Real
+  if (window.SubmissionsTracker) {
+    window.SubmissionsTracker.init();
+  }
+
   // 5. Inicializar Modais e Event Listeners
   initModeratorModal();
   initParticipantCodeEvents();
@@ -103,6 +108,11 @@ function initTabNavigation() {
     // Atualizar Hash sem scroll forçado
     if (window.location.hash !== `#${targetTab}`) {
       history.replaceState(null, null, `#${targetTab}`);
+    }
+
+    // Atualizar contadores em tempo real nos painéis e dropdowns
+    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.updateAllCounters === "function") {
+      window.SubmissionsTracker.updateAllCounters();
     }
 
     // Scroll para o topo suave
@@ -439,6 +449,15 @@ function renderSchedule() {
           </div>
 
           <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            ${
+              item.id === "slot-4" 
+                ? '<div id="submission-counter-slot-4"></div>' 
+                : item.id === "slot-7" 
+                ? '<div id="submission-counter-slot-7"></div>' 
+                : item.id === "slot-9" 
+                ? '<div id="submission-counter-slot-9"></div>' 
+                : ''
+            }
             <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor || 'bg-amber-100 text-amber-900 border-amber-300'} border">
               <i data-lucide="${item.icon || 'circle'}" class="w-3 h-3"></i>
               ${itemBadge}
@@ -508,6 +527,11 @@ function renderSchedule() {
   if (window.lucide) window.lucide.createIcons();
   if (window.LiveSession) {
     window.LiveSession.render();
+  }
+
+  // Atualizar contadores em tempo real nos dropdowns do programa
+  if (window.SubmissionsTracker && typeof window.SubmissionsTracker.updateAllCounters === "function") {
+    window.SubmissionsTracker.updateAllCounters();
   }
 }
 

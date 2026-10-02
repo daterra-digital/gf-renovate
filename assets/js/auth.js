@@ -258,6 +258,11 @@ window.AuthModule = (function () {
       window.LiveSession.setParticipantCode(cleanCode);
     }
 
+    // Registo do código no rastreador automático de participantes e contadores
+    if (window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
+      window.SubmissionsTracker.registerParticipantCode(cleanCode);
+    }
+
     // Atualização da UI
     unlockWebsite();
     renderHeaderUserBadge();

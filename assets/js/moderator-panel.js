@@ -178,9 +178,8 @@ window.ModeratorPanel = (function () {
     if (authCard) authCard.classList.add("hidden");
     if (panelCard) {
       panelCard.classList.remove("hidden");
-      switchTab(state.activeTab);
+      switchTab(state.activeTab === "timing" ? "timing" : "access");
       renderAllModeratorControls();
-      startSubmissionsPolling();
     }
   }
 
@@ -215,7 +214,6 @@ window.ModeratorPanel = (function () {
 
     const panes = {
       access: document.getElementById("mod-tab-content-access"),
-      participants: document.getElementById("mod-tab-content-participants"),
       timing: document.getElementById("mod-tab-content-timing")
     };
 
@@ -230,9 +228,7 @@ window.ModeratorPanel = (function () {
       }
     });
 
-    if (state.activeTab === "participants") {
-      fetchSubmissionsCount();
-    } else if (state.activeTab === "timing") {
+    if (state.activeTab === "timing") {
       updateDelayCalculation();
     }
 
