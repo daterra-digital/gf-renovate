@@ -91,19 +91,24 @@ window.ResultsDashboard = (function () {
   };
 
   const OFFICIAL_Q29_OPTIONS = [
-    "Extremamente provável",
-    "Muito provável",
-    "Moderavelmente provável",
+    "Nada Provável",
     "Pouco Provável",
-    "Nada provável"
+    "Moderadamente Provável",
+    "Muito Provável",
+    "Extremamente Provável"
   ];
 
   const Q29_TRANSLATIONS = {
     "Extremamente provável": "Extremely likely",
+    "Extremamente Provável": "Extremely likely",
     "Muito provável": "Very likely",
+    "Muito Provável": "Very likely",
     "Moderavelmente provável": "Moderately likely",
+    "Moderadamente Provável": "Moderately likely",
     "Pouco Provável": "Unlikely",
-    "Nada provável": "Not likely at all"
+    "Pouco provável": "Unlikely",
+    "Nada provável": "Not likely",
+    "Nada Provável": "Not likely"
   };
 
   /**
@@ -261,53 +266,72 @@ window.ResultsDashboard = (function () {
     container.innerHTML = html;
   }
 
-  function parseQ29Recommendation(val) {
-    if (val === null || val === undefined) return null;
-    const s = String(val).trim().toLowerCase();
-    if (!s) return null;
-    if (s.includes("extremamente") || s.includes("extremely")) return "Extremamente provável";
-    if (s.includes("nada") || s.includes("not likely")) return "Nada provável";
-    if (s.includes("pouco") || s.includes("unlikely")) return "Pouco Provável";
-    if (s.includes("moderad") || s.includes("moderavel") || s.includes("moderately")) return "Moderavelmente provável";
-    if (s.includes("muito") || s.includes("very")) return "Muito provável";
+  const Q29_LABELS_PT = {
+    1: "Nada Provável",
+    2: "Pouco Provável",
+    3: "Moderadamente Provável",
+    4: "Muito Provável",
+    5: "Extremamente Provável"
+  };
 
-    const m = s.match(/^([1-5])(?![0-9])/);
-    if (m) {
-      const n = parseInt(m[1], 10);
-      switch (n) {
-        case 5: return "Extremamente provável";
-        case 4: return "Muito provável";
-        case 3: return "Moderavelmente provável";
-        case 2: return "Pouco Provável";
-        case 1: return "Nada provável";
-      }
+  const Q29_LABELS_EN = {
+    1: "Not likely",
+    2: "Unlikely",
+    3: "Moderately likely",
+    4: "Very likely",
+    5: "Extremely likely"
+  };
+
+  const Q29_COLORS = {
+    1: "#DC2626", // Vermelho - Nada Provável
+    2: "#EA580C", // Laranja - Pouco Provável
+    3: "#F5B842", // Amarelo - Moderadamente Provável
+    4: "#2563EB", // Azul - Muito Provável
+    5: "#059669"  // Esmeralda/Verde - Extremamente Provável
+  };
+
+  function getQ29DynamicZoneLabel(avg, isEn) {
+    if (avg === null || avg === undefined) {
+      return isEn ? "(Awaiting responses)" : "(A aguardar respostas)";
     }
-    return null;
+    const a = round1(avg);
+    if (a >= 4.0) {
+      return isEn ? "(Very or Extremely likely)" : "(Muito ou Extremamente provável)";
+    }
+    if (a >= 3.0) {
+      return isEn ? "(Moderately likely)" : "(Moderadamente provável)";
+    }
+    return isEn ? "(Unlikely or Not likely)" : "(Pouco ou Nada provável)";
+  }
+
+  function parseQ29Recommendation(val) {
+    const v = parseQ29Strict(val);
+    return v !== null ? (Q29_LABELS_PT[v] || null) : null;
   }
 
   function getQ29Weight(label) {
     switch (label) {
-      case "Extremamente provável": return 5;
-      case "Muito provável": return 4;
-      case "Moderavelmente provável": return 3;
-      case "Pouco Provável": return 2;
-      case "Nada provável": return 1;
+      case "Extremamente provável":
+      case "Extremamente Provável": return 5;
+      case "Muito provável":
+      case "Muito Provável": return 4;
+      case "Moderavelmente provável":
+      case "Moderadamente Provável": return 3;
+      case "Pouco Provável":
+      case "Pouco provável": return 2;
+      case "Nada provável":
+      case "Nada Provável": return 1;
       default: return 0;
     }
   }
 
   function calculateQ29Recommendation(rawList) {
-    const counts = {
-      "Extremamente provável": 0,
-      "Muito provável": 0,
-      "Moderavelmente provável": 0,
-      "Pouco Provável": 0,
-      "Nada provável": 0
-    };
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
     if (!rawList || !rawList.length) {
       return {
         average: null,
+        percent: 0,
         positivePercent: 0,
         counts,
         total: 0
@@ -318,10 +342,10 @@ window.ResultsDashboard = (function () {
     let total = 0;
 
     rawList.forEach(item => {
-      const opt = parseQ29Recommendation(item);
-      if (opt && counts[opt] !== undefined) {
-        counts[opt]++;
-        sum += getQ29Weight(opt);
+      const v = parseQ29Strict(item);
+      if (v >= 1 && v <= 5) {
+        counts[v]++;
+        sum += v;
         total++;
       }
     });
@@ -329,6 +353,7 @@ window.ResultsDashboard = (function () {
     if (total === 0) {
       return {
         average: null,
+        percent: 0,
         positivePercent: 0,
         counts,
         total: 0
@@ -336,15 +361,53 @@ window.ResultsDashboard = (function () {
     }
 
     const average = parseFloat((sum / total).toFixed(1));
-    const positive = counts["Extremamente provável"] + counts["Muito provável"];
+    const percent = Math.round((average / 5) * 100);
+    const positive = counts[4] + counts[5];
     const positivePercent = Math.round((positive / total) * 100);
 
     return {
       average,
+      percent,
       positivePercent,
       counts,
       total
     };
+  }
+
+  /**
+   * Valida se uma célula contém uma frase de feedback genuína submetida
+   * Ignora vazios, símbolos, números isolados e escalas numéricas
+   */
+  function isValidFeedbackText(val) {
+    if (val === null || val === undefined) return false;
+    const s = String(val).trim();
+    if (s.length < 2) return false;
+    if (/^[-._/\\?*#+~,;:()]+$/.test(s)) return false;
+    if (/^[1-5]$/.test(s)) return false;
+    if (/^[1-5]\s*-\s*[A-Za-zÀ-ÿ\s]+$/.test(s)) return false;
+    return true;
+  }
+
+  /**
+   * Converte texto de carimbo de data/hora para milissegundos
+   */
+  function parseSubmissionTimestamp(tsStr) {
+    if (!tsStr) return 0;
+    const s = String(tsStr).trim();
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d.getTime();
+    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+    if (m) {
+      const day = parseInt(m[1], 10);
+      const month = parseInt(m[2], 10) - 1;
+      let year = parseInt(m[3], 10);
+      if (year < 100) year += 2000;
+      const hour = m[4] ? parseInt(m[4], 10) : 0;
+      const min = m[5] ? parseInt(m[5], 10) : 0;
+      const sec = m[6] ? parseInt(m[6], 10) : 0;
+      return new Date(year, month, day, hour, min, sec).getTime();
+    }
+    return 0;
   }
 
   // =====================================================================
@@ -405,6 +468,7 @@ window.ResultsDashboard = (function () {
         if (c) { code = c; break; }
       }
       if (!isValidParticipantCode(code)) return;
+      row._participantCode = code;
       latestByCode.delete(code); // reinserir para preservar a ordem cronológica
       latestByCode.set(code, row);
     });
@@ -684,13 +748,14 @@ window.ResultsDashboard = (function () {
       },
       nps: {
         average: null,
+        percent: 0,
         positivePercent: 0,
         counts: {
-          "Extremamente provável": 0,
-          "Muito provável": 0,
-          "Moderavelmente provável": 0,
-          "Pouco Provável": 0,
-          "Nada provável": 0
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+          5: 0
         },
         total: 0
       },
@@ -722,6 +787,7 @@ window.ResultsDashboard = (function () {
         digitalComfortAvg: null
       },
       qualitativeFeedback: {
+        feed: [],
         simSuggestions: [],
         finalSuggestions: []
       }
@@ -1320,7 +1386,11 @@ window.ResultsDashboard = (function () {
     const idxQ21 = findColIndex(simHeaders, /^\s*Q21\b/i);
     const idxQ22 = findColIndex(simHeaders, /^\s*Q22\b/i);
     const idxQ23 = findColIndex(simHeaders, /^\s*Q23\b/i);
-    const idxQ25 = findColIndex(simHeaders, /^\s*Q25\b|confuso|falta/i);
+    const idxQ25_sim = findColIndex(simHeaders, /^\s*Q25\b|confuso|falta/i);
+    const idxQ26_sim = findColIndex(simHeaders, /^\s*Q26\b/i);
+    const idxQ27_sim = findColIndex(simHeaders, /^\s*Q27\b/i);
+    const idxQ28_sim = findColIndex(simHeaders, /^\s*Q28\b/i);
+    const idxQ30_sim = findColIndex(simHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
     const idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
 
     const reQ24 = /^\s*Q24\s*[.):\-]/i;
@@ -1332,13 +1402,21 @@ window.ResultsDashboard = (function () {
     });
 
     // Mapear índices de colunas do Separador 3 (Global)
-    const idxQ26 = findColIndex(globalHeaders, /^\s*Q26\b/i);
-    const idxQ27 = findColIndex(globalHeaders, /^\s*Q27\b/i);
-    const idxQ28 = findColIndex(globalHeaders, /^\s*Q28\b/i);
-    let idxQ29 = findColIndex(globalHeaders, /^\s*Q29\s*[.):\-]/i);
-    if (idxQ29 === -1) idxQ29 = findColIndex(globalHeaders, /Q29/i);
-    const idxQ30 = findColIndex(globalHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
+    const idxQ25_global = findColIndex(globalHeaders, /^\s*Q25\b|confuso|falta/i);
+    const idxQ26_global = findColIndex(globalHeaders, /^\s*Q26\b/i);
+    const idxQ27_global = findColIndex(globalHeaders, /^\s*Q27\b/i);
+    const idxQ28_global = findColIndex(globalHeaders, /^\s*Q28\b/i);
+    let idxQ29_global = findColIndex(globalHeaders, /^\s*Q29\s*[.):\-]/i);
+    if (idxQ29_global === -1) idxQ29_global = findColIndex(globalHeaders, /Q29/i);
+    const idxQ30_global = findColIndex(globalHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
     const idxGlobalCode = findColIndex(globalHeaders, /código|codigo|participante/i);
+
+    const idxQ25 = idxQ25_sim !== -1 ? idxQ25_sim : idxQ25_global;
+    const idxQ26 = idxQ26_global !== -1 ? idxQ26_global : idxQ26_sim;
+    const idxQ27 = idxQ27_global !== -1 ? idxQ27_global : idxQ27_sim;
+    const idxQ28 = idxQ28_global !== -1 ? idxQ28_global : idxQ28_sim;
+    const idxQ29 = idxQ29_global;
+    const idxQ30 = idxQ30_global !== -1 ? idxQ30_global : idxQ30_sim;
 
     // Processamento SUS do Serious Game (apenas participantes válidos com os 10 itens completos)
     const gameSusArrays = [];
@@ -1451,14 +1529,67 @@ window.ResultsDashboard = (function () {
       q23: extractLikertAverage(simData, idxQ23)
     };
 
-    // Feedback Qualitativo
-    const simSuggestions = simData
-      .filter(r => idxQ25 !== -1 && r[idxQ25] && r[idxQ25].trim().length > 3)
-      .map(r => ({ code: r[1] || "P", text: r[idxQ25].trim() }));
+    // Feedback Qualitativo: Voz dos Participantes (Q25, Q26-Q28, Q30)
+    const feedItems = [];
 
-    const finalSuggestions = globalData
-      .filter(r => idxQ30 !== -1 && r[idxQ30] && r[idxQ30].trim().length > 3)
-      .map(r => ({ code: (idxGlobalCode !== -1 && r[idxGlobalCode]) || r[1] || "P", text: r[idxQ30].trim() }));
+    function collectFeedbackFromRows(rows, headers, qList) {
+      rows.forEach((row, rowIdx) => {
+        let code = row._participantCode || "";
+        if (!code) {
+          const cIdx = findColIndex(headers, /código|codigo|participante|code/i);
+          if (cIdx !== -1 && row[cIdx]) code = normalizeParticipantCode(row[cIdx]);
+        }
+        if (!code) {
+          for (let i = 0; i < row.length; i++) {
+            const c = normalizeParticipantCode(row[i]);
+            if (c && isValidParticipantCode(c)) { code = c; break; }
+          }
+        }
+        if (!code) code = "Participante";
+
+        const ts = parseSubmissionTimestamp(row[0]);
+
+        qList.forEach(qItem => {
+          if (qItem.colIdx === -1 || !row[qItem.colIdx]) return;
+          const text = String(row[qItem.colIdx]).trim();
+          if (!isValidFeedbackText(text)) return;
+
+          feedItems.push({
+            code,
+            text,
+            tagPT: qItem.tagPT,
+            tagEN: qItem.tagEN,
+            tagType: qItem.tagType,
+            timestamp: ts,
+            orderKey: ts > 0 ? ts : (rowIdx + 1)
+          });
+        });
+      });
+    }
+
+    // Formulário 2: Simulador (Q25 -> Simulador, Q26-Q28 -> Experiência Global, Q30 -> Erro / Sugestão)
+    collectFeedbackFromRows(simData, simHeaders, [
+      { colIdx: idxQ25_sim, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
+      { colIdx: idxQ26_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ27_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ28_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ30_sim, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
+    ]);
+
+    // Formulário 3: Global (Q25 se existir, Q26-Q28 -> Experiência Global, Q30 -> Erro / Sugestão)
+    collectFeedbackFromRows(globalData, globalHeaders, [
+      { colIdx: idxQ25_global, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
+      { colIdx: idxQ26_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ27_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ28_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { colIdx: idxQ30_global, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
+    ]);
+
+    // Ordenar das mais recentes para as mais antigas (maior orderKey primeiro)
+    feedItems.sort((a, b) => b.orderKey - a.orderKey);
+
+    const simSuggestions = feedItems.filter(f => f.tagType === "sim");
+    const finalSuggestions = feedItems.filter(f => f.tagType === "issue");
 
     state.metrics = {
       participantCount: Math.max(gameData.length, simData.length, globalData.length),
@@ -1476,6 +1607,7 @@ window.ResultsDashboard = (function () {
         digitalComfortAvg: digitalCount > 0 ? parseFloat((digitalTotal / digitalCount).toFixed(1)) : null
       },
       qualitativeFeedback: {
+        feed: feedItems,
         simSuggestions,
         finalSuggestions
       }
@@ -2377,9 +2509,11 @@ window.ResultsDashboard = (function () {
       data = [1];
       colors = ["#E2E8F0"];
     } else {
-      labels = OFFICIAL_Q29_OPTIONS.map(opt => isEn ? (Q29_TRANSLATIONS[opt] || opt) : opt);
-      data = OFFICIAL_Q29_OPTIONS.map(opt => n.counts[opt] || 0);
-      colors = ["#059669", "#2563EB", "#F5B842", "#EA580C", "#DC2626"];
+      const order = [1, 2, 3, 4, 5];
+      const labelMap = isEn ? Q29_LABELS_EN : Q29_LABELS_PT;
+      labels = order.map(k => labelMap[k]);
+      data = order.map(k => n.counts[k] || 0);
+      colors = order.map(k => Q29_COLORS[k]);
     }
 
     state.charts.npsGauge = new Chart(ctx, {
@@ -2396,10 +2530,10 @@ window.ResultsDashboard = (function () {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: "68%",
         plugins: {
           legend: {
-            position: "bottom",
-            labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
+            display: false // Mapeamento de Legenda Oculta: fatias limpas e informativas via tooltip
           },
           tooltip: {
             callbacks: {
@@ -2422,27 +2556,85 @@ window.ResultsDashboard = (function () {
     if (npsScoreEl) {
       npsScoreEl.textContent = isZero
         ? "— / 5.0 (0%)"
-        : `${n.average.toFixed(1)} / 5.0 (${n.positivePercent}%)`;
+        : `${n.average.toFixed(1)} / 5.0 (${n.percent}%)`;
+    }
+
+    const npsZoneEl = document.getElementById("nps-zone-label");
+    if (npsZoneEl) {
+      npsZoneEl.textContent = isZero
+        ? (isEn ? "(Awaiting responses)" : "(A aguardar respostas)")
+        : getQ29DynamicZoneLabel(n.average, isEn);
     }
   }
 
   /**
-   * Renderização do Feedback Qualitativo dos Participantes (Q25 e Q30)
+   * Renderização do Feedback Qualitativo dos Participantes (Voz dos Participantes: Q25, Q26-Q28, Q30)
    */
   function renderQualitativeFeedback() {
+    const feedContainer = document.getElementById("feedback-feed-container");
     const containerSim = document.getElementById("feedback-sim-container");
     const containerFinal = document.getElementById("feedback-final-container");
     if (!state.metrics?.qualitativeFeedback) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const { simSuggestions, finalSuggestions } = state.metrics.qualitativeFeedback;
+    const feed = state.metrics.qualitativeFeedback.feed || [];
 
     const noSuggestionsText = isEn ? "No suggestions recorded yet." : "Sem sugestões registadas de momento.";
-    const participantLabel = isEn ? "Participant" : "Participante";
-    const simTag = isEn ? "Q25 Simulator" : "Q25 Simulador";
-    const finalTag = isEn ? "Q30 Consortium" : "Q30 Consórcio";
 
+    if (feedContainer) {
+      if (!feed.length) {
+        feedContainer.innerHTML = `
+          <div class="col-span-full py-12 flex flex-col items-center justify-center text-center text-slate-400 space-y-2">
+            <i data-lucide="message-square-dashed" class="w-8 h-8 text-slate-300"></i>
+            <p class="text-xs italic">${noSuggestionsText}</p>
+          </div>
+        `;
+      } else {
+        feedContainer.innerHTML = feed.map(item => {
+          let tagClass = "bg-slate-100 text-slate-800 border-slate-200";
+          let tagIcon = "message-square";
+          let quoteBorder = "border-slate-300";
+
+          if (item.tagType === "sim") {
+            tagClass = "bg-amber-100 text-amber-900 border-amber-200";
+            tagIcon = "gamepad-2";
+            quoteBorder = "border-amber-400";
+          } else if (item.tagType === "global") {
+            tagClass = "bg-blue-100 text-blue-900 border-blue-200";
+            tagIcon = "globe";
+            quoteBorder = "border-blue-400";
+          } else if (item.tagType === "issue") {
+            tagClass = "bg-rose-100 text-rose-900 border-rose-200";
+            tagIcon = "alert-circle";
+            quoteBorder = "border-rose-400";
+          }
+
+          const tagLabel = isEn ? (item.tagEN || item.tagPT) : item.tagPT;
+
+          return `
+            <div class="p-3 bg-slate-50/70 hover:bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-2xs transition-all space-y-2 flex flex-col justify-between">
+              <div class="flex items-center justify-between gap-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${tagClass}">
+                  <i data-lucide="${tagIcon}" class="w-3 h-3"></i>
+                  <span>[${tagLabel}]</span>
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs">
+                  <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
+                  <span>${item.code}</span>
+                </span>
+              </div>
+              <p class="text-xs text-slate-800 leading-relaxed font-normal italic pl-2.5 border-l-2 ${quoteBorder}">
+                “${item.text}”
+              </p>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    // Preservar compatibilidade caso os contentores antigos ainda existam no DOM
     if (containerSim) {
+      const simSuggestions = state.metrics.qualitativeFeedback.simSuggestions || [];
       if (!simSuggestions.length) {
         containerSim.innerHTML = `<p class="text-xs text-slate-500 italic p-3">${noSuggestionsText}</p>`;
       } else {
@@ -2451,36 +2643,37 @@ window.ResultsDashboard = (function () {
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500">
               <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono text-[11px] font-bold border border-slate-200 shadow-2xs">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
-                <span>${item.code || participantLabel}</span>
+                <span>${item.code}</span>
               </span>
-              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> ${simTag}</span>
+              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="gamepad-2" class="w-3 h-3"></i> [${isEn ? "Simulator" : "Simulador"}]</span>
             </div>
-            <p class="text-xs text-slate-800 leading-relaxed font-medium">"${item.text}"</p>
+            <p class="text-xs text-slate-800 leading-relaxed font-medium italic">“${item.text}”</p>
           </div>
         `).join("");
       }
     }
 
     if (containerFinal) {
+      const finalSuggestions = state.metrics.qualitativeFeedback.finalSuggestions || [];
       if (!finalSuggestions.length) {
         containerFinal.innerHTML = `<p class="text-xs text-slate-500 italic p-3">${noSuggestionsText}</p>`;
       } else {
         containerFinal.innerHTML = finalSuggestions.slice(0, 6).map(item => `
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5 hover:border-slate-300 transition-all">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500">
-              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200 shadow-2xs">
-                <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
-                <span>${item.code || participantLabel}</span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 font-mono text-[11px] font-bold border border-rose-200 shadow-2xs">
+                <i data-lucide="user" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i>
+                <span>${item.code}</span>
               </span>
-              <span class="text-emerald-800 font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> ${finalTag}</span>
+              <span class="text-rose-800 font-semibold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> [${isEn ? "Bug / Suggestion" : "Erro / Sugestão"}]</span>
             </div>
-            <p class="text-xs text-slate-800 leading-relaxed font-medium">"${item.text}"</p>
+            <p class="text-xs text-slate-800 leading-relaxed font-medium italic">“${item.text}”</p>
           </div>
         `).join("");
       }
     }
 
-    if (window.lucide) {
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
       window.lucide.createIcons();
     }
   }

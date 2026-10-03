@@ -1021,7 +1021,7 @@
         <!-- ========================================== -->
         <div id="results-sec-feedback" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <!-- Donut: Recomendação RENOVATE (Q29) -->
-          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2">
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
               <span data-i18n="results.nps.title" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
                 Recomendação RENOVATE (Q29)
@@ -1031,29 +1031,29 @@
             <div class="h-[180px] relative flex items-center justify-center">
               <canvas id="chart-nps-gauge"></canvas>
             </div>
-            <div class="text-center pt-1 border-t border-slate-100 text-xs text-slate-600">
-              <span data-i18n="results.nps.scoreLabel">Score Médio:</span> <strong id="nps-center-score" class="text-blue-900 font-mono text-sm">— / 5.0 (0%)</strong> <span data-i18n="results.nps.zoneText">(Muito ou Extremamente provável)</span>
+            <div class="text-center pt-2 border-t border-slate-100 text-xs text-slate-600">
+              <span data-i18n="results.nps.scoreLabel">Score Médio:</span> <strong id="nps-center-score" class="text-blue-900 font-mono text-sm">— / 5.0 (0%)</strong> <span id="nps-zone-label" data-i18n="results.nps.zoneText" class="text-slate-500 font-medium">(A aguardar respostas)</span>
             </div>
           </div>
 
-          <!-- Comentários e Sugestões do Simulador (Q25) e Consórcio (Q30) -->
-          <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
+          <!-- Comentários e Sugestões do Simulador (Q25), Experiência Global (Q26-Q28) e Consórcio (Q30) -->
+          <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3 flex flex-col justify-between">
             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
               <span data-i18n="results.feedback.title" class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <i data-lucide="message-square" class="w-4 h-4 text-amber-600"></i>
                 Voz dos Participantes: Sugestões & Bloqueios Identificados
               </span>
-              <span class="text-[10px] text-slate-500 font-medium">Q25 & Q30</span>
+              <span data-i18n="results.feedback.badge" class="text-[10px] text-slate-500 font-medium">Q25 a Q30</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[280px] overflow-y-auto pr-1">
-              <div id="feedback-sim-container" class="space-y-2">
-                <!-- Preenchido via results-dashboard.js -->
-              </div>
-              <div id="feedback-final-container" class="space-y-2">
-                <!-- Preenchido via results-dashboard.js -->
+            <div id="feedback-feed-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[280px] overflow-y-auto pr-1 auto-rows-max">
+              <div class="col-span-full py-12 flex flex-col items-center justify-center text-center text-slate-400 space-y-2">
+                <i data-lucide="message-square-dashed" class="w-8 h-8 text-slate-300"></i>
+                <p data-i18n="results.feedback.none" class="text-xs italic">Sem sugestões registadas de momento.</p>
               </div>
             </div>
+            <div id="feedback-sim-container" class="hidden"></div>
+            <div id="feedback-final-container" class="hidden"></div>
           </div>
         </div>
 
@@ -2077,15 +2077,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261003-1455"></script>
-  <script src="assets/js/i18n.js?v=20261003-1455"></script>
-  <script src="assets/js/content-data.js?v=20261003-1455"></script>
-  <script src="assets/js/auth.js?v=20261003-1455"></script>
-  <script src="assets/js/live-session.js?v=20261003-1455"></script>
-  <script src="assets/js/results-dashboard.js?v=20261003-1455"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261003-1455"></script>
-  <script src="assets/js/moderator-panel.js?v=20261003-1455"></script>
-  <script src="assets/js/app.js?v=20261003-1455"></script>
+  <script src="system-status.js?v=20261003-1515"></script>
+  <script src="assets/js/i18n.js?v=20261003-1515"></script>
+  <script src="assets/js/content-data.js?v=20261003-1515"></script>
+  <script src="assets/js/auth.js?v=20261003-1515"></script>
+  <script src="assets/js/live-session.js?v=20261003-1515"></script>
+  <script src="assets/js/results-dashboard.js?v=20261003-1515"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261003-1515"></script>
+  <script src="assets/js/moderator-panel.js?v=20261003-1515"></script>
+  <script src="assets/js/app.js?v=20261003-1515"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

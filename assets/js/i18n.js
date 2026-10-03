@@ -207,8 +207,10 @@ window.I18nManager = (function () {
       "results.nps.title": "Recomendação RENOVATE (Q29)",
       "results.nps.scale": "5 Níveis de Probabilidade",
       "results.nps.scoreLabel": "Score Médio:",
-      "results.nps.zoneText": "(Muito ou Extremamente provável)",
+      "results.nps.zoneText": "(A aguardar respostas)",
       "results.feedback.title": "Voz dos Participantes: Sugestões & Bloqueios Identificados",
+      "results.feedback.badge": "Q25 a Q30",
+      "results.feedback.none": "Sem sugestões registadas de momento.",
 
       // Deliverable 1.3 & Media (Entregável 1.3)
       "results.deliv.code": "Entregável 1.3",
@@ -560,8 +562,10 @@ window.I18nManager = (function () {
       "results.nps.title": "RENOVATE Recommendation (Q29)",
       "results.nps.scale": "5 Probability Levels",
       "results.nps.scoreLabel": "Mean Score:",
-      "results.nps.zoneText": "(Very or Extremely likely)",
+      "results.nps.zoneText": "(Awaiting responses)",
       "results.feedback.title": "Participants' Voice: Suggestions & Roadblocks Identified",
+      "results.feedback.badge": "Q25 to Q30",
+      "results.feedback.none": "No suggestions recorded yet.",
 
       // Deliverable 1.4 & Media
       "results.deliv.code": "Deliverable 1.3",
