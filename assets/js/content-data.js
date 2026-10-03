@@ -431,16 +431,16 @@ const RENOVATE_CONFIG = {
       { label: "Áreas Temáticas Prioritárias", labelEn: "Priority Thematic Areas", value: "8" }
     ],
     highlights: [
-      "Priorização de formações práticas no campo com recurso a demonstrações e jogos interativos.",
-      "Adaptação dos conteúdos às realidades regionais e utilização de linguagem simples e acessível.",
-      "Integração de simuladores para calcular o rácio custo-benefício e apoiar a decisão estratégica.",
-      "Implementação de inteligência artificial para personalizar de forma dinâmica os conteúdos formativos."
+      "Necessidade de formação prática com recurso a demonstrações no campo e simuladores interativos.",
+      "Adaptação dos conteúdos formativos aos contextos locais, utilizando linguagem simples e direta.",
+      "Integração de simuladores para avaliação de cenários práticos e análise de custo-benefício.",
+      "Desenvolvimento de uma plataforma intuitiva com conteúdos audiovisuais e elementos de gamificação."
     ],
     highlightsEn: [
-      "Prioritisation of practical field training using demonstrations and interactive games.",
-      "Adaptation of content to regional realities using simple and accessible language.",
-      "Integration of simulators to calculate the cost-benefit ratio and support strategic decision-making.",
-      "Implementation of artificial intelligence to dynamically personalise training content."
+      "Need for practical training using field demonstrations and interactive simulators.",
+      "Adaptation of training content to local contexts, using simple and direct language.",
+      "Integration of simulators for practical scenario evaluation and cost-benefit analysis.",
+      "Development of an intuitive platform with audiovisual content and gamification elements."
     ],
     galleryAlbums: [
       {
@@ -511,8 +511,8 @@ const RENOVATE_CONFIG = {
   // Resultados & Media
   resultsMedia: {
     deliverable: {
-      code: "Entregável 1.4",
-      codeEn: "Deliverable 1.4",
+      code: "Entregável 1.3",
+      codeEn: "Deliverable 1.3",
       status: "Relatório Oficial • Horizonte Europa",
       statusEn: "Official Report • Horizon Europe",
       url: "https://renovateproject.eu/shared-files/2751/?D1.3_Reports_on_analysis_of_expectation_for_training_and_Focus_Group_meetings_RENOVATE.pdf",
