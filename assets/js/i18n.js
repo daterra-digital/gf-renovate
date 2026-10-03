@@ -240,10 +240,13 @@ window.I18nManager = (function () {
       // Footer
       "footer.projectCoord": "Projeto & Coordenação",
       "footer.initiativesHost": "Iniciativas & Anfitrião",
+      "footer.projectLabel": "Projeto",
+      "footer.orgInitiatives": "Organização & Iniciativas",
+      "footer.hostLabel": "Anfitrião",
       "footer.project": "Projeto RENOVATE",
       "footer.daterra": "DATERRA",
       "footer.eurotech": "EuroTech Day",
-      "footer.esas": "ESAS - Santarém",
+      "footer.esas": "Escola Superior Agrária de Santarém",
 
       // Moderator Modal
       "mod.title": "Painel do Moderador",
@@ -588,10 +591,13 @@ window.I18nManager = (function () {
       // Footer
       "footer.projectCoord": "Project & Coordination",
       "footer.initiativesHost": "Initiatives & Host",
+      "footer.projectLabel": "Project",
+      "footer.orgInitiatives": "Organisation & Initiatives",
+      "footer.hostLabel": "Host",
       "footer.project": "RENOVATE Project",
       "footer.daterra": "DATERRA",
       "footer.eurotech": "EuroTech Day",
-      "footer.esas": "ESAS - Santarém",
+      "footer.esas": "Santarém School of Agriculture",
 
       // Moderator Modal
       "mod.title": "Moderator Panel",

@@ -1647,11 +1647,11 @@
         </div>
 
         <!-- Coluna 2: Links Institucionais em Grelha Clara e de Fácil Leitura -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-12 text-xs sm:text-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-xs sm:text-sm">
           <div class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
               <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-              <span data-i18n="footer.projectCoord">Projeto & Coordenação</span>
+              <span data-i18n="footer.projectLabel">Projeto</span>
             </span>
             <ul class="space-y-2.5 font-medium">
               <li>
@@ -1661,34 +1661,45 @@
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
+            </ul>
+          </div>
+
+          <!-- Grupo 2: Organização & Iniciativas -->
+          <div class="space-y-3">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
+              <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+              <span data-i18n="footer.orgInitiatives">Organização &amp; Iniciativas</span>
+            </span>
+            <ul class="space-y-2.5 font-medium">
               <li>
-                <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" 
+                <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
                   <span data-i18n="footer.daterra">DATERRA</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
+              </li>
+              <li>
+                <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span data-i18n="footer.eurotech">EuroTech Day</span>
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </li>
             </ul>
           </div>
 
+          <!-- Grupo 3: Anfitrião -->
           <div class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
-              <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
-              <span data-i18n="footer.initiativesHost">Iniciativas & Anfitrião</span>
+              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+              <span data-i18n="footer.hostLabel">Anfitrião</span>
             </span>
             <ul class="space-y-2.5 font-medium">
               <li>
-                <a href="https://eurotech.daterra.com.pt/pt/euro-tech-day_pt/" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span data-i18n="footer.eurotech">EuroTech Day</span>
-                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </a>
-              </li>
-              <li>
-                <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
-                  <span data-i18n="footer.esas">ESAS - Santarém</span>
-                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-start gap-1.5 text-slate-100 hover:text-[#F5B842] transition-colors group">
+                  <span data-i18n="footer.esas" class="leading-snug">Escola Superior Agrária<br>de Santarém</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"></i>
                 </a>
               </li>
             </ul>
@@ -2053,15 +2064,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261003-0100"></script>
-  <script src="assets/js/i18n.js?v=20261003-0100"></script>
-  <script src="assets/js/content-data.js?v=20261003-0100"></script>
-  <script src="assets/js/auth.js?v=20261003-0100"></script>
-  <script src="assets/js/live-session.js?v=20261003-0100"></script>
-  <script src="assets/js/results-dashboard.js?v=20261003-0100"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261003-0100"></script>
-  <script src="assets/js/moderator-panel.js?v=20261003-0100"></script>
-  <script src="assets/js/app.js?v=20261003-0100"></script>
+  <script src="system-status.js?v=20261003-0200"></script>
+  <script src="assets/js/i18n.js?v=20261003-0200"></script>
+  <script src="assets/js/content-data.js?v=20261003-0200"></script>
+  <script src="assets/js/auth.js?v=20261003-0200"></script>
+  <script src="assets/js/live-session.js?v=20261003-0200"></script>
+  <script src="assets/js/results-dashboard.js?v=20261003-0200"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261003-0200"></script>
+  <script src="assets/js/moderator-panel.js?v=20261003-0200"></script>
+  <script src="assets/js/app.js?v=20261003-0200"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
