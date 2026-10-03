@@ -521,7 +521,13 @@ window.AuthModule = (function () {
         const confirmMsg = isEn
           ? "Do you really want to log out and lock access to the RENOVATE Restricted Area?"
           : "Deseja realmente terminar a sua sessão e bloquear o acesso à Área Reservada RENOVATE?";
-        if (!confirm(confirmMsg)) {
+        let proceed = true;
+        try {
+          proceed = confirm(confirmMsg);
+        } catch (e) {
+          proceed = true;
+        }
+        if (!proceed) {
           isLoggingOut = false;
           return;
         }
@@ -1062,32 +1068,37 @@ window.AuthModule = (function () {
           </div>
         </div>
 
-        <!-- Aba Inferior Integrada (Botão Sair) -->
+        <!-- Aba Inferior Integrada (Botão Sair: proporção estrita 25-30%, h-7, flex-none) -->
         <button type="button" id="btn-header-logout" data-action="logout"
-                class="w-full bg-red-600 hover:bg-red-700 group-hover:bg-red-700 text-white font-bold text-[9px] sm:text-[10px] py-0.5 px-2 flex items-center justify-center gap-1 transition cursor-pointer border-t border-red-700/50">
-          <i data-lucide="log-out" class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"></i>
-          <span>${isEn ? 'Log Out' : 'Sair'}</span>
+                class="w-full flex-none shrink-0 h-7 bg-red-600 hover:bg-red-700 group-hover:bg-red-700 text-white font-bold text-[11px] leading-none py-1 px-2 flex items-center justify-center gap-1 transition cursor-pointer border-t border-red-700/50">
+          <i data-lucide="log-out" class="w-3 h-3 text-white pointer-events-none"></i>
+          <span class="pointer-events-none">${isEn ? 'Log Out' : 'Sair'}</span>
         </button>
       </div>
     `;
 
-    // Comportamento de Clique: Todo o cartão ou o clique direto na aba vermelha ativa a função logout()
-    const card = document.getElementById("header-user-card");
-    if (card) {
-      card.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        logout();
-      });
+    // Comportamento de Clique/Toque Tátil Seguro e Imediato (Desktop + Mobile)
+    let lastLogoutTrigger = 0;
+    function triggerLogoutSafe(e) {
+      if (Date.now() - lastLogoutTrigger < 600) return;
+      lastLogoutTrigger = Date.now();
+      if (e) {
+        if (typeof e.preventDefault === "function") e.preventDefault();
+        if (typeof e.stopPropagation === "function") e.stopPropagation();
+      }
+      logout();
     }
 
+    const card = document.getElementById("header-user-card");
     const logoutBtn = document.getElementById("btn-header-logout");
+
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        logout();
-      });
+      logoutBtn.addEventListener("touchend", triggerLogoutSafe, { passive: false });
+      logoutBtn.addEventListener("click", triggerLogoutSafe);
+    }
+    if (card) {
+      card.addEventListener("touchend", triggerLogoutSafe, { passive: false });
+      card.addEventListener("click", triggerLogoutSafe);
     }
 
     if (window.lucide) {
@@ -1268,6 +1279,7 @@ window.AuthModule = (function () {
   }
 
   let hasBoundLogoutListener = false;
+  let lastGlobalLogoutTrigger = 0;
 
   /**
    * Regista a delegação global de eventos de Logout uma única vez durante o ciclo de vida da aplicação
@@ -1276,14 +1288,19 @@ window.AuthModule = (function () {
     if (hasBoundLogoutListener) return;
     hasBoundLogoutListener = true;
 
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest("#header-user-card, #btn-header-logout, #btn-step1-logout, [data-action='logout']");
+    function handleGlobalLogout(e) {
+      const btn = e.target && e.target.closest && e.target.closest("#header-user-card, #btn-header-logout, #btn-step1-logout, [data-action='logout']");
       if (btn) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (Date.now() - lastGlobalLogoutTrigger < 600) return;
+        lastGlobalLogoutTrigger = Date.now();
+        if (typeof e.preventDefault === "function") e.preventDefault();
+        if (typeof e.stopPropagation === "function") e.stopPropagation();
         logout();
       }
-    });
+    }
+
+    document.addEventListener("touchend", handleGlobalLogout, { passive: false });
+    document.addEventListener("click", handleGlobalLogout);
   }
 
   /**

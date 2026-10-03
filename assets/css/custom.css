@@ -110,11 +110,29 @@ header {
 
 /* Touch Targets Optimization */
 @media (max-width: 767px) {
-  button, a {
+  button:not(#btn-header-logout), a {
     min-height: 42px;
   }
   .nav-tab-btn {
     min-height: 44px;
+  }
+}
+
+/* Fixação Estrita de Altura e Proporção da Aba Sair do Header (Mobile) */
+#btn-header-logout {
+  min-height: unset !important;
+  height: 28px !important;
+  max-height: 28px !important;
+  touch-action: manipulation;
+}
+
+/* Prevenção de Auto-Zoom em Inputs Mobile (iOS Safari & Chrome Mobile: font-size >= 16px) */
+@media (max-width: 640px) {
+  #auth-participant-code,
+  #auth-access-key,
+  #auth-login-form input[type="text"],
+  #auth-login-form input[type="password"] {
+    font-size: 16px !important;
   }
 }
 
