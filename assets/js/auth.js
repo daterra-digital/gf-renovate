@@ -1055,7 +1055,7 @@ window.AuthModule = (function () {
         </div>
       </div>
       <!-- Botão Sair (Logout) Exclusivo no Cabeçalho -->
-      <button type="button" id="btn-header-logout" 
+      <button type="button" id="btn-header-logout" onclick="window.AuthModule && window.AuthModule.logout()" 
               class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-[11px] sm:text-xs font-bold transition shadow-2xs cursor-pointer shrink-0" 
               title="${isEn ? 'Log out of Restricted Area' : 'Terminar Sessão na Área Reservada'}">
         <i data-lucide="log-out" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-600"></i>
@@ -1063,8 +1063,14 @@ window.AuthModule = (function () {
       </button>
     `;
 
-    // NOTA: O clique em #btn-header-logout é gerido exclusivamente via delegação global de eventos única
-    // em initEvents() para evitar duplo popup de confirmação de saída.
+    const logoutBtn = document.getElementById("btn-header-logout");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        logout();
+      });
+    }
 
     if (window.lucide) {
       window.lucide.createIcons();

@@ -629,10 +629,38 @@ window.ResultsDashboard = (function () {
   }
 
   /**
+   * Verifica se um código pertence a um perfil moderador/administrador que deve ser excluído das métricas
+   */
+  function isModeratorCode(raw) {
+    const code = normalizeParticipantCode(raw);
+    return code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2" || code === "MODERATOR";
+  }
+
+  /**
+   * Avalia se uma linha contém respostas reais substanciais do formulário (pelo menos 1 resposta válida a questão)
+   */
+  function hasSubstantialAnswers(row) {
+    if (!row || typeof row !== "object") return false;
+    let count = 0;
+    const keys = Object.keys(row);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      if (k === "_participantCode" || k === "_qCache" || isTimestampHeader(k, i) || isCodeHeader(k)) continue;
+      const v = row[k];
+      if (v !== undefined && v !== null && String(v).trim() !== "") {
+        count++;
+        if (count >= 2) return true;
+      }
+    }
+    return count >= 1;
+  }
+
+  /**
    * Aplica a Regra Global de Filtragem:
    * - Converte entrada para Array de Objetos;
-   * - Mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 / NS-PT (exclui -MD e ADMIN);
-   * - Se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente;
+   * - Exclui moderadores e administradores (-MD, ADMIN);
+   * - Deduplica por código oficial (se submeter mais do que uma vez, mantém a mais recente);
+   * - Para submissões sem código preenchido mas com respostas substanciais, atribui identificador de contingência (RESP-xx);
    * - Retorna { rows: Object[], data: Object[], codes: Set<string>, headers: string[] }
    */
   function filterValidParticipantRows(rawInput) {
@@ -654,11 +682,21 @@ window.ResultsDashboard = (function () {
         const k = rowKeys[kIdx];
         if (k && k !== "_participantCode" && k !== "_qCache") allHeadersSet.add(k);
       }
-      const code = extractParticipantCodeFromRow(row);
-      if (!isValidParticipantCode(code)) continue;
-      row._participantCode = code;
-      latestByCode.delete(code);
-      latestByCode.set(code, row);
+      const rawCode = extractParticipantCodeFromRow(row);
+      if (isModeratorCode(rawCode)) continue;
+
+      let effectiveCode = "";
+      if (isValidParticipantCode(rawCode)) {
+        effectiveCode = normalizeParticipantCode(rawCode);
+      } else if (hasSubstantialAnswers(row)) {
+        effectiveCode = rawCode ? `P-${rawCode}` : `RESP-${String(i + 1).padStart(2, "0")}`;
+      } else {
+        continue;
+      }
+
+      row._participantCode = effectiveCode;
+      latestByCode.delete(effectiveCode);
+      latestByCode.set(effectiveCode, row);
     }
 
     const validRows = Array.from(latestByCode.values());
@@ -843,7 +881,7 @@ window.ResultsDashboard = (function () {
     if (val === null || val === undefined) return null;
     const s = String(val).trim().toLowerCase();
     if (!s) return null;
-    const m = s.match(/^([1-5])(?![0-9])/);
+    const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s]|$)/);
     if (m) return parseInt(m[1], 10);
     if (s.includes("nem concordo") || s.includes("neutro") || s.includes("indiferente") || s.includes("neither")) return 3;
     if (s.includes("discordo totalmente") || s.includes("discordo fortemente") || s.includes("strongly disagree")) return 1;
@@ -860,7 +898,7 @@ window.ResultsDashboard = (function () {
     if (val === null || val === undefined) return null;
     const s = String(val).trim().toLowerCase();
     if (!s) return null;
-    const m = s.match(/^([1-5])(?![0-9])/);
+    const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s]|$)/);
     if (m) return parseInt(m[1], 10);
     if (s.includes("extremamente") || s.includes("extremely")) return 5;
     if (s.includes("nada") || s.includes("not likely")) return 1;
@@ -869,6 +907,20 @@ window.ResultsDashboard = (function () {
     if (s.includes("muito") || s.includes("very")) return 4;
     return null;
   }
+
+  // Padrões de correspondência para os 10 itens padronizados da escala SUS (Brooke, 1996)
+  const SUS_ITEM_PATTERNS = [
+    /gostaria de utilizar|frequência|frequencia|frequently/i,
+    /desnecessariamente complex|unnecessarily complex/i,
+    /fácil de utilizar|facil de utilizar|easy to use/i,
+    /apoio de uma pessoa|apoio de um|pessoa técnica|technical/i,
+    /bem integrad|well integrated/i,
+    /demasiada inconsist|inconsistency/i,
+    /rapidamente|quickly/i,
+    /incómoda|incomoda|confuso|cumbersome/i,
+    /confiante|confident/i,
+    /aprender muitas coisas|needed to learn/i
+  ];
 
   /**
    * System Usability Scale (Brooke, 1996) sobre as 10 sub-declarações de uma questão (Q13 ou Q24):
@@ -885,9 +937,26 @@ window.ResultsDashboard = (function () {
         findSusKeys(Object.keys(r), questionNumber, toolKeywordRegex).forEach(k => keySet.add(k));
       }
     });
-    const itemKeys = Array.from(keySet).slice(0, 10);
-    if (itemKeys.length < 10) {
+    const rawKeys = Array.from(keySet);
+    if (rawKeys.length < 10) {
       return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
+    }
+
+    // Ordenar estritamente segundo os 10 itens da escala SUS (Brooke, 1996)
+    let itemKeys = [];
+    const ordered = [];
+    const used = new Set();
+    SUS_ITEM_PATTERNS.forEach(pat => {
+      const found = rawKeys.find(k => !used.has(k) && pat.test(k));
+      if (found) {
+        ordered.push(found);
+        used.add(found);
+      }
+    });
+    if (ordered.length === 10) {
+      itemKeys = ordered;
+    } else {
+      itemKeys = rawKeys.slice(0, 10);
     }
 
     let sum = 0;
@@ -1214,17 +1283,16 @@ window.ResultsDashboard = (function () {
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
         try {
-          fetchData(true).catch(err => {
-            console.error("Erro na promise do botão de atualização:", err);
-            const icon = document.getElementById("icon-refresh-results");
-            if (icon) icon.classList.remove("animate-spin");
-            refreshBtn.disabled = false;
-          });
+          fetchData(true)
+            .catch(err => {
+              console.error("Erro na promise do botão de atualização:", err);
+            })
+            .finally(() => {
+              stopRefreshSpinner();
+            });
         } catch (err) {
           console.error("Erro ao clicar no botão de atualização:", err);
-          const icon = document.getElementById("icon-refresh-results");
-          if (icon) icon.classList.remove("animate-spin");
-          refreshBtn.disabled = false;
+          stopRefreshSpinner();
         }
       });
     }
@@ -1583,7 +1651,7 @@ window.ResultsDashboard = (function () {
           for (const k of Object.keys(rootVal)) {
             const val = rootVal[k];
             if (!val) continue;
-            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
             if (normKey.includes("login")) {
               const validLogins = extractValidLoginCodes(val);
               if (validLogins.length > 0) {
@@ -1607,6 +1675,14 @@ window.ResultsDashboard = (function () {
         }
       });
 
+      const safeListen = (paths, handler) => {
+        paths.forEach(p => {
+          try {
+            db.ref(p).on("value", handler);
+          } catch (e) {}
+        });
+      };
+
       // 1. /Logins (Amostra Total TT)
       const handleLoginsSnapshot = snapshot => {
         try {
@@ -1624,7 +1700,7 @@ window.ResultsDashboard = (function () {
           console.warn("Aviso ao processar /Logins no ResultsDashboard:", err);
         }
       };
-      db.ref("/Logins").on("value", handleLoginsSnapshot);
+      safeListen(["/Logins", "/logins", "/Login"], handleLoginsSnapshot);
 
       // 2. /RespostasdoFormulário1 (Game + Demografia)
       const handleGameSnapshot = snapshot => {
@@ -1637,8 +1713,7 @@ window.ResultsDashboard = (function () {
           console.warn("Aviso /RespostasdoFormulário1:", err);
         }
       };
-      db.ref("/RespostasdoFormulário1").on("value", handleGameSnapshot);
-      db.ref("/RespostasdoFormulario1").on("value", handleGameSnapshot);
+      safeListen(["/RespostasdoFormulário1", "/RespostasdoFormulario1", "/Respostas do Formulário 1", "/Respostas do Formulario 1", "/Formulário1", "/Formulario1"], handleGameSnapshot);
 
       // 3. /RespostasdoFormulário2 (Simulador)
       const handleSimSnapshot = snapshot => {
@@ -1651,8 +1726,7 @@ window.ResultsDashboard = (function () {
           console.warn("Aviso /RespostasdoFormulário2:", err);
         }
       };
-      db.ref("/RespostasdoFormulário2").on("value", handleSimSnapshot);
-      db.ref("/RespostasdoFormulario2").on("value", handleSimSnapshot);
+      safeListen(["/RespostasdoFormulário2", "/RespostasdoFormulario2", "/Respostas do Formulário 2", "/Respostas do Formulario 2", "/Formulário2", "/Formulario2"], handleSimSnapshot);
 
       // 4. /RespostasdoFormulário3 (Global NPS + Síntese)
       const handleGlobalSnapshot = snapshot => {
@@ -1665,8 +1739,7 @@ window.ResultsDashboard = (function () {
           console.warn("Aviso /RespostasdoFormulário3:", err);
         }
       };
-      db.ref("/RespostasdoFormulário3").on("value", handleGlobalSnapshot);
-      db.ref("/RespostasdoFormulario3").on("value", handleGlobalSnapshot);
+      safeListen(["/RespostasdoFormulário3", "/RespostasdoFormulario3", "/Respostas do Formulário 3", "/Respostas do Formulario 3", "/Formulário3", "/Formulario3"], handleGlobalSnapshot);
 
       state.isLive = true;
       updateConnectionBadge(true);
@@ -1729,6 +1802,23 @@ window.ResultsDashboard = (function () {
   let isFetchingData = false;
 
   /**
+   * Pára o spinner do botão de atualização e reativa o botão na interface ativa
+   */
+  function stopRefreshSpinner() {
+    isFetchingData = false;
+    const btn = document.getElementById("btn-refresh-results");
+    if (btn) {
+      btn.disabled = false;
+      const spinners = btn.querySelectorAll(".animate-spin, [class*='animate-spin']");
+      spinners.forEach(el => el.classList.remove("animate-spin"));
+    }
+    const icon = document.getElementById("icon-refresh-results");
+    if (icon) {
+      icon.classList.remove("animate-spin");
+    }
+  }
+
+  /**
    * Sincronização sob demanda (acionada pelo botão 'Atualizar Dados' ou atalhos)
    * Executa leituras explícitas db.ref().once('value') nos 4 nós, força re-processamento,
    * executa chart.update() e atualiza obrigatoriamente o elemento de hora (Última atualização: HH:MM:SS)
@@ -1738,14 +1828,32 @@ window.ResultsDashboard = (function () {
     isFetchingData = true;
 
     const refreshBtn = document.getElementById("btn-refresh-results");
-    const refreshIcon = document.getElementById("icon-refresh-results");
+    const refreshIcon = document.getElementById("icon-refresh-results") || (refreshBtn ? refreshBtn.querySelector("svg") : null);
     if (refreshIcon) refreshIcon.classList.add("animate-spin");
     if (refreshBtn) refreshBtn.disabled = true;
+
+    // Watchdog de segurança para garantir que o spinner e o botão nunca ficam bloqueados
+    const watchdogTimer = setTimeout(() => {
+      stopRefreshSpinner();
+    }, 10000);
 
     try {
       if (typeof firebase !== "undefined" && firebase.database) {
         const db = firebase.database();
         try { db.goOnline(); } catch (e) {}
+
+        // Helper para leitura resiliente com candidatos a caminhos de nós no Firebase
+        const fetchCandidateNode = async (candidates) => {
+          for (const path of candidates) {
+            try {
+              const snap = await db.ref(path).once("value");
+              if (snap && snap.exists() && snap.val() !== null) {
+                return snap.val();
+              }
+            } catch (e) {}
+          }
+          return null;
+        };
 
         // 1. Tentar ler raiz "/" para obter toda a árvore de forma unificada
         try {
@@ -1756,7 +1864,7 @@ window.ResultsDashboard = (function () {
             for (const k of Object.keys(rootVal)) {
               const val = rootVal[k];
               if (!val) continue;
-              const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
               if (normKey.includes("login")) {
                 const validLogins = extractValidLoginCodes(val);
                 if (validLogins.length > 0) {
@@ -1779,16 +1887,16 @@ window.ResultsDashboard = (function () {
           console.warn("Aviso na leitura da raiz no fetchData:", rootErr);
         }
 
-        // 2. Leituras pontuais diretas como redundância
+        // 2. Leituras pontuais diretas como redundância (suporta com/sem acentos, com/sem espaços)
         const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
-          db.ref("/Logins").once("value").catch(() => null),
-          db.ref("/RespostasdoFormulário1").once("value").catch(() => db.ref("/RespostasdoFormulario1").once("value").catch(() => null)),
-          db.ref("/RespostasdoFormulário2").once("value").catch(() => db.ref("/RespostasdoFormulario2").once("value").catch(() => null)),
-          db.ref("/RespostasdoFormulário3").once("value").catch(() => db.ref("/RespostasdoFormulario3").once("value").catch(() => null))
+          fetchCandidateNode(["/Logins", "/logins", "/Login"]),
+          fetchCandidateNode(["/RespostasdoFormulário1", "/RespostasdoFormulario1", "/Respostas do Formulário 1", "/Respostas do Formulario 1", "/Formulário1", "/Formulario1"]),
+          fetchCandidateNode(["/RespostasdoFormulário2", "/RespostasdoFormulario2", "/Respostas do Formulário 2", "/Respostas do Formulario 2", "/Formulário2", "/Formulario2"]),
+          fetchCandidateNode(["/RespostasdoFormulário3", "/RespostasdoFormulario3", "/Respostas do Formulário 3", "/Respostas do Formulario 3", "/Formulário3", "/Formulario3"])
         ]);
 
-        if (snapLogins && snapLogins.val() !== null) {
-          const validLogins = extractValidLoginCodes(snapLogins.val());
+        if (snapLogins !== null) {
+          const validLogins = extractValidLoginCodes(snapLogins);
           if (validLogins.length > 0) {
             state.totalLogins = validLogins.length;
             state.uniqueLoginCodes = new Set(validLogins);
@@ -1797,14 +1905,14 @@ window.ResultsDashboard = (function () {
             }
           }
         }
-        if (snapGame && snapGame.val() !== null) {
-          state.rawFirebaseData.game = snapGame.val();
+        if (snapGame !== null) {
+          state.rawFirebaseData.game = snapGame;
         }
-        if (snapSim && snapSim.val() !== null) {
-          state.rawFirebaseData.sim = snapSim.val();
+        if (snapSim !== null) {
+          state.rawFirebaseData.sim = snapSim;
         }
-        if (snapGlobal && snapGlobal.val() !== null) {
-          state.rawFirebaseData.global = snapGlobal.val();
+        if (snapGlobal !== null) {
+          state.rawFirebaseData.global = snapGlobal;
         }
       }
 
@@ -1844,9 +1952,10 @@ window.ResultsDashboard = (function () {
         syncAllFirebaseData();
       } catch (e) {}
     } finally {
-      isFetchingData = false;
-      if (refreshIcon) refreshIcon.classList.remove("animate-spin");
-      if (refreshBtn) refreshBtn.disabled = false;
+      clearTimeout(watchdogTimer);
+      stopRefreshSpinner();
+      setTimeout(stopRefreshSpinner, 50);
+      setTimeout(stopRefreshSpinner, 250);
     }
   }
 
@@ -2379,7 +2488,17 @@ window.ResultsDashboard = (function () {
     // 4. Renderizar Feedback Qualitativo
     renderQualitativeFeedback();
 
-    if (window.lucide) window.lucide.createIcons();
+    if (window.lucide) {
+      try {
+        window.lucide.createIcons();
+      } catch (e) {
+        console.warn("Aviso ao inicializar ícones Lucide no dashboard:", e);
+      }
+    }
+    // Garante que o ícone do botão de atualização não fica preso em rotação após o Lucide recriar elementos
+    if (!isFetchingData) {
+      stopRefreshSpinner();
+    }
   }
 
   /**

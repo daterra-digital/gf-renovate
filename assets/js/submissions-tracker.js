@@ -232,6 +232,26 @@ window.SubmissionsTracker = (function () {
   }
 
   /**
+  /**
+   * Avalia se uma linha contém respostas reais substanciais do formulário
+   */
+  function hasSubstantialAnswers(row) {
+    if (!row || typeof row !== "object") return false;
+    let count = 0;
+    const keys = Object.keys(row);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      if (/carimbo|timestamp|c[oó]digo|participant/i.test(k)) continue;
+      const v = row[k];
+      if (v !== undefined && v !== null && String(v).trim() !== "") {
+        count++;
+        if (count >= 2) return true;
+      }
+    }
+    return count >= 1;
+  }
+
+  /**
    * Conta as submissões válidas num nó de respostas de formulário do Firebase
    */
   function countValidFormSubmissions(rawNode) {
@@ -259,7 +279,7 @@ window.SubmissionsTracker = (function () {
     const seenCodes = new Set();
     const codes = [];
 
-    rows.forEach(r => {
+    rows.forEach((r, idx) => {
       if (!r) return;
       let code = null;
       if (typeof r === "string") {
@@ -309,6 +329,12 @@ window.SubmissionsTracker = (function () {
             codes.push(clean);
           }
         }
+      } else if (hasSubstantialAnswers(r)) {
+        const fallbackCode = `RESP-${String(idx + 1).padStart(2, "0")}`;
+        if (!seenCodes.has(fallbackCode)) {
+          seenCodes.add(fallbackCode);
+          codes.push(fallbackCode);
+        }
       }
     });
 
@@ -352,7 +378,7 @@ window.SubmissionsTracker = (function () {
           for (const k of Object.keys(rootVal)) {
             const val = rootVal[k];
             if (!val) continue;
-            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
             if (normKey.includes("login")) {
               const validLogins = extractValidLoginCodes(val);
               if (validLogins.length > 0) {
@@ -381,6 +407,14 @@ window.SubmissionsTracker = (function () {
         }
       });
 
+      const safeListen = (paths, handler) => {
+        paths.forEach(p => {
+          try {
+            db.ref(p).on("value", handler);
+          } catch (e) {}
+        });
+      };
+
       // 1. /Logins (Amostra Total TT)
       const handleLoginsSnapshot = snapshot => {
         try {
@@ -405,7 +439,7 @@ window.SubmissionsTracker = (function () {
           console.warn("Aviso ao processar /Logins no SubmissionsTracker:", err);
         }
       };
-      db.ref("/Logins").on("value", handleLoginsSnapshot);
+      safeListen(["/Logins", "/logins", "/Login"], handleLoginsSnapshot);
 
       // 2. /RespostasdoFormulário1 (Game)
       const handleGameSnapshot = snapshot => {
@@ -421,8 +455,7 @@ window.SubmissionsTracker = (function () {
           console.warn("Aviso ao processar /RespostasdoFormulário1 no SubmissionsTracker:", err);
         }
       };
-      db.ref("/RespostasdoFormulário1").on("value", handleGameSnapshot);
-      db.ref("/RespostasdoFormulario1").on("value", handleGameSnapshot);
+      safeListen(["/RespostasdoFormulário1", "/RespostasdoFormulario1", "/Respostas do Formulário 1", "/Respostas do Formulario 1", "/Formulário1", "/Formulario1"], handleGameSnapshot);
 
       // 3. /RespostasdoFormulário2 (Simulador)
       const handleSimSnapshot = snapshot => {
@@ -438,8 +471,7 @@ window.SubmissionsTracker = (function () {
           console.warn("Aviso ao processar /RespostasdoFormulário2 no SubmissionsTracker:", err);
         }
       };
-      db.ref("/RespostasdoFormulário2").on("value", handleSimSnapshot);
-      db.ref("/RespostasdoFormulario2").on("value", handleSimSnapshot);
+      safeListen(["/RespostasdoFormulário2", "/RespostasdoFormulario2", "/Respostas do Formulário 2", "/Respostas do Formulario 2", "/Formulário2", "/Formulario2"], handleSimSnapshot);
 
       // 4. /RespostasdoFormulário3 (Global)
       const handleGlobalSnapshot = snapshot => {
@@ -455,8 +487,7 @@ window.SubmissionsTracker = (function () {
           console.warn("Aviso ao processar /RespostasdoFormulário3 no SubmissionsTracker:", err);
         }
       };
-      db.ref("/RespostasdoFormulário3").on("value", handleGlobalSnapshot);
-      db.ref("/RespostasdoFormulario3").on("value", handleGlobalSnapshot);
+      safeListen(["/RespostasdoFormulário3", "/RespostasdoFormulario3", "/Respostas do Formulário 3", "/Respostas do Formulario 3", "/Formulário3", "/Formulario3"], handleGlobalSnapshot);
 
       state.firebaseConnected = true;
     } catch (e) {
@@ -490,74 +521,86 @@ window.SubmissionsTracker = (function () {
       const db = firebase.database();
       db.goOnline();
 
-      // 1. Tentar ler raiz "/"
-      try {
-        const rootSnap = await db.ref("/").once("value");
-        if (rootSnap && rootSnap.val()) {
-          const rootVal = rootSnap.val();
-          for (const k of Object.keys(rootVal)) {
-            const val = rootVal[k];
-            if (!val) continue;
-            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            if (normKey.includes("login")) {
-              const validLogins = extractValidLoginCodes(val);
-              if (validLogins.length > 0) {
-                state.totalParticipants = validLogins.length;
-                validLogins.forEach(c => state.registeredCodes.add(c));
-                saveRegisteredCodes();
+        const fetchCandidateNode = async (candidates) => {
+          for (const path of candidates) {
+            try {
+              const snap = await db.ref(path).once("value");
+              if (snap && snap.exists() && snap.val() !== null) {
+                return snap.val();
               }
-            } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
-              const parsed = countValidFormSubmissions(val);
-              state.counts.game = parsed.count;
-              parsed.codes.forEach(c => state.registeredCodes.add(c));
-            } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
-              const parsed = countValidFormSubmissions(val);
-              state.counts.sim = parsed.count;
-              parsed.codes.forEach(c => state.registeredCodes.add(c));
-            } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
-              const parsed = countValidFormSubmissions(val);
-              state.counts.global = parsed.count;
-              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            } catch (e) {}
+          }
+          return null;
+        };
+
+        // 1. Tentar ler raiz "/"
+        try {
+          const rootSnap = await db.ref("/").once("value");
+          if (rootSnap && rootSnap.val()) {
+            const rootVal = rootSnap.val();
+            for (const k of Object.keys(rootVal)) {
+              const val = rootVal[k];
+              if (!val) continue;
+              const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+              if (normKey.includes("login")) {
+                const validLogins = extractValidLoginCodes(val);
+                if (validLogins.length > 0) {
+                  state.totalParticipants = validLogins.length;
+                  validLogins.forEach(c => state.registeredCodes.add(c));
+                  saveRegisteredCodes();
+                }
+              } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
+                const parsed = countValidFormSubmissions(val);
+                state.counts.game = parsed.count;
+                parsed.codes.forEach(c => state.registeredCodes.add(c));
+              } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
+                const parsed = countValidFormSubmissions(val);
+                state.counts.sim = parsed.count;
+                parsed.codes.forEach(c => state.registeredCodes.add(c));
+              } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
+                const parsed = countValidFormSubmissions(val);
+                state.counts.global = parsed.count;
+                parsed.codes.forEach(c => state.registeredCodes.add(c));
+              }
             }
           }
+        } catch (rootErr) {
+          console.warn("Aviso na leitura da raiz no refreshFromFirebase:", rootErr);
         }
-      } catch (rootErr) {
-        console.warn("Aviso na leitura da raiz no refreshFromFirebase:", rootErr);
-      }
 
-      // 2. Leituras pontuais diretas
-      const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
-        db.ref("/Logins").once("value").catch(() => null),
-        db.ref("/RespostasdoFormulário1").once("value").catch(() => db.ref("/RespostasdoFormulario1").once("value").catch(() => null)),
-        db.ref("/RespostasdoFormulário2").once("value").catch(() => db.ref("/RespostasdoFormulario2").once("value").catch(() => null)),
-        db.ref("/RespostasdoFormulário3").once("value").catch(() => db.ref("/RespostasdoFormulario3").once("value").catch(() => null))
-      ]);
+        // 2. Leituras pontuais diretas como redundância
+        const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
+          fetchCandidateNode(["/Logins", "/logins", "/Login"]),
+          fetchCandidateNode(["/RespostasdoFormulário1", "/RespostasdoFormulario1", "/Respostas do Formulário 1", "/Respostas do Formulario 1", "/Formulário1", "/Formulario1"]),
+          fetchCandidateNode(["/RespostasdoFormulário2", "/RespostasdoFormulario2", "/Respostas do Formulário 2", "/Respostas do Formulario 2", "/Formulário2", "/Formulario2"]),
+          fetchCandidateNode(["/RespostasdoFormulário3", "/RespostasdoFormulario3", "/Respostas do Formulário 3", "/Respostas do Formulario 3", "/Formulário3", "/Formulario3"])
+        ]);
 
-      if (snapLogins && snapLogins.val() !== null) {
-        const validLogins = extractValidLoginCodes(snapLogins.val());
-        if (validLogins.length > 0) {
-          state.totalParticipants = validLogins.length;
-          validLogins.forEach(c => state.registeredCodes.add(c));
-          saveRegisteredCodes();
-        } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
-          state.totalParticipants = state.registeredCodes.size;
+        if (snapLogins !== null) {
+          const validLogins = extractValidLoginCodes(snapLogins);
+          if (validLogins.length > 0) {
+            state.totalParticipants = validLogins.length;
+            validLogins.forEach(c => state.registeredCodes.add(c));
+            saveRegisteredCodes();
+          } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
+            state.totalParticipants = state.registeredCodes.size;
+          }
         }
-      }
-      if (snapGame && snapGame.val() !== null) {
-        const parsed = countValidFormSubmissions(snapGame.val());
-        state.counts.game = parsed.count;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-      }
-      if (snapSim && snapSim.val() !== null) {
-        const parsed = countValidFormSubmissions(snapSim.val());
-        state.counts.sim = parsed.count;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-      }
-      if (snapGlobal && snapGlobal.val() !== null) {
-        const parsed = countValidFormSubmissions(snapGlobal.val());
-        state.counts.global = parsed.count;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-      }
+        if (snapGame !== null) {
+          const parsed = countValidFormSubmissions(snapGame);
+          state.counts.game = parsed.count;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+        }
+        if (snapSim !== null) {
+          const parsed = countValidFormSubmissions(snapSim);
+          state.counts.sim = parsed.count;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+        }
+        if (snapGlobal !== null) {
+          const parsed = countValidFormSubmissions(snapGlobal);
+          state.counts.global = parsed.count;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+        }
       state.isLive = true;
       updateAllCounters();
     } catch (e) {
