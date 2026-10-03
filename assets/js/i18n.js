@@ -194,8 +194,8 @@ window.I18nManager = (function () {
       "results.demo.title": "Caracterização da Amostra & Literacia Digital",
       "results.demo.desc": "Distribuição dos participantes por perfil profissional (Q1), culturas agrícolas acompanhadas (Q5) e literacia agronómica digital (Q6).",
       "results.demo.profileTitle": "Perfil Profissional (Q1)",
-      "results.demo.cropsTitle": "Culturas com Maior Representatividade (Q5)",
-      "results.demo.digitalTitle": "Literacia Digital Agrícola (Q6)",
+      "results.demo.cropsTitle": "Culturas Acompanhadas (Q5)",
+      "results.demo.digitalTitle": "Literacia Digital (Q6)",
       "results.demo.digitalDesc": "Quão confortáveis se sentem os participantes na utilização diária de software de agricultura de precisão antes da formação.",
       "results.demo.digitalLevel": "Nível de Literacia Digital Intermédio-Alto",
       "results.demo.conclusionTitle": "Conclusão Metodológica:",
@@ -545,8 +545,8 @@ window.I18nManager = (function () {
       "results.demo.title": "Sample Demographics & Digital Literacy",
       "results.demo.desc": "Distribution of participants by professional profile (Q1), agricultural crops involved (Q5) and digital agronomic literacy (Q6).",
       "results.demo.profileTitle": "Professional Profile (Q1)",
-      "results.demo.cropsTitle": "Crops with Highest Representation (Q5)",
-      "results.demo.digitalTitle": "Agricultural Digital Literacy (Q6)",
+      "results.demo.cropsTitle": "Crops Monitored (Q5)",
+      "results.demo.digitalTitle": "Digital Literacy (Q6)",
       "results.demo.digitalDesc": "Self-reported comfort level in the daily use of precision farming software prior to training.",
       "results.demo.digitalLevel": "Intermediate-High Digital Literacy Level",
       "results.demo.conclusionTitle": "Methodological Conclusion:",
@@ -840,6 +840,9 @@ window.I18nManager = (function () {
     if (window.renderPartners) window.renderPartners();
     if (window.LiveSession && typeof window.LiveSession.render === "function") {
       window.LiveSession.render();
+    }
+    if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
+      window.ResultsDashboard.renderKpiCards();
     }
     if (window.ResultsDashboard && typeof window.ResultsDashboard.fetchData === "function") {
       window.ResultsDashboard.fetchData(false);

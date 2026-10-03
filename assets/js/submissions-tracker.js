@@ -44,17 +44,23 @@ window.SubmissionsTracker = (function () {
         if (Array.isArray(parsed)) {
           parsed.forEach(code => {
             if (code && typeof code === "string") {
-              state.registeredCodes.add(code.trim().toUpperCase());
+              const clean = code.trim().toUpperCase();
+              if (!clean.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean)) {
+                state.registeredCodes.add(clean);
+              }
             }
           });
         }
       }
 
-      // Adicionar código da sessão ativa se existir
+      // Adicionar código da sessão ativa se for participante padrão (não-moderador)
       if (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function") {
         const currentCode = window.AuthModule.getParticipantCode();
         if (currentCode) {
-          state.registeredCodes.add(currentCode.trim().toUpperCase());
+          const clean = currentCode.trim().toUpperCase();
+          if (!clean.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean)) {
+            state.registeredCodes.add(clean);
+          }
         }
       }
     } catch (e) {
@@ -80,7 +86,7 @@ window.SubmissionsTracker = (function () {
   function registerParticipantCode(rawCode) {
     if (!rawCode || typeof rawCode !== "string") return;
     const cleanCode = rawCode.trim().toUpperCase();
-    if (!cleanCode) return;
+    if (!cleanCode || cleanCode.endsWith("-MD") || !/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(cleanCode)) return;
 
     state.registeredCodes.add(cleanCode);
     saveRegisteredCodes();
@@ -95,25 +101,16 @@ window.SubmissionsTracker = (function () {
   function recalculateTotalParticipants() {
     const { game, sim, global } = state.counts;
     const maxResponses = Math.max(game, sim, global);
-    const codesCount = state.registeredCodes.size;
-
-    if (state.isLive || maxResponses > 0) {
-      state.totalParticipants = Math.max(codesCount, maxResponses, 1);
-    } else {
-      // Se ainda não existirem respostas reais submetidas:
-      if (codesCount > 0) {
-        state.totalParticipants = codesCount;
-        state.counts.game = 0;
-        state.counts.sim = 0;
-        state.counts.global = 0;
-      } else {
-        // Amostra padrão de demonstração do Grupo Focal (antes do início da sessão)
-        state.totalParticipants = 18;
-        state.counts.game = 18;
-        state.counts.sim = 18;
-        state.counts.global = 18;
+    
+    // Contar apenas códigos válidos registados (exclui -MD e fora de FG2-PT01..FG2-PT50)
+    let validCodesCount = 0;
+    state.registeredCodes.forEach(code => {
+      if (code && !code.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(code)) {
+        validCodesCount++;
       }
-    }
+    });
+
+    state.totalParticipants = Math.max(validCodesCount, maxResponses, 0);
   }
 
   /**
@@ -143,14 +140,15 @@ window.SubmissionsTracker = (function () {
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      count++;
 
       // Extração simples respeitando aspas
       const cols = line.split(",").map(c => c.replace(/^"|"$/g, "").trim());
       if (cols.length > codeColIndex) {
         const potentialCode = cols[codeColIndex].toUpperCase();
-        if (potentialCode && (potentialCode.startsWith("FG2-") || potentialCode.startsWith("NS-") || potentialCode.length >= 3)) {
+        // Filtro Global: excluir códigos com sufixo -MD e códigos inválidos
+        if (potentialCode && !potentialCode.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(potentialCode)) {
           codes.push(potentialCode);
+          count++;
         }
       }
     }
@@ -350,16 +348,9 @@ window.SubmissionsTracker = (function () {
     }
 
     // 3. Menu "Resultados & Media": Cartão "Amostra Total"
-    const kpiCount = document.getElementById("kpi-responses-count");
-    if (kpiCount) {
-      kpiCount.textContent = TT;
-    }
-
-    const kpiBadgeContainer = document.getElementById("kpi-total-submissions-badge");
-    if (kpiBadgeContainer) {
-      const totalSubmissions = n1 + n2 + n3;
-      const totalExpected = TT * 3;
-      kpiBadgeContainer.innerHTML = generateBadgeHTML(totalSubmissions, totalExpected, true);
+    // Gerido por ResultsDashboard.renderKpiCards (Regra Global de Filtragem -MD e alvo N × 32 respostas)
+    if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
+      window.ResultsDashboard.renderKpiCards();
     }
   }
 

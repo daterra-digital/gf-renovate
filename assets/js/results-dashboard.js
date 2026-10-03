@@ -49,41 +49,44 @@ window.ResultsDashboard = (function () {
   };
 
   // Opções Oficiais do Questionário de Validação
+  // Opções Oficiais do Questionário de Validação (Mapeamento Exato)
   const OFFICIAL_PROFILES = [
     "Agricultor(a) / Produtor(a)",
     "Técnico(a) / Consultor(a)",
-    "Formador(a) / Profissional de Ensino Agrícola",
-    "Representante da Indústria (Maquinaria / Agroquímicos)",
-    "Entidade Reguladora / Administração Pública",
+    "Formador(a) / Prof. Ensino",
+    "Representante da Indústria",
+    "Entidade Reguladora / Admin. Pública",
     "Estudante",
     "Investigador(a)",
-    "Outra"
+    "Outro"
   ];
 
   const PROFILE_TRANSLATIONS = {
     "Agricultor(a) / Produtor(a)": "Farmer / Producer",
     "Técnico(a) / Consultor(a)": "Technical Advisor / Consultant",
-    "Formador(a) / Profissional de Ensino Agrícola": "Trainer / Agricultural Educator",
-    "Representante da Indústria (Maquinaria / Agroquímicos)": "Industry Representative (Machinery / Agrochemicals)",
-    "Entidade Reguladora / Administração Pública": "Regulatory Entity / Public Administration",
+    "Formador(a) / Prof. Ensino": "Trainer / Agricultural Educator",
+    "Representante da Indústria": "Industry Representative (Machinery / Agrochemicals)",
+    "Entidade Reguladora / Admin. Pública": "Regulatory Entity / Public Administration",
     "Estudante": "Student",
     "Investigador(a)": "Researcher",
-    "Outra": "Other"
+    "Outro": "Other"
   };
 
   const OFFICIAL_CROPS = [
     "Vinha",
     "Pomóideas / Prunóideas",
     "Olival",
+    "Citrinos",
     "Cereais / Culturas arvenses",
     "Hortícolas"
   ];
 
   const CROP_TRANSLATIONS = {
-    "Vinha": "Vineyard / Grapevine",
-    "Pomóideas / Prunóideas": "Pome / Stone Fruit",
-    "Olival": "Olive Grove",
-    "Cereais / Culturas arvenses": "Cereals / Arable Crops",
+    "Vinha": "Vineyards",
+    "Pomóideas / Prunóideas": "Orchards (Pome/Stone fruit)",
+    "Olival": "Olive groves",
+    "Citrinos": "Citrus",
+    "Cereais / Culturas arvenses": "Cereals / Arable crops",
     "Hortícolas": "Vegetables / Horticulture"
   };
 
@@ -103,71 +106,183 @@ window.ResultsDashboard = (function () {
     "Nada provável": "Not likely at all"
   };
 
+  /**
+   * Mapeamento de Legendas (Inglês/PT no Sheets -> Português na UI):
+   * Farmer/Grower -> "Agricultor(a) / Produtor(a)"
+   * Agricultural Advisor / Technician -> "Técnico(a) / Consultor(a)"
+   * Trainer / Agricultural Education Professional -> "Formador(a) / Prof. Ensino"
+   * Industry Representative (Machinery / Agrochemicals) -> "Representante da Indústria"
+   * Regulator / Public Administration -> "Entidade Reguladora / Admin. Pública"
+   * Student -> "Estudante"
+   * Researcher -> "Investigador(a)"
+   * Other: ______________ -> "Outro"
+   */
   function normalizeProfile(val) {
-    if (!val) return "Outra";
+    if (!val) return "Outro";
     const s = String(val).trim().toLowerCase();
-    if (s.includes("agricultor") || s.includes("produtor")) return "Agricultor(a) / Produtor(a)";
-    if (s.includes("técnico") || s.includes("tecnico") || s.includes("consultor")) return "Técnico(a) / Consultor(a)";
-    if (s.includes("formador") || s.includes("ensino") || s.includes("professor") || s.includes("docente")) return "Formador(a) / Profissional de Ensino Agrícola";
-    if (s.includes("indústria") || s.includes("industria") || s.includes("maquinaria") || s.includes("agroquímico") || s.includes("agroquimico")) return "Representante da Indústria (Maquinaria / Agroquímicos)";
-    if (s.includes("reguladora") || s.includes("administração") || s.includes("administracao") || s.includes("pública") || s.includes("publica") || s.includes("governo")) return "Entidade Reguladora / Administração Pública";
-    if (s.includes("estudante") || s.includes("aluno")) return "Estudante";
-    if (s.includes("investigador") || s.includes("pesquisador") || s.includes("cientista")) return "Investigador(a)";
-    return "Outra";
+    if (s.includes("farmer") || s.includes("grower") || s.includes("agricultor") || s.includes("produtor")) {
+      return "Agricultor(a) / Produtor(a)";
+    }
+    if (s.includes("advisor") || s.includes("technician") || s.includes("técnico") || s.includes("tecnico") || s.includes("consultor")) {
+      return "Técnico(a) / Consultor(a)";
+    }
+    if (s.includes("trainer") || s.includes("education") || s.includes("formador") || s.includes("ensino") || s.includes("professor") || s.includes("docente")) {
+      return "Formador(a) / Prof. Ensino";
+    }
+    if (s.includes("industry") || s.includes("indústria") || s.includes("industria") || s.includes("machinery") || s.includes("maquinaria") || s.includes("agrochemical") || s.includes("agroquímico") || s.includes("agroquimico")) {
+      return "Representante da Indústria";
+    }
+    if (s.includes("regulator") || s.includes("reguladora") || s.includes("administration") || s.includes("administração") || s.includes("administracao") || s.includes("public") || s.includes("pública") || s.includes("publica") || s.includes("governo")) {
+      return "Entidade Reguladora / Admin. Pública";
+    }
+    if (s.includes("student") || s.includes("estudante") || s.includes("aluno")) {
+      return "Estudante";
+    }
+    if (s.includes("researcher") || s.includes("investigador") || s.includes("pesquisador") || s.includes("cientista")) {
+      return "Investigador(a)";
+    }
+    return "Outro";
   }
 
+  /**
+   * Mapeamento de Culturas (Inglês/PT no Sheets -> Português na UI):
+   * Vineyards -> "Vinha"
+   * Orchards (Pome/Stone fruit) -> "Pomóideas / Prunóideas"
+   * Olive groves -> "Olival"
+   * Citrus -> "Citrinos"
+   * Cereals / Arable crops -> "Cereais / Culturas arvenses"
+   * Vegetables / Horticulture -> "Hortícolas"
+   */
   function normalizeCrop(val) {
     if (!val) return null;
     const s = String(val).trim().toLowerCase();
-    if (s.includes("vinha") || s.includes("vinhedo") || s.includes("viticultura") || s.includes("uva")) return "Vinha";
-    if (s.includes("pomóidea") || s.includes("pomoidea") || s.includes("prunóidea") || s.includes("prunoidea") || s.includes("pomar") || s.includes("fruti") || s.includes("maçã") || s.includes("maca") || s.includes("pera") || s.includes("pessego")) return "Pomóideas / Prunóideas";
-    if (s.includes("olival") || s.includes("oliva") || s.includes("azeite") || s.includes("oliveira")) return "Olival";
-    if (s.includes("cereal") || s.includes("cereais") || s.includes("arvense") || s.includes("milho") || s.includes("trigo") || s.includes("cevada") || s.includes("arroz") || s.includes("grandes")) return "Cereais / Culturas arvenses";
-    if (s.includes("hortícola") || s.includes("horticola") || s.includes("hortaliça") || s.includes("hortalica") || s.includes("legume") || s.includes("tomate")) return "Hortícolas";
+    if (s.includes("vineyard") || s.includes("vinha") || s.includes("vinhedo") || s.includes("viticultura") || s.includes("uva")) {
+      return "Vinha";
+    }
+    if (s.includes("orchard") || s.includes("pome") || s.includes("stone") || s.includes("pomóidea") || s.includes("pomoidea") || s.includes("prunóidea") || s.includes("prunoidea") || s.includes("pomar") || s.includes("fruti") || s.includes("maçã") || s.includes("maca") || s.includes("pera") || s.includes("pessego") || s.includes("pêssego")) {
+      return "Pomóideas / Prunóideas";
+    }
+    if (s.includes("olive") || s.includes("olival") || s.includes("oliva") || s.includes("azeite") || s.includes("oliveira")) {
+      return "Olival";
+    }
+    if (s.includes("citrus") || s.includes("citrino") || s.includes("citrinos") || s.includes("laranja") || s.includes("limão") || s.includes("limao")) {
+      return "Citrinos";
+    }
+    if (s.includes("cereal") || s.includes("cereais") || s.includes("arable") || s.includes("arvense") || s.includes("milho") || s.includes("trigo") || s.includes("cevada") || s.includes("arroz") || s.includes("grandes")) {
+      return "Cereais / Culturas arvenses";
+    }
+    if (s.includes("vegetable") || s.includes("horticulture") || s.includes("hortícola") || s.includes("horticola") || s.includes("hortaliça") || s.includes("hortalica") || s.includes("legume") || s.includes("tomate")) {
+      return "Hortícolas";
+    }
     return null;
   }
 
+  /**
+   * Extrai o dígito numérico inicial (escala 1 a 5) da Literacia Digital (Q6)
+   */
   function parseDigitalComfort(val) {
-    if (typeof val === "number" && val >= 1 && val <= 5) return val;
-    if (!val) return 3;
-    const s = String(val).trim().toLowerCase();
-    if (s.includes("muito desconfortável") || s.includes("muito desconfortavel")) return 1;
-    if (s.includes("muito confortável") || s.includes("muito confortavel")) return 5;
-    if (s.includes("nem") || s.includes("neutro")) return 3;
-    if (s.includes("desconfortável") || s.includes("desconfortavel")) return 2;
-    if (s.includes("confortável") || s.includes("confortavel")) return 4;
-    const m = s.match(/[1-5]/);
-    return m ? parseInt(m[0], 10) : 3;
+    if (val === null || val === undefined) return null;
+    const s = String(val).trim();
+    if (!s) return null;
+    const match = s.match(/^([1-5])/);
+    if (match) {
+      return parseInt(match[1], 10);
+    }
+    const lower = s.toLowerCase();
+    if (lower.includes("muito desconfortável") || lower.includes("muito desconfortavel") || lower.includes("very uncomfortable")) return 1;
+    if (lower.includes("muito confortável") || lower.includes("muito confortavel") || lower.includes("very comfortable")) return 5;
+    if (lower.includes("desconfortável") || lower.includes("desconfortavel") || lower.includes("uncomfortable")) return 2;
+    if (lower.includes("confortável") || lower.includes("confortavel") || lower.includes("comfortable")) return 4;
+    if (lower.includes("neutro") || lower.includes("nem") || lower.includes("neutral")) return 3;
+    const anyDigit = s.match(/[1-5]/);
+    return anyDigit ? parseInt(anyDigit[0], 10) : null;
   }
 
-  function getComfortLevelLabel(avg, isEn) {
-    const num = parseFloat(avg);
-    if (num >= 4.5) return isEn ? "Very comfortable (Level 5/5)" : "Muito confortável (Nível 5/5)";
-    if (num >= 3.5) return isEn ? "Comfortable (Level 4/5)" : "Confortável (Nível 4/5)";
-    if (num >= 2.5) return isEn ? "Neither comfortable nor uncomfortable (Level 3/5)" : "Nem confortável nem desconfortável (Nível 3/5)";
-    if (num >= 1.5) return isEn ? "Uncomfortable (Level 2/5)" : "Desconfortável (Nível 2/5)";
-    return isEn ? "Very uncomfortable (Level 1/5)" : "Muito desconfortável (Nível 1/5)";
+  /**
+   * Rótulo Qualitativo Dinâmico (arredondar a média para o inteiro mais próximo):
+   * Média ≈ 1 -> "Muito Desconfortável (Nível 1/5)"
+   * Média ≈ 2 -> "Desconfortável (Nível 2/5)"
+   * Média ≈ 3 -> "Neutro (Nível 3/5)"
+   * Média ≈ 4 -> "Confortável (Nível 4/5)"
+   * Média ≈ 5 -> "Muito Confortável (Nível 5/5)"
+   */
+  function getComfortLevelLabel(avg, isEn = false) {
+    if (avg === null || avg === undefined || isNaN(avg) || avg <= 0) {
+      return isEn ? "Awaiting responses" : "A aguardar respostas";
+    }
+    const rounded = Math.min(5, Math.max(1, Math.round(parseFloat(avg))));
+    switch (rounded) {
+      case 1:
+        return isEn ? "Very Uncomfortable (Level 1/5)" : "Muito Desconfortável (Nível 1/5)";
+      case 2:
+        return isEn ? "Uncomfortable (Level 2/5)" : "Desconfortável (Nível 2/5)";
+      case 3:
+        return isEn ? "Neutral (Level 3/5)" : "Neutro (Nível 3/5)";
+      case 4:
+        return isEn ? "Comfortable (Level 4/5)" : "Confortável (Nível 4/5)";
+      case 5:
+        return isEn ? "Very Comfortable (Level 5/5)" : "Muito Confortável (Nível 5/5)";
+      default:
+        return isEn ? "Neutral (Level 3/5)" : "Neutro (Nível 3/5)";
+    }
+  }
+
+  /**
+   * Atualiza visualmente a barra inferior de escala (1 a 5) destacando a posição da média
+   */
+  function renderDigitalScale(roundedMean) {
+    const container = document.getElementById("demo-digital-scale");
+    if (!container) return;
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const titles = isEn ? [
+      "1 - Very uncomfortable",
+      "2 - Uncomfortable",
+      "3 - Neutral",
+      "4 - Comfortable",
+      "5 - Very comfortable"
+    ] : [
+      "1 - Muito desconfortável",
+      "2 - Desconfortável",
+      "3 - Neutro",
+      "4 - Confortável",
+      "5 - Muito confortável"
+    ];
+
+    let html = "";
+    for (let i = 1; i <= 5; i++) {
+      const isHighlight = roundedMean === i;
+      const badgeClass = isHighlight
+        ? "px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-extrabold shadow-2xs border border-amber-300"
+        : "px-1.5 py-0.5 rounded bg-slate-100 text-slate-600";
+      const text = isHighlight ? `${i} (${isEn ? "Mean" : "Média"})` : `${i}`;
+      html += `<span class="${badgeClass}" title="${titles[i - 1]}">${text}</span>`;
+      if (i < 5) html += `<span class="text-slate-300">•</span>`;
+    }
+    container.innerHTML = html;
   }
 
   function parseQ29Recommendation(val) {
-    if (!val) return "Muito provável";
+    if (val === null || val === undefined) return null;
     const s = String(val).trim().toLowerCase();
-    if (s.includes("extremamente")) return "Extremamente provável";
-    if (s.includes("pouco")) return "Pouco Provável";
-    if (s.includes("nada")) return "Nada provável";
-    if (s.includes("moderada") || s.includes("moderavelmente")) return "Moderavelmente provável";
-    if (s.includes("muito")) return "Muito provável";
+    if (!s) return null;
+    if (s.includes("extremamente") || s.includes("extremely")) return "Extremamente provável";
+    if (s.includes("nada") || s.includes("not likely")) return "Nada provável";
+    if (s.includes("pouco") || s.includes("unlikely")) return "Pouco Provável";
+    if (s.includes("moderad") || s.includes("moderavel") || s.includes("moderately")) return "Moderavelmente provável";
+    if (s.includes("muito") || s.includes("very")) return "Muito provável";
 
-    const m = s.match(/\d+/);
+    const m = s.match(/^([1-5])(?![0-9])/);
     if (m) {
-      const n = parseInt(m[0], 10);
-      if (n >= 9 || n === 5) return "Extremamente provável";
-      if (n >= 7 || n === 4) return "Muito provável";
-      if (n >= 5 || n === 3) return "Moderavelmente provável";
-      if (n >= 3 || n === 2) return "Pouco Provável";
-      return "Nada provável";
+      const n = parseInt(m[1], 10);
+      switch (n) {
+        case 5: return "Extremamente provável";
+        case 4: return "Muito provável";
+        case 3: return "Moderavelmente provável";
+        case 2: return "Pouco Provável";
+        case 1: return "Nada provável";
+      }
     }
-    return "Muito provável";
+    return null;
   }
 
   function getQ29Weight(label) {
@@ -177,7 +292,7 @@ window.ResultsDashboard = (function () {
       case "Moderavelmente provável": return 3;
       case "Pouco Provável": return 2;
       case "Nada provável": return 1;
-      default: return 4;
+      default: return 0;
     }
   }
 
@@ -192,10 +307,10 @@ window.ResultsDashboard = (function () {
 
     if (!rawList || !rawList.length) {
       return {
-        average: 4.7,
-        positivePercent: 94,
-        counts: { "Extremamente provável": 10, "Muito provável": 6, "Moderavelmente provável": 2, "Pouco Provável": 0, "Nada provável": 0 },
-        total: 18
+        average: null,
+        positivePercent: 0,
+        counts,
+        total: 0
       };
     }
 
@@ -204,22 +319,389 @@ window.ResultsDashboard = (function () {
 
     rawList.forEach(item => {
       const opt = parseQ29Recommendation(item);
-      if (counts[opt] !== undefined) {
+      if (opt && counts[opt] !== undefined) {
         counts[opt]++;
         sum += getQ29Weight(opt);
         total++;
       }
     });
 
-    const average = total > 0 ? parseFloat((sum / total).toFixed(1)) : 4.7;
+    if (total === 0) {
+      return {
+        average: null,
+        positivePercent: 0,
+        counts,
+        total: 0
+      };
+    }
+
+    const average = parseFloat((sum / total).toFixed(1));
     const positive = counts["Extremamente provável"] + counts["Muito provável"];
-    const positivePercent = total > 0 ? Math.round((positive / total) * 100) : 94;
+    const positivePercent = Math.round((positive / total) * 100);
 
     return {
       average,
       positivePercent,
       counts,
       total
+    };
+  }
+
+  // =====================================================================
+  // MOTOR DE DADOS DOS 4 CARTÕES DE RESUMO (KPI Strip)
+  // =====================================================================
+
+  // Regra Global de Filtragem: apenas códigos padrão FG2-PT01 a FG2-PT50.
+  // Qualquer código com sufixo -MD (moderador) ou fora deste intervalo é excluído.
+  const VALID_PARTICIPANT_CODE = /^FG2-PT(0[1-9]|[1-4]\d|50)$/;
+
+  // Alvo de respostas por participante: 30 questões + 2 respostas da Word Cloud
+  const ANSWER_UNITS_PER_PARTICIPANT = 32;
+
+  // Balizas qualitativas
+  const SUS_EXCELLENT_MIN = 80.3;
+  const SUS_GOOD_MIN = 68.0;
+  const Q29_HIGH_MIN = 4.0;
+  const Q29_MODERATE_MIN = 3.0;
+
+  function normalizeParticipantCode(raw) {
+    return raw === null || raw === undefined ? "" : String(raw).trim().toUpperCase();
+  }
+
+  function isValidParticipantCode(raw) {
+    const code = normalizeParticipantCode(raw);
+    return !code.endsWith("-MD") && VALID_PARTICIPANT_CODE.test(code);
+  }
+
+  function round1(x) {
+    return Math.round(x * 10) / 10;
+  }
+
+  function isCodeHeader(h) {
+    return /c[oó]digo|participant code/i.test(String(h || ""));
+  }
+
+  function isTimestampHeader(h, idx) {
+    return idx === 0 || /carimbo|timestamp|data\/hora/i.test(String(h || ""));
+  }
+
+  /**
+   * Aplica a Regra Global de Filtragem a um separador (cabeçalho + linhas):
+   * - mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 (exclui -MD e códigos inválidos);
+   * - se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente.
+   * @returns {{headers: string[], data: string[][], codes: Set<string>}}
+   */
+  function filterValidParticipantRows(rows) {
+    const headers = (rows && rows[0]) || [];
+    const codeCols = [];
+    headers.forEach((h, i) => { if (isCodeHeader(h)) codeCols.push(i); });
+    if (!codeCols.length && headers.length > 1) codeCols.push(1);
+
+    const latestByCode = new Map();
+    (rows || []).slice(1).forEach(row => {
+      let code = "";
+      for (const ci of codeCols) {
+        const c = normalizeParticipantCode(row[ci]);
+        if (c) { code = c; break; }
+      }
+      if (!isValidParticipantCode(code)) return;
+      latestByCode.delete(code); // reinserir para preservar a ordem cronológica
+      latestByCode.set(code, row);
+    });
+
+    return {
+      headers,
+      data: Array.from(latestByCode.values()),
+      codes: new Set(latestByCode.keys())
+    };
+  }
+
+  /**
+   * Agrupa as colunas de um separador em "unidades de resposta":
+   * - cada questão numerada (Qn) conta como 1 unidade, mesmo quando tem várias sub-colunas (ex.: Q13/Q24 SUS);
+   * - cada questão "3 palavras" (Word Cloud) conta como 1 unidade;
+   * - carimbo de data/hora e código de participante são ignorados.
+   */
+  function getAnswerUnits(headers) {
+    const units = new Map();
+    (headers || []).forEach((h, i) => {
+      if (isTimestampHeader(h, i) || isCodeHeader(h)) return;
+      const label = String(h || "");
+      const q = label.match(/^\s*Q(\d+)\s*[.):\-]/i);
+      let key = null;
+      if (q) key = `Q${parseInt(q[1], 10)}`;
+      else if (/3 palavras|three words|3 words/i.test(label)) key = `WC${i}`;
+      if (!key) return;
+      if (!units.has(key)) units.set(key, []);
+      units.get(key).push(i);
+    });
+    return Array.from(units.values());
+  }
+
+  /**
+   * Conta as respostas válidas (unidades de resposta preenchidas) de um separador já filtrado
+   */
+  function countAnsweredUnits(tab) {
+    const units = getAnswerUnits(tab.headers);
+    let total = 0;
+    tab.data.forEach(row => {
+      units.forEach(cols => {
+        if (cols.some(ci => row[ci] !== undefined && String(row[ci]).trim() !== "")) total++;
+      });
+    });
+    return total;
+  }
+
+  /**
+   * Leitura estrita de uma resposta Likert 1–5 (devolve null se vazia/inválida)
+   */
+  function parseLikertStrict(val) {
+    if (val === null || val === undefined) return null;
+    const s = String(val).trim().toLowerCase();
+    if (!s) return null;
+    const m = s.match(/^([1-5])(?![0-9])/);
+    if (m) return parseInt(m[1], 10);
+    if (s.includes("nem concordo") || s.includes("neutro") || s.includes("indiferente") || s.includes("neither")) return 3;
+    if (s.includes("discordo totalmente") || s.includes("discordo fortemente") || s.includes("strongly disagree")) return 1;
+    if (s.includes("concordo totalmente") || s.includes("concordo fortemente") || s.includes("strongly agree")) return 5;
+    if (s.includes("discordo") || s.includes("disagree")) return 2;
+    if (s.includes("concordo") || s.includes("agree")) return 4;
+    return null;
+  }
+
+  /**
+   * Leitura estrita da Q29 (escala 1–5). Aceita o valor numérico ou o rótulo da escala.
+   */
+  function parseQ29Strict(val) {
+    if (val === null || val === undefined) return null;
+    const s = String(val).trim().toLowerCase();
+    if (!s) return null;
+    const m = s.match(/^([1-5])(?![0-9])/);
+    if (m) return parseInt(m[1], 10);
+    if (s.includes("extremamente") || s.includes("extremely")) return 5;
+    if (s.includes("nada") || s.includes("not likely")) return 1;
+    if (s.includes("pouco") || s.includes("unlikely")) return 2;
+    if (s.includes("moderad") || s.includes("moderavel") || s.includes("moderately")) return 3;
+    if (s.includes("muito") || s.includes("very")) return 4;
+    return null;
+  }
+
+  /**
+   * System Usability Scale (Brooke, 1996) sobre as 10 sub-declarações de uma questão (Q13 ou Q24):
+   * ímpares (1,3,5,7,9): resposta − 1 | pares (2,4,6,8,10): 5 − resposta
+   * Score do participante = soma × 2.5 | Resultado = média aritmética dos participantes válidos.
+   * Participantes com alguma das 10 sub-declarações por responder não entram na média.
+   */
+  function computeSusKpi(tab, questionNumber) {
+    const re = new RegExp(`^\\s*Q${questionNumber}\\s*[.):\\-]`, "i");
+    const cols = [];
+    tab.headers.forEach((h, i) => { if (re.test(String(h || ""))) cols.push(i); });
+    if (cols.length < 10) return { average: null, n: 0 };
+
+    const itemCols = cols.slice(0, 10); // ordem das colunas = ordem oficial dos itens SUS
+    let sum = 0;
+    let n = 0;
+    tab.data.forEach(row => {
+      const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+      if (vals.some(v => v === null)) return;
+      let raw = 0;
+      vals.forEach((v, idx) => {
+        raw += (idx % 2 === 0) ? (v - 1) : (5 - v); // idx 0 = sub-questão 1 (ímpar)
+      });
+      sum += raw * 2.5;
+      n++;
+    });
+    return { average: n > 0 ? sum / n : null, n };
+  }
+
+  /**
+   * Média aritmética simples das respostas válidas da Q29 (1–5)
+   */
+  function computeQ29Kpi(tab) {
+    let idx = findColIndex(tab.headers, /^\s*Q29\s*[.):\-]/i);
+    if (idx === -1) idx = findColIndex(tab.headers, /Q29/i);
+    if (idx === -1) return { average: null, n: 0 };
+    let sum = 0;
+    let n = 0;
+    tab.data.forEach(row => {
+      const v = parseQ29Strict(row[idx]);
+      if (v === null) return;
+      sum += v;
+      n++;
+    });
+    return { average: n > 0 ? sum / n : null, n };
+  }
+
+  /**
+   * Calcula os dados dos 4 cartões a partir dos 3 separadores já filtrados
+   */
+  function computeKpis(game, sim, global) {
+    const submissionCodes = new Set([...game.codes, ...sim.codes, ...global.codes]);
+    return {
+      submissionCodes,
+      answeredUnits: countAnsweredUnits(game) + countAnsweredUnits(sim) + countAnsweredUnits(global),
+      susGame: computeSusKpi(game, 13),
+      susSim: computeSusKpi(sim, 24),
+      q29: computeQ29Kpi(global)
+    };
+  }
+
+  /**
+   * Códigos válidos com sessão iniciada no website (exclui -MD)
+   */
+  function getActiveSessionCodes() {
+    const codes = new Set();
+    const add = c => { if (isValidParticipantCode(c)) codes.add(normalizeParticipantCode(c)); };
+    try {
+      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getRegisteredCodes === "function") {
+        window.SubmissionsTracker.getRegisteredCodes().forEach(add);
+      }
+      if (localStorage.getItem("renovate_session_active") === "true") {
+        add(localStorage.getItem("renovate_participant_code"));
+      }
+      const active = JSON.parse(localStorage.getItem("renovate_active_codes") || "[]");
+      if (Array.isArray(active)) active.forEach(add);
+    } catch (e) {}
+    return codes;
+  }
+
+  function getSusLabel(score, isEn) {
+    if (score === null) return isEn ? "Awaiting responses" : "A aguardar respostas";
+    const s = round1(score);
+    if (s >= SUS_EXCELLENT_MIN) return isEn ? "Excellent" : "Excelente";
+    if (s >= SUS_GOOD_MIN) return isEn ? "Good" : "Bom";
+    return isEn ? "Below Average" : "Abaixo da Média";
+  }
+
+  function getQ29Label(avg, isEn) {
+    if (avg === null) return isEn ? "Awaiting responses" : "A aguardar respostas";
+    const a = round1(avg);
+    if (a >= Q29_HIGH_MIN) return isEn ? "High Recommendation Intent" : "Elevada Intenção de Recomendação";
+    if (a >= Q29_MODERATE_MIN) return isEn ? "Moderate Intent" : "Intenção Moderada";
+    return isEn ? "Low Recommendation Intent" : "Baixa Intenção de Recomendação";
+  }
+
+  /**
+   * Liga os dados aos 4 cartões de resumo existentes no menu "Resultados & Media"
+   */
+  function renderKpiCards() {
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+    let k = state.kpis;
+    let participantCount;
+
+    if (k) {
+      // N = participantes válidos com sessão ativa (inclui quem já submeteu respostas)
+      const codes = getActiveSessionCodes();
+      k.submissionCodes.forEach(c => codes.add(c));
+      participantCount = codes.size;
+    } else {
+      // Sem dados ou a aguardar conexão: estado estritamente a zeros
+      const codes = getActiveSessionCodes();
+      participantCount = codes.size;
+      k = {
+        answeredUnits: 0,
+        susGame: { average: null },
+        susSim: { average: null },
+        q29: { average: null }
+      };
+    }
+
+    // 1. AMOSTRA TOTAL
+    setText("kpi-responses-count", participantCount);
+    const target = participantCount * ANSWER_UNITS_PER_PARTICIPANT;
+    const badge = document.getElementById("kpi-total-submissions-badge");
+    if (badge && window.SubmissionsTracker && typeof window.SubmissionsTracker.generateBadgeHTML === "function") {
+      badge.innerHTML = window.SubmissionsTracker.generateBadgeHTML(k.answeredUnits, target, true);
+    }
+
+    // 2. SUS SERIOUS GAME (Q13)
+    const sg = k.susGame.average;
+    setText("kpi-sus-game", sg === null ? "—" : round1(sg).toFixed(1));
+    setText("kpi-sus-game-bench", getSusLabel(sg, isEn));
+
+    // 3. SUS SIMULADOR 3D (Q24)
+    const ss = k.susSim.average;
+    setText("kpi-sus-sim", ss === null ? "—" : round1(ss).toFixed(1));
+    setText("kpi-sus-sim-bench", getSusLabel(ss, isEn));
+
+    // 4. RECOMENDAÇÃO RENOVATE (Q29)
+    const q = k.q29.average;
+    setText("kpi-nps", q === null ? "—" : round1(q).toFixed(1));
+    setText("kpi-nps-unit", q === null ? "/ 5.0" : `/ 5.0 (${Math.round((q / 5) * 100)}%)`);
+    setText("kpi-nps-label", getQ29Label(q, isEn));
+
+    // Sincronizar secção comparativa SUS com os mesmos dados calculados
+    renderSusBenchmarkGauge();
+  }
+
+  /**
+   * Estrutura de métricas limpas em Estado Inicial (Zero-State)
+   * Todos os gráficos e contadores a ZEROS até à entrada de dados reais
+   */
+  function getZeroMetrics() {
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const zeroProfiles = {};
+    OFFICIAL_PROFILES.forEach(p => { zeroProfiles[p] = 0; });
+    const zeroCrops = {};
+    OFFICIAL_CROPS.forEach(c => { zeroCrops[c] = 0; });
+
+    return {
+      participantCount: 0,
+      susGame: {
+        average: null,
+        benchmark: isEn ? "Awaiting responses" : "A aguardar respostas",
+        itemsAvg: new Array(10).fill(0)
+      },
+      susSim: {
+        average: null,
+        benchmark: isEn ? "Awaiting responses" : "A aguardar respostas",
+        itemsAvg: new Array(10).fill(0)
+      },
+      nps: {
+        average: null,
+        positivePercent: 0,
+        counts: {
+          "Extremamente provável": 0,
+          "Muito provável": 0,
+          "Moderavelmente provável": 0,
+          "Pouco Provável": 0,
+          "Nada provável": 0
+        },
+        total: 0
+      },
+      wordsGame: [],
+      wordsSim: [],
+      gamePedagogy: {
+        q7: 0,
+        q8: 0,
+        q9: 0,
+        q10: 0,
+        q11: 0,
+        q12: 0
+      },
+      simModules: {
+        q15: 0,
+        q16: 0,
+        q17: 0,
+        q18: 0,
+        q19: 0,
+        q20: 0,
+        q21: 0,
+        q22: 0,
+        q23: 0
+      },
+      demographics: {
+        profiles: zeroProfiles,
+        crops: zeroCrops,
+        ages: {},
+        digitalComfortAvg: null
+      },
+      qualitativeFeedback: {
+        simSuggestions: [],
+        finalSuggestions: []
+      }
     };
   }
 
@@ -231,7 +713,7 @@ window.ResultsDashboard = (function () {
       sim: "1882859537",    // Questionário 2: Simulador 3D (Virmedex)
       global: "914346842"   // Questionário 3: Avaliação Global (NPS + Síntese)
     },
-    autoRefreshSeconds: 30
+    autoRefreshSeconds: 10
   };
 
   // Estado interno
@@ -242,7 +724,8 @@ window.ResultsDashboard = (function () {
     lastUpdated: null,
     activeTabFilter: "all",
     activeWordCloudTool: "game", // "game" ou "sim"
-    metrics: null,
+    metrics: getZeroMetrics(),
+    kpis: null, // dados reais (filtrados) dos 4 cartões de resumo
     charts: {},
     refreshTimer: null
   };
@@ -253,6 +736,7 @@ window.ResultsDashboard = (function () {
   function init() {
     loadConfig();
     bindEvents();
+    renderAllDashboardMetrics();
     fetchData();
   }
 
@@ -498,23 +982,28 @@ window.ResultsDashboard = (function () {
 
     const sheetId = state.config.spreadsheetId ? state.config.spreadsheetId.trim() : "";
 
-    // Se não tiver ID definido, utilizar imediatamente o conjunto de demonstração
+    // Se não tiver ID definido, manter o estado a zeros (sem dados de demonstração)
     if (!sheetId) {
-      loadDemoData();
+      state.metrics = getZeroMetrics();
+      state.kpis = null;
+      state.isLive = false;
+      state.isWaitingAnswers = true;
       finishFetch(isManualRefresh, false);
       return;
     }
 
     try {
       const gids = state.config.tabGids;
-      const gameUrl = buildTabUrl(sheetId, gids.game, "0");
-      const simUrl = gids.sim ? buildTabUrl(sheetId, gids.sim) : null;
-      const globalUrl = gids.global ? buildTabUrl(sheetId, gids.global) : null;
+      const bust = `&_t=${Date.now()}`; // evita respostas em cache do "Publicar na Web"
+      const gameUrl = buildTabUrl(sheetId, gids.game, "0") + bust;
+      const simUrl = gids.sim ? buildTabUrl(sheetId, gids.sim) + bust : null;
+      const globalUrl = gids.global ? buildTabUrl(sheetId, gids.global) + bust : null;
+      const noStore = { cache: "no-store" };
 
       const [gameRes, simRes, globalRes] = await Promise.all([
-        fetch(gameUrl),
-        simUrl ? fetch(simUrl).catch(() => null) : Promise.resolve(null),
-        globalUrl ? fetch(globalUrl).catch(() => null) : Promise.resolve(null)
+        fetch(gameUrl, noStore),
+        simUrl ? fetch(simUrl, noStore).catch(() => null) : Promise.resolve(null),
+        globalUrl ? fetch(globalUrl, noStore).catch(() => null) : Promise.resolve(null)
       ]);
 
       if (!gameRes || !gameRes.ok) {
@@ -525,26 +1014,33 @@ window.ResultsDashboard = (function () {
       const simCsv = simRes && simRes.ok ? await simRes.text() : "";
       const globalCsv = globalRes && globalRes.ok ? await globalRes.text() : "";
 
-      const rawGameRows = parseCSV(gameCsv);
-      const rawSimRows = simCsv ? parseCSV(simCsv) : [];
-      const rawGlobalRows = globalCsv ? parseCSV(globalCsv) : [];
+      // Regra Global de Filtragem: apenas códigos FG2-PT01..FG2-PT50 (exclui sufixo -MD do moderador)
+      const game = filterValidParticipantRows(parseCSV(gameCsv));
+      const sim = filterValidParticipantRows(simCsv ? parseCSV(simCsv) : []);
+      const global = filterValidParticipantRows(globalCsv ? parseCSV(globalCsv) : []);
 
-      // Validar se há respostas (pelo menos 1 linha além do cabeçalho)
-      if (rawGameRows.length <= 1) {
-        console.info("ℹ️ Folha conectada com sucesso aos 3 separadores! A exibir pré-visualização até que a 1ª resposta seja submetida.");
-        loadDemoData();
+      // Dados dos 4 cartões de resumo calculados sempre a partir dos dados reais filtrados
+      state.kpis = computeKpis(game, sim, global);
+
+      const hasValidAnswers = game.data.length + sim.data.length + global.data.length > 0;
+      if (!hasValidAnswers) {
+        state.metrics = getZeroMetrics();
         state.isLive = true;
         state.isWaitingAnswers = true;
       } else {
-        processRealData(rawGameRows, rawSimRows, rawGlobalRows);
+        processRealData(
+          [game.headers, ...game.data],
+          [sim.headers, ...sim.data],
+          [global.headers, ...global.data]
+        );
         state.isLive = true;
         state.isWaitingAnswers = false;
       }
 
       finishFetch(isManualRefresh, true);
     } catch (err) {
-      console.warn("⚠️ Não foi possível obter dados em tempo real do Google Sheets. A utilizar dados de demonstração.", err);
-      loadDemoData();
+      console.warn("⚠️ Não foi possível obter dados em tempo real do Google Sheets. A manter painel a zeros.", err);
+      state.metrics = getZeroMetrics();
       state.isLive = false;
       state.isWaitingAnswers = false;
       finishFetch(isManualRefresh, false, err.message);
@@ -561,17 +1057,18 @@ window.ResultsDashboard = (function () {
     renderAllDashboardMetrics();
 
     if (isManual) {
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
       const msg = state.isLive && state.isWaitingAnswers
-        ? "Google Sheets conectado aos 3 separadores! A aguardar primeiras respostas dos participantes."
+        ? (isEn ? "Google Sheets connected! Awaiting participant responses." : "Google Sheets conectado aos 3 separadores! A aguardar primeiras respostas dos participantes.")
         : state.isLive
-        ? `Resultados sincronizados em tempo real (${state.metrics.participantCount} respostas)`
-        : "A exibir dados de demonstração da 2ª Sessão";
+        ? (isEn ? `Results synced in real-time (${state.kpis ? state.kpis.submissionCodes.size : 0} participants with responses)` : `Resultados sincronizados em tempo real (${state.kpis ? state.kpis.submissionCodes.size : 0} participantes com respostas)`)
+        : (isEn ? "Google Sheets connection pending. Dashboard at zeros." : "Sincronização pendente. Painel a zeros.");
       showToast(msg, state.isLive ? "success" : "info");
     }
 
-    // Agendar próximo auto-refresh
+    // Agendar próximo auto-refresh a cada 10 segundos
     if (state.refreshTimer) clearTimeout(state.refreshTimer);
-    if (state.isLive && state.config.autoRefreshSeconds > 0) {
+    if (state.config.spreadsheetId && state.config.autoRefreshSeconds > 0) {
       state.refreshTimer = setTimeout(() => {
         fetchData(false);
       }, state.config.autoRefreshSeconds * 1000);
@@ -598,7 +1095,7 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Atualiza o badge de estado de ligação (Ao Vivo vs Modo Demonstração)
+   * Atualiza o badge de estado de ligação
    */
   function updateConnectionBadge() {
     const badge = document.getElementById("results-live-status-badge");
@@ -627,10 +1124,10 @@ window.ResultsDashboard = (function () {
         <span>${isEn ? "Google Sheets Connected (Real-Time)" : "Google Sheets Conectado (Em Tempo Real)"}</span>
       `;
     } else {
-      badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs";
+      badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs";
       badge.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-        <span>${isEn ? "Demo Mode (Preview Data)" : "Modo Demonstração (Dados de Pré-Visualização)"}</span>
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span>${isEn ? "Sync Pending (Awaiting Data)" : "Sincronização Pendente (Aguardando Dados)"}</span>
       `;
     }
   }
@@ -724,6 +1221,22 @@ window.ResultsDashboard = (function () {
   /**
    * Processa os dados reais lidos via CSV das 3 abas
    */
+  /**
+   * Extrai a média Likert (1 a 5) de uma coluna ignorando valores vazios ou inválidos (0 se sem dados)
+   */
+  function extractLikertAverage(rows, colIdx) {
+    if (colIdx === -1 || !rows || !rows.length) return 0;
+    const vals = rows
+      .map(r => parseLikertStrict(r[colIdx]))
+      .filter(v => v !== null);
+    if (!vals.length) return 0;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return parseFloat((sum / vals.length).toFixed(1));
+  }
+
+  /**
+   * Processa os dados reais lidos via CSV das 3 abas
+   */
   function processRealData(gameRows, simRows, globalRows) {
     const gameHeaders = gameRows[0] || [];
     const gameData = gameRows.slice(1);
@@ -735,146 +1248,177 @@ window.ResultsDashboard = (function () {
     const globalData = globalRows.slice(1);
 
     // Mapear índices de colunas do Separador 1 (Game + Demografia)
-    const idxProfile = findColIndex(gameHeaders, /perfil|profissão|profissao/i);
-    const idxAge = findColIndex(gameHeaders, /idade/i);
-    const idxGender = findColIndex(gameHeaders, /género|genero|sexo/i);
-    const idxCrops = findColIndex(gameHeaders, /cultura/i);
-    const idxComfort = findColIndex(gameHeaders, /confortável|confortavel|digital/i);
-    const idxQ7 = findColIndex(gameHeaders, /Q7/i);
-    const idxQ8 = findColIndex(gameHeaders, /Q8/i);
-    const idxQ9 = findColIndex(gameHeaders, /Q9/i);
-    const idxQ10 = findColIndex(gameHeaders, /Q10/i);
-    const idxQ11 = findColIndex(gameHeaders, /Q11/i);
-    const idxQ12 = findColIndex(gameHeaders, /Q12/i);
+    const idxProfile = findColIndex(gameHeaders, /^\s*Q1\b|perfil|profissão|profissao/i);
+    const idxAge = findColIndex(gameHeaders, /^\s*Q2\b|idade/i);
+    const idxGender = findColIndex(gameHeaders, /^\s*Q3\b|género|genero|sexo/i);
+    const idxCrops = findColIndex(gameHeaders, /^\s*Q5\b|cultura/i);
+    const idxComfort = findColIndex(gameHeaders, /^\s*Q6\b|confortável|confortavel|digital/i);
+    const idxQ7 = findColIndex(gameHeaders, /^\s*Q7\b/i);
+    const idxQ8 = findColIndex(gameHeaders, /^\s*Q8\b/i);
+    const idxQ9 = findColIndex(gameHeaders, /^\s*Q9\b/i);
+    const idxQ10 = findColIndex(gameHeaders, /^\s*Q10\b/i);
+    const idxQ11 = findColIndex(gameHeaders, /^\s*Q11\b/i);
+    const idxQ12 = findColIndex(gameHeaders, /^\s*Q12\b/i);
     const idxWordsGame = findColIndex(gameHeaders, /3 palavras|palavras/i);
 
     // Encontrar os 10 itens SUS do Game (Q13)
+    const reQ13 = /^\s*Q13\s*[.):\-]/i;
     const susGameColIndices = [];
     gameHeaders.forEach((h, i) => {
-      if (h.includes("Q13") || (h.includes("SUS") && h.includes("Game"))) {
+      if (reQ13.test(String(h || "")) || (h.includes("SUS") && h.includes("Game"))) {
         susGameColIndices.push(i);
       }
     });
 
     // Mapear índices de colunas do Separador 2 (Simulador)
-    const idxQ15 = findColIndex(simHeaders, /Q15/i);
-    const idxQ16 = findColIndex(simHeaders, /Q16/i);
-    const idxQ17 = findColIndex(simHeaders, /Q17/i);
-    const idxQ18 = findColIndex(simHeaders, /Q18/i);
-    const idxQ19 = findColIndex(simHeaders, /Q19/i);
-    const idxQ20 = findColIndex(simHeaders, /Q20/i);
-    const idxQ21 = findColIndex(simHeaders, /Q21/i);
-    const idxQ22 = findColIndex(simHeaders, /Q22/i);
-    const idxQ23 = findColIndex(simHeaders, /Q23/i);
-    const idxQ25 = findColIndex(simHeaders, /Q25|confuso|falta/i);
+    const idxQ15 = findColIndex(simHeaders, /^\s*Q15\b/i);
+    const idxQ16 = findColIndex(simHeaders, /^\s*Q16\b/i);
+    const idxQ17 = findColIndex(simHeaders, /^\s*Q17\b/i);
+    const idxQ18 = findColIndex(simHeaders, /^\s*Q18\b/i);
+    const idxQ19 = findColIndex(simHeaders, /^\s*Q19\b/i);
+    const idxQ20 = findColIndex(simHeaders, /^\s*Q20\b/i);
+    const idxQ21 = findColIndex(simHeaders, /^\s*Q21\b/i);
+    const idxQ22 = findColIndex(simHeaders, /^\s*Q22\b/i);
+    const idxQ23 = findColIndex(simHeaders, /^\s*Q23\b/i);
+    const idxQ25 = findColIndex(simHeaders, /^\s*Q25\b|confuso|falta/i);
     const idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
 
+    const reQ24 = /^\s*Q24\s*[.):\-]/i;
     const susSimColIndices = [];
     simHeaders.forEach((h, i) => {
-      if (h.includes("Q24") || (h.includes("SUS") && h.includes("Simulador"))) {
+      if (reQ24.test(String(h || "")) || (h.includes("SUS") && h.includes("Simulador"))) {
         susSimColIndices.push(i);
       }
     });
 
     // Mapear índices de colunas do Separador 3 (Global)
-    const idxQ26 = findColIndex(globalHeaders, /Q26/i);
-    const idxQ27 = findColIndex(globalHeaders, /Q27/i);
-    const idxQ28 = findColIndex(globalHeaders, /Q28/i);
-    const idxQ29 = findColIndex(globalHeaders, /Q29|recomendar|probabilidade/i);
-    const idxQ30 = findColIndex(globalHeaders, /Q30|erros|falhas|melhorias/i);
+    const idxQ26 = findColIndex(globalHeaders, /^\s*Q26\b/i);
+    const idxQ27 = findColIndex(globalHeaders, /^\s*Q27\b/i);
+    const idxQ28 = findColIndex(globalHeaders, /^\s*Q28\b/i);
+    let idxQ29 = findColIndex(globalHeaders, /^\s*Q29\s*[.):\-]/i);
+    if (idxQ29 === -1) idxQ29 = findColIndex(globalHeaders, /Q29/i);
+    const idxQ30 = findColIndex(globalHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
     const idxGlobalCode = findColIndex(globalHeaders, /código|codigo|participante/i);
 
-    // Processamento SUS do Serious Game
-    const gameSusArrays = gameData.map(row => {
-      if (susGameColIndices.length >= 10) {
-        return susGameColIndices.slice(0, 10).map(ci => parseLikertNumber(row[ci]));
-      }
-      return [4, 2, 4, 2, 4, 2, 4, 2, 4, 2];
-    });
+    // Processamento SUS do Serious Game (apenas participantes válidos com os 10 itens completos)
+    const gameSusArrays = [];
+    if (susGameColIndices.length >= 10) {
+      const itemCols = susGameColIndices.slice(0, 10);
+      gameData.forEach(row => {
+        const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+        if (vals.every(v => v !== null)) {
+          gameSusArrays.push(vals);
+        }
+      });
+    }
     const susGame = calculateSusFromResponses(gameSusArrays);
 
-    // Processamento SUS do Simulador
-    const simSusArrays = simData.map(row => {
-      if (susSimColIndices.length >= 10) {
-        return susSimColIndices.slice(0, 10).map(ci => parseLikertNumber(row[ci]));
-      }
-      return [4, 2, 5, 2, 4, 2, 4, 2, 4, 2];
-    });
+    // Processamento SUS do Simulador (apenas participantes válidos com os 10 itens completos)
+    const simSusArrays = [];
+    if (susSimColIndices.length >= 10) {
+      const itemCols = susSimColIndices.slice(0, 10);
+      simData.forEach(row => {
+        const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+        if (vals.every(v => v !== null)) {
+          simSusArrays.push(vals);
+        }
+      });
+    }
     const susSim = calculateSusFromResponses(simSusArrays);
 
     // Processamento Q29 Recomendação do Questionário Global
-    const q29Responses = globalData.map(row => {
-      return idxQ29 !== -1 && row[idxQ29] ? row[idxQ29] : "Extremamente provável";
-    });
+    const q29Responses = [];
+    if (idxQ29 !== -1) {
+      globalData.forEach(row => {
+        if (row[idxQ29] && String(row[idxQ29]).trim()) {
+          q29Responses.push(row[idxQ29]);
+        }
+      });
+    }
     const nps = calculateQ29Recommendation(q29Responses);
 
     // Nuvens de Palavras
-    const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? r[idxWordsGame] : "");
-    const rawWordsSim = simData.map(r => idxWordsSim !== -1 ? r[idxWordsSim] : "");
+    const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? r[idxWordsGame] : "").filter(Boolean);
+    const rawWordsSim = simData.map(r => idxWordsSim !== -1 ? r[idxWordsSim] : "").filter(Boolean);
     const wordsGame = extractWordFrequencies(rawWordsGame);
     const wordsSim = extractWordFrequencies(rawWordsSim);
 
-    // Demografia
+    // Demografia: inicializar todos os 8 perfis e 6 culturas a zero
     const profiles = {};
+    OFFICIAL_PROFILES.forEach(p => { profiles[p] = 0; });
     const crops = {};
+    OFFICIAL_CROPS.forEach(c => { crops[c] = 0; });
     const ages = {};
     let digitalTotal = 0;
     let digitalCount = 0;
 
     gameData.forEach(row => {
-      const rawP = idxProfile !== -1 && row[idxProfile] ? row[idxProfile].trim() : "Outra";
-      const p = normalizeProfile(rawP);
-      profiles[p] = (profiles[p] || 0) + 1;
-
-      const a = idxAge !== -1 && row[idxAge] ? row[idxAge].trim() : "30-45 anos";
-      ages[a] = (ages[a] || 0) + 1;
-
-      if (idxComfort !== -1 && row[idxComfort]) {
-        const c = parseDigitalComfort(row[idxComfort]);
-        digitalTotal += c;
-        digitalCount++;
+      // Q1 Perfil Profissional
+      if (idxProfile !== -1 && row[idxProfile] && String(row[idxProfile]).trim()) {
+        const p = normalizeProfile(row[idxProfile]);
+        profiles[p] = (profiles[p] || 0) + 1;
       }
 
-      if (idxCrops !== -1 && row[idxCrops]) {
-        const cropItems = row[idxCrops].split(/[,;]/);
+      // Idade (Q2)
+      if (idxAge !== -1 && row[idxAge] && String(row[idxAge]).trim()) {
+        const a = row[idxAge].trim();
+        ages[a] = (ages[a] || 0) + 1;
+      }
+
+      // Q6 Literacia Digital
+      if (idxComfort !== -1 && row[idxComfort] && String(row[idxComfort]).trim()) {
+        const c = parseDigitalComfort(row[idxComfort]);
+        if (c !== null) {
+          digitalTotal += c;
+          digitalCount++;
+        }
+      }
+
+      // Q5 Culturas Acompanhadas (múltipla escolha separada por vírgula)
+      if (idxCrops !== -1 && row[idxCrops] && String(row[idxCrops]).trim()) {
+        const cropItems = String(row[idxCrops]).split(/[,;]/);
+        const seenInRow = new Set();
         cropItems.forEach(c => {
           const normCrop = normalizeCrop(c);
-          if (normCrop) crops[normCrop] = (crops[normCrop] || 0) + 1;
+          if (normCrop && !seenInRow.has(normCrop)) {
+            seenInRow.add(normCrop);
+            crops[normCrop] = (crops[normCrop] || 0) + 1;
+          }
         });
       }
     });
 
-    // Médias Pedagógicas Game
+    // Médias Pedagógicas Game (0 se sem respostas)
     const gamePedagogy = {
-      q7: average(gameData.map(r => idxQ7 !== -1 ? parseLikertNumber(r[idxQ7]) : 4)),
-      q8: average(gameData.map(r => idxQ8 !== -1 ? parseLikertNumber(r[idxQ8]) : 4)),
-      q9: average(gameData.map(r => idxQ9 !== -1 ? parseLikertNumber(r[idxQ9]) : 4)),
-      q10: average(gameData.map(r => idxQ10 !== -1 ? parseLikertNumber(r[idxQ10]) : 5)),
-      q11: average(gameData.map(r => idxQ11 !== -1 ? parseLikertNumber(r[idxQ11]) : 4)),
-      q12: average(gameData.map(r => idxQ12 !== -1 ? parseLikertNumber(r[idxQ12]) : 4))
+      q7: extractLikertAverage(gameData, idxQ7),
+      q8: extractLikertAverage(gameData, idxQ8),
+      q9: extractLikertAverage(gameData, idxQ9),
+      q10: extractLikertAverage(gameData, idxQ10),
+      q11: extractLikertAverage(gameData, idxQ11),
+      q12: extractLikertAverage(gameData, idxQ12)
     };
 
-    // Médias Técnicas Simulador
+    // Médias Técnicas Simulador (0 se sem respostas)
     const simModules = {
-      q15: average(simData.map(r => idxQ15 !== -1 ? parseLikertNumber(r[idxQ15]) : 4)),
-      q16: average(simData.map(r => idxQ16 !== -1 ? parseLikertNumber(r[idxQ16]) : 4)),
-      q17: average(simData.map(r => idxQ17 !== -1 ? parseLikertNumber(r[idxQ17]) : 5)),
-      q18: average(simData.map(r => idxQ18 !== -1 ? parseLikertNumber(r[idxQ18]) : 5)),
-      q19: average(simData.map(r => idxQ19 !== -1 ? parseLikertNumber(r[idxQ19]) : 4)),
-      q20: average(simData.map(r => idxQ20 !== -1 ? parseLikertNumber(r[idxQ20]) : 5)),
-      q21: average(simData.map(r => idxQ21 !== -1 ? parseLikertNumber(r[idxQ21]) : 4)),
-      q22: average(simData.map(r => idxQ22 !== -1 ? parseLikertNumber(r[idxQ22]) : 5)),
-      q23: average(simData.map(r => idxQ23 !== -1 ? parseLikertNumber(r[idxQ23]) : 4))
+      q15: extractLikertAverage(simData, idxQ15),
+      q16: extractLikertAverage(simData, idxQ16),
+      q17: extractLikertAverage(simData, idxQ17),
+      q18: extractLikertAverage(simData, idxQ18),
+      q19: extractLikertAverage(simData, idxQ19),
+      q20: extractLikertAverage(simData, idxQ20),
+      q21: extractLikertAverage(simData, idxQ21),
+      q22: extractLikertAverage(simData, idxQ22),
+      q23: extractLikertAverage(simData, idxQ23)
     };
 
     // Feedback Qualitativo
     const simSuggestions = simData
       .filter(r => idxQ25 !== -1 && r[idxQ25] && r[idxQ25].trim().length > 3)
-      .map(r => ({ code: r[1] || "P", text: r[idxQ25] }));
+      .map(r => ({ code: r[1] || "P", text: r[idxQ25].trim() }));
 
     const finalSuggestions = globalData
       .filter(r => idxQ30 !== -1 && r[idxQ30] && r[idxQ30].trim().length > 3)
-      .map(r => ({ code: r[idxGlobalCode] || r[1] || "P", text: r[idxQ30] }));
+      .map(r => ({ code: (idxGlobalCode !== -1 && r[idxGlobalCode]) || r[1] || "P", text: r[idxQ30].trim() }));
 
     state.metrics = {
       participantCount: Math.max(gameData.length, simData.length, globalData.length),
@@ -889,7 +1433,7 @@ window.ResultsDashboard = (function () {
         profiles,
         crops,
         ages,
-        digitalComfortAvg: digitalCount ? (digitalTotal / digitalCount).toFixed(1) : 3.8
+        digitalComfortAvg: digitalCount > 0 ? parseFloat((digitalTotal / digitalCount).toFixed(1)) : null
       },
       qualitativeFeedback: {
         simSuggestions,
@@ -914,9 +1458,9 @@ window.ResultsDashboard = (function () {
    */
   function parseLikertNumber(val) {
     if (typeof val === "number") return val;
-    if (!val) return 3;
+    if (!val) return null;
     const match = String(val).match(/\d+/);
-    return match ? parseInt(match[0], 10) : 3;
+    return match ? parseInt(match[0], 10) : null;
   }
 
   /**
@@ -924,8 +1468,11 @@ window.ResultsDashboard = (function () {
    * Formula: Odd items: (R - 1); Even items: (5 - R); Score = sum * 2.5
    */
   function calculateSusFromResponses(responsesArray) {
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const defaultBenchmark = isEn ? "Awaiting responses" : "A aguardar respostas";
+
     if (!responsesArray || !responsesArray.length) {
-      return { average: 75.0, benchmark: "Bom", itemsAvg: new Array(10).fill(4.0) };
+      return { average: null, benchmark: defaultBenchmark, itemsAvg: new Array(10).fill(0) };
     }
 
     const itemsSum = new Array(10).fill(0);
@@ -948,20 +1495,17 @@ window.ResultsDashboard = (function () {
       count++;
     });
 
-    const averageScore = count > 0 ? (totalScore / count) : 75.0;
-    const itemsAvg = itemsSum.map(s => count > 0 ? (s / count).toFixed(1) : 3.5);
+    if (count === 0) {
+      return { average: null, benchmark: defaultBenchmark, itemsAvg: new Array(10).fill(0) };
+    }
 
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    let benchmark = isEn ? "Good / Above Average" : "Bom / Acima da Média";
-    if (averageScore >= 85) benchmark = isEn ? "Excellent (Grade A)" : "Excelente (Classe A)";
-    else if (averageScore >= 80) benchmark = isEn ? "Excellent" : "Excelente";
-    else if (averageScore >= 68) benchmark = isEn ? "Good (Industry Average: 68)" : "Bom (Média da Indústria: 68)";
-    else if (averageScore >= 50) benchmark = isEn ? "Marginal / OK" : "Marginal / Razoável";
-    else benchmark = isEn ? "Unacceptable" : "Inaceitável";
+    const averageScore = totalScore / count;
+    const itemsAvg = itemsSum.map(s => parseFloat((s / count).toFixed(1)));
+    const roundedAvg = parseFloat(averageScore.toFixed(1));
 
     return {
-      average: parseFloat(averageScore.toFixed(1)),
-      benchmark,
+      average: roundedAvg,
+      benchmark: getSusLabel(roundedAvg, isEn),
       itemsAvg
     };
   }
@@ -1018,12 +1562,12 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Calcula média de array numérico
+   * Calcula média de array numérico (0 se sem valores válidos)
    */
   function average(arr) {
-    if (!arr || !arr.length) return 4.0;
-    const nums = arr.map(n => parseFloat(n)).filter(n => !isNaN(n));
-    if (!nums.length) return 4.0;
+    if (!arr || !arr.length) return 0;
+    const nums = arr.map(n => parseFloat(n)).filter(n => !isNaN(n) && n > 0);
+    if (!nums.length) return 0;
     const sum = nums.reduce((acc, curr) => acc + curr, 0);
     return parseFloat((sum / nums.length).toFixed(1));
   }
@@ -1035,23 +1579,8 @@ window.ResultsDashboard = (function () {
     if (!state.metrics) return;
     const m = state.metrics;
 
-    // 1. Atualizar Indicadores Principais (KPI Strip)
-    const kpiCount = document.getElementById("kpi-responses-count");
-    const kpiSusGame = document.getElementById("kpi-sus-game");
-    const kpiSusSim = document.getElementById("kpi-sus-sim");
-    const kpiNps = document.getElementById("kpi-nps");
-    const kpiNpsUnit = document.getElementById("kpi-nps-unit");
-
-    if (kpiCount) kpiCount.textContent = m.participantCount || 0;
-    if (kpiSusGame) kpiSusGame.textContent = m.susGame?.average || "78.4";
-    if (kpiSusSim) kpiSusSim.textContent = m.susSim?.average || "81.6";
-    if (kpiNps) kpiNps.textContent = `${m.nps?.average || "4.7"}`;
-    if (kpiNpsUnit) kpiNpsUnit.textContent = `/ 5.0 (${m.nps?.positivePercent || 94}%)`;
-
-    const susGameBench = document.getElementById("kpi-sus-game-bench");
-    const susSimBench = document.getElementById("kpi-sus-sim-bench");
-    if (susGameBench) susGameBench.textContent = m.susGame?.benchmark || "Bom / Acima da Média";
-    if (susSimBench) susSimBench.textContent = m.susSim?.benchmark || "Excelente";
+    // 1. Atualizar Indicadores Principais (KPI Strip - 4 cartões de resumo)
+    renderKpiCards();
 
     // 2. Renderizar Nuvem de Palavras
     renderWordCloud();
@@ -1107,8 +1636,10 @@ window.ResultsDashboard = (function () {
     // Se a biblioteca WordCloud2 estiver disponível no ecrã
     if (window.WordCloud) {
       // Ajustar resolução interna do canvas para alta definição
-      const rect = container.getBoundingClientRect();
-      const width = Math.max(rect.width - 24, 300);
+      const rect = (typeof container.getBoundingClientRect === "function")
+        ? container.getBoundingClientRect()
+        : { width: 380, height: 280 };
+      const width = Math.max((rect.width || 380) - 24, 300);
       const height = 280;
 
       canvas.width = width;
@@ -1182,62 +1713,104 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Renderização da Régua Visual SUS com Posicionamento dos Resultados Finais
+   * Renderização da Secção SUS Comparativa e Régua Graduada (Brooke, 1996)
+   * Consome diretamente as variáveis de estado já calculadas para os cartões de resumo (Q13 e Q24)
    */
   function renderSusBenchmarkGauge() {
-    if (!state.metrics) return;
-    const m = state.metrics;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
-    const gameScore = m.susGame?.average ? parseFloat(m.susGame.average) : 78.4;
-    const simScore = m.susSim?.average ? parseFloat(m.susSim.average) : 81.6;
+    // 2. Cartões de Resumo Comparativo (Reaproveitamento de Dados)
+    const k = state.kpis;
+    const m = state.metrics;
 
-    // 1. Atualizar Cartões de Resultado Final
+    const resolveScore = (kpiObj, metricObj) => {
+      if (kpiObj && kpiObj.average !== null && kpiObj.average !== undefined) {
+        return parseFloat(kpiObj.average);
+      }
+      if (metricObj && metricObj.average !== null && metricObj.average !== undefined) {
+        return parseFloat(metricObj.average);
+      }
+      return null;
+    };
+
+    const gameScore = resolveScore(k?.susGame, m?.susGame);
+    const simScore = resolveScore(k?.susSim, m?.susSim);
+
+    const hasGame = gameScore !== null;
+    const hasSim = simScore !== null;
+
+    // A. Cartão Esquerdo: Serious Game (Tallentto)
     const cardGameScore = document.getElementById("sus-card-game-score");
     const cardGameBench = document.getElementById("sus-card-game-bench");
     const cardGameDiff = document.getElementById("sus-card-game-diff");
 
+    if (cardGameScore) cardGameScore.textContent = hasGame ? round1(gameScore).toFixed(1) : "—";
+    if (cardGameBench) cardGameBench.textContent = getSusLabel(gameScore, isEn);
+
+    // B. Cartão Direito: Simulador RENOVATE (Virmedex)
     const cardSimScore = document.getElementById("sus-card-sim-score");
     const cardSimBench = document.getElementById("sus-card-sim-bench");
     const cardSimDiff = document.getElementById("sus-card-sim-diff");
 
-    if (cardGameScore) cardGameScore.textContent = gameScore.toFixed(1);
-    if (cardGameBench) cardGameBench.textContent = m.susGame?.benchmark || (isEn ? "Good / Above Average" : "Bom / Acima da Média");
-    if (cardGameDiff) {
-      const diffGame = (gameScore - 68.0).toFixed(1);
-      const sign = diffGame >= 0 ? "+" : "";
-      cardGameDiff.textContent = `${sign}${diffGame} ${isEn ? "vs Global Avg (68.0)" : "vs Média Mundial"}`;
+    if (cardSimScore) cardSimScore.textContent = hasSim ? round1(simScore).toFixed(1) : "—";
+    if (cardSimBench) cardSimBench.textContent = getSusLabel(simScore, isEn);
+
+    // Badge de Comparação (Verde se positivo, Vermelho se negativo face a 68.0)
+    function updateSusBadge(el, score) {
+      if (!el) return;
+      el.className = "inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full border transition-colors";
+      if (score !== null) {
+        const delta = round1(score - 68.0);
+        const sign = delta >= 0 ? "+" : "";
+        el.textContent = `${sign}${delta.toFixed(1)} ${isEn ? "vs Global Avg" : "vs Média Mundial"}`;
+        if (delta >= 0) {
+          el.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-300");
+        } else {
+          el.classList.add("bg-rose-100", "text-rose-800", "border-rose-300");
+        }
+      } else {
+        el.textContent = `— ${isEn ? "vs Global Avg" : "vs Média Mundial"}`;
+        el.classList.add("bg-slate-100", "text-slate-500", "border-slate-200");
+      }
     }
 
-    if (cardSimScore) cardSimScore.textContent = simScore.toFixed(1);
-    if (cardSimBench) cardSimBench.textContent = m.susSim?.benchmark || (isEn ? "Excellent (Grade A)" : "Excelente (Classe A)");
-    if (cardSimDiff) {
-      const diffSim = (simScore - 68.0).toFixed(1);
-      const sign = diffSim >= 0 ? "+" : "";
-      cardSimDiff.textContent = `${sign}${diffSim} ${isEn ? "vs Global Avg (68.0)" : "vs Média Mundial"}`;
-    }
+    updateSusBadge(cardGameDiff, gameScore);
+    updateSusBadge(cardSimDiff, simScore);
 
-    // 2. Atualizar Pinos Indicadores na Régua
+    // 3. Gráfico da Escala SUS (Barra Horizontal) - Pinos Dinâmicos
     const pinGame = document.getElementById("sus-pin-game");
     const pinSim = document.getElementById("sus-pin-sim");
     const pinGameText = document.getElementById("sus-pin-game-text");
     const pinSimText = document.getElementById("sus-pin-sim-text");
 
-    const gamePos = Math.min(Math.max(gameScore, 4), 96);
-    const simPos = Math.min(Math.max(simScore, 4), 96);
-
     if (pinGame) {
-      pinGame.style.left = `${gamePos}%`;
+      if (hasGame) {
+        pinGame.style.display = "flex";
+        pinGame.style.opacity = "1";
+        const clampedGame = Math.min(Math.max(gameScore, 0), 100);
+        pinGame.style.left = `${clampedGame}%`;
+      } else {
+        pinGame.style.display = "none";
+        pinGame.style.opacity = "0";
+      }
     }
     if (pinGameText) {
-      pinGameText.textContent = `Game: ${gameScore.toFixed(1)}`;
+      pinGameText.textContent = hasGame ? `Game: ${round1(gameScore).toFixed(1)}` : "—";
     }
 
     if (pinSim) {
-      pinSim.style.left = `${simPos}%`;
+      if (hasSim) {
+        pinSim.style.display = "flex";
+        pinSim.style.opacity = "1";
+        const clampedSim = Math.min(Math.max(simScore, 0), 100);
+        pinSim.style.left = `${clampedSim}%`;
+      } else {
+        pinSim.style.display = "none";
+        pinSim.style.opacity = "0";
+      }
     }
     if (pinSimText) {
-      pinSimText.textContent = `Simulador: ${simScore.toFixed(1)}`;
+      pinSimText.textContent = hasSim ? `Simulador: ${round1(simScore).toFixed(1)}` : "—";
     }
   }
 
@@ -1278,8 +1851,12 @@ window.ResultsDashboard = (function () {
       "10. Fácil Iniciação"
     ];
 
-    const gameItems = state.metrics.susGame?.itemsAvg || [4.4, 1.8, 4.6, 1.6, 4.5, 1.7, 4.6, 1.5, 4.5, 1.8];
-    const simItems = state.metrics.susSim?.itemsAvg || [4.5, 1.6, 4.7, 1.5, 4.6, 1.5, 4.5, 1.6, 4.6, 1.6];
+    const gameItems = (state.metrics.susGame?.average !== null && state.metrics.susGame?.itemsAvg)
+      ? state.metrics.susGame.itemsAvg
+      : new Array(10).fill(0);
+    const simItems = (state.metrics.susSim?.average !== null && state.metrics.susSim?.itemsAvg)
+      ? state.metrics.susSim.itemsAvg
+      : new Array(10).fill(0);
 
     state.charts.susComparison = new Chart(ctx, {
       type: "bar",
@@ -1323,7 +1900,7 @@ window.ResultsDashboard = (function () {
         },
         scales: {
           y: {
-            min: 1,
+            min: 0,
             max: 5,
             ticks: { stepSize: 1, font: { size: 10 } },
             title: { display: true, text: isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)", font: { size: 11, weight: "bold" } }
@@ -1348,7 +1925,7 @@ window.ResultsDashboard = (function () {
     }
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const p = state.metrics.gamePedagogy || { q7: 4.4, q8: 3.9, q9: 4.3, q10: 4.6, q11: 4.5, q12: 4.3 };
+    const p = state.metrics.gamePedagogy || { q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0 };
 
     state.charts.gamePedagogy = new Chart(ctx, {
       type: "radar",
@@ -1410,7 +1987,7 @@ window.ResultsDashboard = (function () {
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const s = state.metrics.simModules || {
-      q15: 4.1, q16: 4.2, q17: 4.5, q18: 4.7, q19: 4.0, q20: 4.6, q21: 4.4, q22: 4.5, q23: 4.4
+      q15: 0, q16: 0, q17: 0, q18: 0, q19: 0, q20: 0, q21: 0, q22: 0, q23: 0
     };
 
     state.charts.simModules = new Chart(ctx, {
@@ -1455,6 +2032,7 @@ window.ResultsDashboard = (function () {
         },
         scales: {
           x: {
+            beginAtZero: true,
             min: 0,
             max: 5,
             ticks: { stepSize: 1, font: { size: 10 } }
@@ -1480,15 +2058,32 @@ window.ResultsDashboard = (function () {
     if (ctxProfiles && window.Chart) {
       if (state.charts.demoProfiles) state.charts.demoProfiles.destroy();
 
-      const pEntries = OFFICIAL_PROFILES
-        .map(p => ({
-          label: isEn ? (PROFILE_TRANSLATIONS[p] || p) : p,
-          count: demo.profiles[p] || 0
-        }))
-        .filter(item => item.count > 0);
+      const totalProfiles = OFFICIAL_PROFILES.reduce((acc, p) => acc + (demo.profiles[p] || 0), 0);
+      const isZero = totalProfiles === 0;
 
-      const pLabels = pEntries.length ? pEntries.map(e => e.label) : [isEn ? "Farmer / Producer" : "Agricultor(a) / Produtor(a)"];
-      const pData = pEntries.length ? pEntries.map(e => e.count) : [1];
+      let pLabels, pData, pColors;
+      if (isZero) {
+        pLabels = [isEn ? "Awaiting responses" : "A aguardar respostas"];
+        pData = [1];
+        pColors = ["#E2E8F0"];
+      } else {
+        const activeEntries = OFFICIAL_PROFILES
+          .map(p => {
+            const count = demo.profiles[p] || 0;
+            const pct = Math.round((count / totalProfiles) * 100);
+            return {
+              label: isEn ? (PROFILE_TRANSLATIONS[p] || p) : p,
+              count,
+              pct
+            };
+          })
+          .filter(e => e.count > 0);
+
+        pLabels = activeEntries.map(e => `${e.label} (${e.pct}%)`);
+        pData = activeEntries.map(e => e.count);
+        const palette = ["#F5B842", "#0F172A", "#059669", "#2563EB", "#D97706", "#8B5CF6", "#06B6D4", "#64748B"];
+        pColors = activeEntries.map((_, i) => palette[i % palette.length]);
+      }
 
       state.charts.demoProfiles = new Chart(ctxProfiles, {
         type: "doughnut",
@@ -1496,7 +2091,7 @@ window.ResultsDashboard = (function () {
           labels: pLabels,
           datasets: [{
             data: pData,
-            backgroundColor: ["#F5B842", "#0F172A", "#059669", "#2563EB", "#D97706", "#8B5CF6", "#06B6D4", "#64748B"],
+            backgroundColor: pColors,
             borderWidth: 2,
             borderColor: "#FFFFFF"
           }]
@@ -1508,13 +2103,25 @@ window.ResultsDashboard = (function () {
             legend: {
               position: "bottom",
               labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  if (isZero) {
+                    return isEn ? " Awaiting responses: 0" : " A aguardar respostas: 0";
+                  }
+                  const val = context.raw || 0;
+                  const pct = Math.round((val / totalProfiles) * 100);
+                  return ` ${context.label}: ${val} (${pct}%)`;
+                }
+              }
             }
           }
         }
       });
     }
 
-    // Gráfico de Culturas com Maior Representatividade (Q5 - Barras Horizontais)
+    // Gráfico de Culturas com Maior Representatividade (Q5 - Barras Horizontais Ordenadas Decrescente)
     const ctxCrops = document.getElementById("chart-demo-crops")?.getContext("2d");
     if (ctxCrops && window.Chart) {
       if (state.charts.demoCrops) state.charts.demoCrops.destroy();
@@ -1545,7 +2152,8 @@ window.ResultsDashboard = (function () {
           scales: {
             x: {
               beginAtZero: true,
-              ticks: { stepSize: 2, font: { size: 10 } }
+              suggestedMax: 5,
+              ticks: { stepSize: 1, precision: 0, font: { size: 10 } }
             },
             y: {
               ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" }
@@ -1558,12 +2166,17 @@ window.ResultsDashboard = (function () {
     // Atualizar Média de Literacia Digital (Q6)
     const digitalEl = document.getElementById("demo-digital-comfort");
     const digitalLabelEl = document.getElementById("demo-digital-comfort-label");
+    const hasComfort = demo.digitalComfortAvg !== null && demo.digitalComfortAvg !== undefined;
+
     if (digitalEl) {
-      digitalEl.textContent = `${demo.digitalComfortAvg || "3.8"} / 5.0`;
+      digitalEl.textContent = hasComfort ? `${parseFloat(demo.digitalComfortAvg).toFixed(1)} / 5.0` : "— / 5.0";
     }
     if (digitalLabelEl) {
-      digitalLabelEl.textContent = getComfortLevelLabel(demo.digitalComfortAvg || 3.8, isEn);
+      digitalLabelEl.textContent = hasComfort
+        ? getComfortLevelLabel(demo.digitalComfortAvg, isEn)
+        : (isEn ? "Awaiting responses" : "A aguardar respostas");
     }
+    renderDigitalScale(hasComfort ? Math.round(parseFloat(demo.digitalComfortAvg)) : null);
   }
 
   /**
@@ -1577,10 +2190,18 @@ window.ResultsDashboard = (function () {
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const n = state.metrics.nps;
-    const counts = n.counts || {};
+    const isZero = !n.total || n.total === 0;
 
-    const labels = OFFICIAL_Q29_OPTIONS.map(opt => isEn ? (Q29_TRANSLATIONS[opt] || opt) : opt);
-    const data = OFFICIAL_Q29_OPTIONS.map(opt => counts[opt] || 0);
+    let labels, data, colors;
+    if (isZero) {
+      labels = [isEn ? "Awaiting responses" : "A aguardar respostas"];
+      data = [1];
+      colors = ["#E2E8F0"];
+    } else {
+      labels = OFFICIAL_Q29_OPTIONS.map(opt => isEn ? (Q29_TRANSLATIONS[opt] || opt) : opt);
+      data = OFFICIAL_Q29_OPTIONS.map(opt => n.counts[opt] || 0);
+      colors = ["#059669", "#2563EB", "#F5B842", "#EA580C", "#DC2626"];
+    }
 
     state.charts.npsGauge = new Chart(ctx, {
       type: "doughnut",
@@ -1588,7 +2209,7 @@ window.ResultsDashboard = (function () {
         labels: labels,
         datasets: [{
           data: data,
-          backgroundColor: ["#059669", "#2563EB", "#F5B842", "#EA580C", "#DC2626"],
+          backgroundColor: colors,
           borderWidth: 2,
           borderColor: "#FFFFFF"
         }]
@@ -1604,6 +2225,9 @@ window.ResultsDashboard = (function () {
           tooltip: {
             callbacks: {
               label: function (context) {
+                if (isZero) {
+                  return isEn ? " Awaiting responses: 0" : " A aguardar respostas: 0";
+                }
                 const val = context.raw || 0;
                 const total = n.total || 1;
                 const pct = Math.round((val / total) * 100);
@@ -1617,7 +2241,9 @@ window.ResultsDashboard = (function () {
 
     const npsScoreEl = document.getElementById("nps-center-score");
     if (npsScoreEl) {
-      npsScoreEl.textContent = `${n.average} / 5.0 (${n.positivePercent}%)`;
+      npsScoreEl.textContent = isZero
+        ? "— / 5.0 (0%)"
+        : `${n.average.toFixed(1)} / 5.0 (${n.positivePercent}%)`;
     }
   }
 
@@ -1741,6 +2367,7 @@ window.ResultsDashboard = (function () {
     fetchData,
     onTabShown,
     resizeAllCharts,
-    setSectionFilter
+    setSectionFilter,
+    renderKpiCards
   };
 })();
