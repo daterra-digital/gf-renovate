@@ -51,6 +51,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Keep-Alive & Reconnect ao alternar separadores no browser
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    try {
+      if (typeof firebase !== "undefined" && firebase.database) {
+        firebase.database().goOnline();
+      }
+    } catch (e) {
+      console.warn("Aviso ao reconectar Firebase via visibilitychange no app.js:", e);
+    }
+  }
+});
+
 /**
  * Gestão de Tabs da SPA com suporte a Hash na URL (#live, #program, #fg1, #results)
  */

@@ -157,12 +157,20 @@ window.SubmissionsTracker = (function () {
    */
   function countValidFormSubmissions(rawNode) {
     if (!rawNode) return { count: 0, codes: [] };
-    const list = Array.isArray(rawNode) ? rawNode : (typeof rawNode === "object" ? Object.values(rawNode) : []);
-    if (!list.length) return { count: 0, codes: [] };
 
-    let rows = list;
+    let rows = [];
+    if (rawNode && typeof rawNode === "object" && Array.isArray(rawNode.data)) {
+      rows = rawNode.data;
+    } else if (Array.isArray(rawNode)) {
+      rows = rawNode;
+    } else if (typeof rawNode === "object") {
+      rows = Object.values(rawNode);
+    }
+
+    if (!rows.length) return { count: 0, codes: [] };
+
     // Se a primeira linha for cabeçalho
-    if (Array.isArray(rows[0]) && rows[0].some(c => /c[oó]digo|carimbo/i.test(String(c)))) {
+    if (Array.isArray(rows[0]) && rows[0].some(c => /c[oó]digo|carimbo|timestamp/i.test(String(c || "")))) {
       rows = rows.slice(1);
     }
 
@@ -173,8 +181,10 @@ window.SubmissionsTracker = (function () {
       if (!r) return;
       let code = null;
       if (typeof r === "object") {
-        if (r["Código de Participante"] || r["Código do Participante"] || r.code) {
-          code = r["Código de Participante"] || r["Código do Participante"] || r.code;
+        if (r._participantCode) {
+          code = r._participantCode;
+        } else if (r["Código de Participante"] || r["Código do Participante"] || r.code || r.userCode) {
+          code = r["Código de Participante"] || r["Código do Participante"] || r.code || r.userCode;
         } else if (Array.isArray(r)) {
           for (let i = 0; i < r.length; i++) {
             const s = String(r[i] || "").trim().toUpperCase();
@@ -182,14 +192,20 @@ window.SubmissionsTracker = (function () {
           }
         } else {
           for (const k of Object.keys(r)) {
-            if (/c[oó]digo/i.test(k)) { code = String(r[k] || ""); break; }
+            if (/c[oó]digo|participant|code/i.test(k)) { code = String(r[k] || ""); break; }
+          }
+          if (!code) {
+            for (const k of Object.keys(r)) {
+              const s = String(r[k] || "").trim().toUpperCase();
+              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+            }
           }
         }
       }
 
       if (code) {
         const clean = String(code).trim().toUpperCase();
-        if (!clean.endsWith("-MD") && (clean.startsWith("FG2-PT") || clean.startsWith("NS-PT"))) {
+        if (!clean.endsWith("-MD") && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
           if (!seenCodes.has(clean)) {
             seenCodes.add(clean);
             codes.push(clean);
@@ -198,7 +214,7 @@ window.SubmissionsTracker = (function () {
       }
     });
 
-    const totalCount = seenCodes.size > 0 ? seenCodes.size : rows.length;
+    const totalCount = seenCodes.size > 0 ? seenCodes.size : rows.filter(Boolean).length;
     return { count: totalCount, codes };
   }
 
@@ -218,6 +234,14 @@ window.SubmissionsTracker = (function () {
         firebase.initializeApp({ databaseURL: url });
       }
       const db = firebase.database();
+
+      // Monitor de Ligação WebSockets (.info/connected)
+      db.ref(".info/connected").on("value", snap => {
+        if (snap.val() === true) {
+          state.firebaseConnected = true;
+          state.isLive = true;
+        }
+      });
 
       // 1. /Logins (Amostra Total TT)
       db.ref("/Logins").on("value", snapshot => {
@@ -274,6 +298,63 @@ window.SubmissionsTracker = (function () {
       state.firebaseConnected = true;
     } catch (e) {
       console.error("Erro ao inicializar subscrições Firebase no SubmissionsTracker:", e);
+    }
+  }
+
+  // Keep-Alive & Reconnect ao alternar separadores no browser
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      try {
+        if (typeof firebase !== "undefined" && firebase.database) {
+          firebase.database().goOnline();
+        }
+      } catch (e) {
+        console.warn("Aviso ao ativar goOnline() no SubmissionsTracker:", e);
+      }
+      refreshFromFirebase();
+    }
+  });
+
+  /**
+   * Releitura manual explícita via once() nos 4 nós do Firebase
+   */
+  async function refreshFromFirebase() {
+    if (typeof firebase === "undefined" || !firebase.database) return;
+    try {
+      const db = firebase.database();
+      db.goOnline();
+      const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
+        db.ref("/Logins").once("value").catch(() => null),
+        db.ref("/RespostasdoFormulário1").once("value").catch(() => null),
+        db.ref("/RespostasdoFormulário2").once("value").catch(() => null),
+        db.ref("/RespostasdoFormulário3").once("value").catch(() => null)
+      ]);
+
+      if (snapLogins && snapLogins.val() !== null) {
+        const validLogins = extractValidLoginCodes(snapLogins.val());
+        state.totalParticipants = validLogins.length;
+        validLogins.forEach(c => state.registeredCodes.add(c));
+        saveRegisteredCodes();
+      }
+      if (snapGame && snapGame.val() !== null) {
+        const parsed = countValidFormSubmissions(snapGame.val());
+        state.counts.game = parsed.count;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+      }
+      if (snapSim && snapSim.val() !== null) {
+        const parsed = countValidFormSubmissions(snapSim.val());
+        state.counts.sim = parsed.count;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+      }
+      if (snapGlobal && snapGlobal.val() !== null) {
+        const parsed = countValidFormSubmissions(snapGlobal.val());
+        state.counts.global = parsed.count;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+      }
+      state.isLive = true;
+      updateAllCounters();
+    } catch (e) {
+      console.warn("Aviso ao atualizar SubmissionsTracker via once():", e);
     }
   }
 
@@ -406,6 +487,7 @@ window.SubmissionsTracker = (function () {
       if (Array.isArray(codes)) codes.forEach(c => state.registeredCodes.add(c));
       updateAllCounters();
     },
-    getRegisteredCodes: () => Array.from(state.registeredCodes)
+    getRegisteredCodes: () => Array.from(state.registeredCodes),
+    refreshFromFirebase
   };
 })();

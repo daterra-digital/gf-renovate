@@ -433,7 +433,10 @@ window.ResultsDashboard = (function () {
 
   function isValidParticipantCode(raw) {
     const code = normalizeParticipantCode(raw);
-    return !code.endsWith("-MD") && VALID_PARTICIPANT_CODE.test(code);
+    if (!code || code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2") return false;
+    if (/^FG2-PT\d+$/i.test(code)) return true;
+    if (/^NS-PT\d+$/i.test(code)) return true;
+    return VALID_PARTICIPANT_CODE.test(code);
   }
 
   function round1(x) {
@@ -441,7 +444,7 @@ window.ResultsDashboard = (function () {
   }
 
   function isCodeHeader(h) {
-    return /c[oó]digo|participant code/i.test(String(h || ""));
+    return /c[oó]digo|participant code|usercode|participant/i.test(String(h || ""));
   }
 
   function isTimestampHeader(h, idx) {
@@ -450,26 +453,68 @@ window.ResultsDashboard = (function () {
 
   /**
    * Aplica a Regra Global de Filtragem a um separador (cabeçalho + linhas):
-   * - mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 (exclui -MD e códigos inválidos);
-   * - se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente.
+   * - Suporta { headers, data } ou [headers, row1, row2, ...]
+   * - Mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 / NS-PT (exclui -MD e ADMIN);
+   * - Se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente.
    * @returns {{headers: string[], data: string[][], codes: Set<string>}}
    */
   function filterValidParticipantRows(rows) {
-    const headers = (rows && rows[0]) || [];
+    let headers = [];
+    let dataRows = [];
+
+    if (rows && !Array.isArray(rows) && Array.isArray(rows.headers) && Array.isArray(rows.data)) {
+      headers = rows.headers;
+      dataRows = rows.data;
+    } else if (Array.isArray(rows)) {
+      headers = rows[0] || [];
+      dataRows = rows.slice(1);
+    } else {
+      return { headers: [], data: [], codes: new Set() };
+    }
+
     const codeCols = [];
     headers.forEach((h, i) => { if (isCodeHeader(h)) codeCols.push(i); });
     if (!codeCols.length && headers.length > 1) codeCols.push(1);
 
     const latestByCode = new Map();
-    (rows || []).slice(1).forEach(row => {
+    dataRows.forEach(row => {
+      if (!row) return;
       let code = "";
-      for (const ci of codeCols) {
-        const c = normalizeParticipantCode(row[ci]);
-        if (c) { code = c; break; }
+      if (Array.isArray(row)) {
+        for (const ci of codeCols) {
+          const c = normalizeParticipantCode(row[ci]);
+          if (c) { code = c; break; }
+        }
+        if (!code) {
+          for (let i = 0; i < row.length; i++) {
+            const c = normalizeParticipantCode(row[i]);
+            if (isValidParticipantCode(c)) { code = c; break; }
+          }
+        }
+      } else if (typeof row === "object") {
+        if (row._participantCode) {
+          code = normalizeParticipantCode(row._participantCode);
+        } else if (row.code || row.userCode) {
+          code = normalizeParticipantCode(row.code || row.userCode);
+        } else {
+          for (const k of Object.keys(row)) {
+            if (isCodeHeader(k)) {
+              code = normalizeParticipantCode(row[k]);
+              if (code) break;
+            }
+          }
+          if (!code) {
+            for (const k of Object.keys(row)) {
+              const c = normalizeParticipantCode(row[k]);
+              if (isValidParticipantCode(c)) { code = c; break; }
+            }
+          }
+        }
       }
+
       if (!isValidParticipantCode(code)) return;
       row._participantCode = code;
-      latestByCode.delete(code); // reinserir para preservar a ordem cronológica
+      latestByCode.delete(code); // reinserir para manter a ordem cronológica e a submissão mais recente
       latestByCode.set(code, row);
     });
 
@@ -482,7 +527,7 @@ window.ResultsDashboard = (function () {
 
   /**
    * Agrupa as colunas de um separador em "unidades de resposta":
-   * - cada questão numerada (Qn) conta como 1 unidade, mesmo quando tem várias sub-colunas (ex.: Q13/Q24 SUS);
+   * - cada questão numerada (Qn, n., etc.) conta como 1 unidade, mesmo quando tem várias sub-colunas (ex.: Q13/Q24 SUS);
    * - cada questão "3 palavras" (Word Cloud) conta como 1 unidade;
    * - carimbo de data/hora e código de participante são ignorados.
    */
@@ -490,14 +535,24 @@ window.ResultsDashboard = (function () {
     const units = new Map();
     (headers || []).forEach((h, i) => {
       if (isTimestampHeader(h, i) || isCodeHeader(h)) return;
-      const label = String(h || "");
-      const q = label.match(/^\s*Q(\d+)\s*[.):\-]/i);
+      const label = String(h || "").trim();
       let key = null;
-      if (q) key = `Q${parseInt(q[1], 10)}`;
-      else if (/3 palavras|three words|3 words/i.test(label)) key = `WC${i}`;
-      if (!key) return;
-      if (!units.has(key)) units.set(key, []);
-      units.get(key).push(i);
+
+      const matchQ = label.match(/(?:^|[^a-zA-Z0-9])Q\s*(\d+)\b/i) || label.match(/^\s*(\d{1,2})\s*[.):\-\s]/i);
+      if (matchQ) {
+        key = `Q${parseInt(matchQ[1], 10)}`;
+      } else if (/3 palavras|three words|3 words|palavras/i.test(label)) {
+        key = `WC${i}`;
+      } else if (/^[a-z]+(\d+)$/i.test(label)) {
+        key = `Q${parseInt(label.match(/^[a-z]+(\d+)$/i)[1], 10)}`;
+      } else {
+        key = `COL_${i}`;
+      }
+
+      if (key) {
+        if (!units.has(key)) units.set(key, []);
+        units.get(key).push(i);
+      }
     });
     return Array.from(units.values());
   }
@@ -551,15 +606,82 @@ window.ResultsDashboard = (function () {
   }
 
   /**
+   * Procura o índice de uma coluna de questão de forma resiliente.
+   * Suporta:
+   * - "Q7", "Q07", "q7", "q07"
+   * - "7. ", "7) ", "7 - ", "7: ", "7 "
+   * - "Questão 7", "Pergunta 7", "Question 7"
+   * - [7] ou [Q7]
+   * - Expressões regulares adicionais / palavras-chave de contexto (ex: "clareza", "explicações")
+   * - correspondência exata de chave JSON (ex: "q7")
+   */
+  function findQuestionColIndex(headers, qNumber, keywordRegex = null) {
+    if (!headers || !headers.length) return -1;
+    const num = parseInt(qNumber, 10);
+    const numStr = String(num);
+
+    // 1. Padrões por número da questão (ex: Q7, 7., Questão 7, q7)
+    const patterns = [
+      new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i"),
+      new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s]`, "i"),
+      new RegExp(`(?:quest[aã]o|pergunta|question)\\s*0?${numStr}\\b`, "i"),
+      new RegExp(`^\\s*0?${numStr}\\s*$`, "i")
+    ];
+
+    for (let i = 0; i < headers.length; i++) {
+      const h = String(headers[i] || "").trim();
+      for (const pat of patterns) {
+        if (pat.test(h)) return i;
+      }
+    }
+
+    // 2. Se não encontrou por número, tentar por palavras-chave semânticas
+    if (keywordRegex instanceof RegExp) {
+      for (let i = 0; i < headers.length; i++) {
+        const h = String(headers[i] || "").trim();
+        if (keywordRegex.test(h)) return i;
+      }
+    }
+
+    return -1;
+  }
+
+  /**
+   * Encontra todas as colunas correspondentes à escala SUS (10 sub-declarações)
+   */
+  function findSusColIndices(headers, questionNumber, toolKeywordRegex = null) {
+    if (!headers || !headers.length) return [];
+    const num = parseInt(questionNumber, 10);
+    const numStr = String(num);
+
+    const reQ = new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i");
+    const reNum = new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s\\[]`, "i");
+    const reWord = new RegExp(`(?:quest[aã]o|pergunta)\\s*0?${numStr}\\b`, "i");
+    const susKeywords = /gostaria de utilizar|desnecessariamente complexo|fácil de utilizar|facil de utilizar|apoio de um técnico|apoio de um tecnico|bem integradas|demasiada inconsistência|demasiada inconsistencia|aprenderiam rapidamente|muito complicado|muito confiante|precisaria de aprender|use frequently|unnecessarily complex|easy to use|support of a technical|well integrated|inconsistency|quickly|cumbersome|confident|needed to learn/i;
+
+    const indices = [];
+    headers.forEach((h, i) => {
+      const s = String(h || "").trim();
+      if (reQ.test(s) || reNum.test(s) || reWord.test(s)) {
+        indices.push(i);
+      } else if (susKeywords.test(s)) {
+        if (!indices.includes(i)) indices.push(i);
+      } else if (/SUS\b/i.test(s) && (!toolKeywordRegex || toolKeywordRegex.test(s))) {
+        if (!indices.includes(i)) indices.push(i);
+      }
+    });
+
+    return indices;
+  }
+
+  /**
    * System Usability Scale (Brooke, 1996) sobre as 10 sub-declarações de uma questão (Q13 ou Q24):
    * ímpares (1,3,5,7,9): resposta − 1 | pares (2,4,6,8,10): 5 − resposta
    * Score do participante = soma × 2.5 | Resultado = média aritmética dos participantes válidos.
    * Participantes com alguma das 10 sub-declarações por responder não entram na média.
    */
   function computeSusKpi(tab, questionNumber) {
-    const re = new RegExp(`^\\s*Q${questionNumber}\\s*[.):\\-]`, "i");
-    const cols = [];
-    tab.headers.forEach((h, i) => { if (re.test(String(h || ""))) cols.push(i); });
+    const cols = findSusColIndices(tab.headers, questionNumber);
     if (cols.length < 10) return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
 
     const itemCols = cols.slice(0, 10); // ordem das colunas = ordem oficial dos itens SUS
@@ -571,14 +693,15 @@ window.ResultsDashboard = (function () {
     tab.data.forEach(row => {
       // Acumular coluna a coluna para as 10 dimensões individuais do gráfico
       itemCols.forEach((ci, idx) => {
-        const v = parseLikertStrict(row[ci]);
+        const val = Array.isArray(row) ? row[ci] : row[ci];
+        const v = parseLikertStrict(val);
         if (v !== null) {
           itemSums[idx] += v;
           itemCounts[idx]++;
         }
       });
 
-      const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+      const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : row[ci]));
       if (vals.some(v => v === null)) return;
       let raw = 0;
       vals.forEach((v, idx) => {
@@ -605,13 +728,13 @@ window.ResultsDashboard = (function () {
    * Média aritmética simples das respostas válidas da Q29 (1–5)
    */
   function computeQ29Kpi(tab) {
-    let idx = findColIndex(tab.headers, /^\s*Q29\s*[.):\-]/i);
-    if (idx === -1) idx = findColIndex(tab.headers, /Q29/i);
+    const idx = findQuestionColIndex(tab.headers, 29, /recomenda|recomendaria|provável|provavel|nps/i);
     if (idx === -1) return { average: null, n: 0 };
     let sum = 0;
     let n = 0;
     tab.data.forEach(row => {
-      const v = parseQ29Strict(row[idx]);
+      const val = Array.isArray(row) ? row[idx] : row[idx];
+      const v = parseQ29Strict(val);
       if (v === null) return;
       sum += v;
       n++;
@@ -1093,7 +1216,14 @@ window.ResultsDashboard = (function () {
       if (areNumeric) {
         arr = keys.sort((a, b) => Number(a) - Number(b)).map(k => val[k]);
       } else {
-        arr = Object.values(val);
+        arr = Object.entries(val).map(([k, v]) => {
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v["Código de Participante"]) {
+              return Object.assign({ _participantCode: k, code: k }, v);
+            }
+          }
+          return v;
+        });
       }
     }
 
@@ -1101,7 +1231,7 @@ window.ResultsDashboard = (function () {
 
     // Caso 1: Array 2D [ [headers...], [row1...], [row2...] ]
     if (Array.isArray(arr[0])) {
-      const headers = arr[0].map(h => String(h || "").trim());
+      const headers = arr[0].map(h => String(h !== null && h !== undefined ? h : "").trim());
       const data = arr.slice(1).filter(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim() !== ""));
       return { headers, data };
     }
@@ -1111,11 +1241,36 @@ window.ResultsDashboard = (function () {
       const headerSet = new Set();
       arr.forEach(item => {
         if (item && typeof item === "object") {
-          Object.keys(item).forEach(k => headerSet.add(k));
+          Object.keys(item).forEach(k => {
+            const cleanKey = String(k || "").trim();
+            if (cleanKey && cleanKey !== "_participantCode") {
+              headerSet.add(cleanKey);
+            }
+          });
         }
       });
       const headers = Array.from(headerSet);
-      const data = arr.map(item => headers.map(h => (item && item[h] !== undefined && item[h] !== null) ? item[h] : ""));
+      const data = arr.map(item => {
+        const row = headers.map(h => {
+          if (!item) return "";
+          if (item[h] !== undefined && item[h] !== null) {
+            const v = item[h];
+            return Array.isArray(v) ? (v.length === 1 ? v[0] : v.join(", ")) : v;
+          }
+          const lowerH = h.toLowerCase().trim();
+          for (const k of Object.keys(item)) {
+            if (k.toLowerCase().trim() === lowerH) {
+              const v = item[k];
+              return Array.isArray(v) ? (v.length === 1 ? v[0] : v.join(", ")) : v;
+            }
+          }
+          return "";
+        });
+        if (item && item._participantCode) {
+          row._participantCode = item._participantCode;
+        }
+        return row;
+      });
       return { headers, data };
     }
 
@@ -1182,6 +1337,15 @@ window.ResultsDashboard = (function () {
       }
       const db = firebase.database();
 
+      // Monitor de Ligação WebSockets (.info/connected)
+      db.ref(".info/connected").on("value", snap => {
+        const isConnected = Boolean(snap.val());
+        if (isConnected) {
+          state.isLive = true;
+          updateConnectionBadge(true);
+        }
+      });
+
       // 1. /Logins (Amostra Total TT)
       db.ref("/Logins").on("value", snapshot => {
         const validLogins = extractValidLoginCodes(snapshot.val());
@@ -1229,6 +1393,20 @@ window.ResultsDashboard = (function () {
     }
   }
 
+  // Keep-Alive & Reconnect ao alternar separadores no browser
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      try {
+        if (typeof firebase !== "undefined" && firebase.database) {
+          firebase.database().goOnline();
+        }
+      } catch (e) {
+        console.warn("Aviso ao reconectar Firebase via visibilitychange:", e);
+      }
+      fetchData(false);
+    }
+  });
+
   /**
    * Sincroniza e processa os dados reais recebidos dos nós do Firebase
    */
@@ -1272,22 +1450,83 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Sincronização sob demanda (acionada pelo botão 'Sincronizar Agora' ou atalhos)
+   * Sincronização sob demanda (acionada pelo botão 'Atualizar Dados', visibilitychange ou atalhos)
+   * Executa leituras explícitas db.ref().once('value') nos 4 nós, força re-processamento,
+   * executa chart.update() e atualiza obrigatoriamente o elemento de hora (Última atualização: HH:MM:SS)
    */
-  function fetchData(isManualRefresh = false) {
-    syncAllFirebaseData();
-    if (isManualRefresh) {
+  async function fetchData(isManualRefresh = false) {
+    const refreshIcon = document.getElementById("icon-refresh-results");
+    if (refreshIcon) refreshIcon.classList.add("animate-spin");
+
+    try {
+      if (typeof firebase !== "undefined" && firebase.database) {
+        const db = firebase.database();
+        db.goOnline();
+
+        const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
+          db.ref("/Logins").once("value").catch(err => { console.warn("Aviso /Logins once:", err); return null; }),
+          db.ref("/RespostasdoFormulário1").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário1 once:", err); return null; }),
+          db.ref("/RespostasdoFormulário2").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário2 once:", err); return null; }),
+          db.ref("/RespostasdoFormulário3").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário3 once:", err); return null; })
+        ]);
+
+        if (snapLogins && snapLogins.val() !== null) {
+          const validLogins = extractValidLoginCodes(snapLogins.val());
+          state.totalLogins = validLogins.length;
+          state.uniqueLoginCodes = new Set(validLogins);
+          if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+            window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+          }
+        }
+        if (snapGame && snapGame.val() !== null) {
+          state.rawFirebaseData.game = snapGame.val();
+        }
+        if (snapSim && snapSim.val() !== null) {
+          state.rawFirebaseData.sim = snapSim.val();
+        }
+        if (snapGlobal && snapGlobal.val() !== null) {
+          state.rawFirebaseData.global = snapGlobal.val();
+        }
+      }
+
+      // Sincronizar e re-processar dados (chama chart.update() em todos os gráficos)
+      syncAllFirebaseData();
+
+      // Sincronizar SubmissionsTracker
+      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
+        window.SubmissionsTracker.refreshFromFirebase();
+      }
+
       const isEn = window.I18nManager && window.I18nManager.isEnglish();
-      const count = state.kpis ? state.kpis.submissionCodes.size : 0;
-      const msg = isEn
-        ? `Firebase WebSockets connected in real-time (${count} respondents registered)`
-        : `Firebase conectado em tempo real via WebSockets (${count} respondentes registados)`;
-      showToast(msg, "success");
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString(isEn ? "en-GB" : "pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      state.lastUpdated = timeStr;
+
+      const timeEl = document.getElementById("results-last-sync-time");
+      if (timeEl) {
+        timeEl.textContent = isEn ? `Last update: ${timeStr}` : `Última atualização: ${timeStr}`;
+      }
+      updateConnectionBadge(true);
+
+      if (isManualRefresh) {
+        const count = state.kpis ? state.kpis.submissionCodes.size : 0;
+        const msg = isEn
+          ? `Data updated successfully at ${timeStr} (${state.totalLogins} participants, ${count} respondents)`
+          : `Dados atualizados com sucesso às ${timeStr} (${state.totalLogins} participantes, ${count} respondentes)`;
+        showToast(msg, "success");
+      }
+    } catch (err) {
+      console.warn("Aviso ao atualizar dados sob demanda:", err);
+      syncAllFirebaseData();
+    } finally {
+      if (refreshIcon) {
+        setTimeout(() => refreshIcon.classList.remove("animate-spin"), 400);
+      }
     }
   }
 
   /**
-   * Atualiza o badge de estado de ligação em tempo real
+   * Atualiza o badge de estado de ligação em tempo real e o elemento de texto da hora
    */
   function updateConnectionBadge(isConnected = false) {
     const badge = document.getElementById("results-live-status-badge");
@@ -1296,11 +1535,11 @@ window.ResultsDashboard = (function () {
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const now = new Date();
-    const timeStr = now.toLocaleTimeString(isEn ? "en-GB" : "pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const timeStr = state.lastUpdated || now.toLocaleTimeString(isEn ? "en-GB" : "pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     state.lastUpdated = timeStr;
 
     if (timeEl) {
-      timeEl.textContent = isEn ? `Firebase live: ${timeStr}` : `Firebase em tempo real: ${timeStr}`;
+      timeEl.textContent = isEn ? `Last update: ${timeStr}` : `Última atualização: ${timeStr}`;
     }
 
     if (isConnected || state.isLive) {
@@ -1413,7 +1652,7 @@ window.ResultsDashboard = (function () {
   function extractLikertAverage(rows, colIdx) {
     if (colIdx === -1 || !rows || !rows.length) return 0;
     const vals = rows
-      .map(r => parseLikertStrict(r[colIdx]))
+      .map(r => parseLikertStrict(Array.isArray(r) ? r[colIdx] : (r ? r[colIdx] : null)))
       .filter(v => v !== null);
     if (!vals.length) return 0;
     const sum = vals.reduce((a, b) => a + b, 0);
@@ -1429,7 +1668,7 @@ window.ResultsDashboard = (function () {
   function extractConvertedQ8Average(rows, colIdx) {
     if (colIdx === -1 || !rows || !rows.length) return 0;
     const vals = rows
-      .map(r => parseLikertStrict(r[colIdx]))
+      .map(r => parseLikertStrict(Array.isArray(r) ? r[colIdx] : (r ? r[colIdx] : null)))
       .filter(v => v !== null);
     if (!vals.length) return 0;
     const converted = vals.map(v => 5 - (Math.abs(v - 3) * 2));
@@ -1451,64 +1690,52 @@ window.ResultsDashboard = (function () {
     const globalData = globalRows.slice(1);
 
     // Mapear índices de colunas do Separador 1 (Game + Demografia)
-    const idxProfile = findColIndex(gameHeaders, /^\s*Q1\b|perfil|profissão|profissao/i);
-    const idxAge = findColIndex(gameHeaders, /^\s*Q2\b|idade/i);
-    const idxGender = findColIndex(gameHeaders, /^\s*Q3\b|género|genero|sexo/i);
-    const idxCrops = findColIndex(gameHeaders, /^\s*Q5\b|cultura/i);
-    const idxComfort = findColIndex(gameHeaders, /^\s*Q6\b|confortável|confortavel|digital/i);
-    const idxQ7 = findColIndex(gameHeaders, /^\s*Q7\b/i);
-    const idxQ8 = findColIndex(gameHeaders, /^\s*Q8\b/i);
-    const idxQ9 = findColIndex(gameHeaders, /^\s*Q9\b/i);
-    const idxQ10 = findColIndex(gameHeaders, /^\s*Q10\b/i);
-    const idxQ11 = findColIndex(gameHeaders, /^\s*Q11\b/i);
-    const idxQ12 = findColIndex(gameHeaders, /^\s*Q12\b/i);
+    const idxProfile = findQuestionColIndex(gameHeaders, 1, /perfil|profissão|profissao|função|funcao|profile/i);
+    const idxAge = findQuestionColIndex(gameHeaders, 2, /idade|faixa etária|faixa etaria|age/i);
+    const idxGender = findQuestionColIndex(gameHeaders, 3, /género|genero|sexo|gender/i);
+    const idxCrops = findQuestionColIndex(gameHeaders, 5, /cultura|culturas|crops/i);
+    const idxComfort = findQuestionColIndex(gameHeaders, 6, /confortável|confortavel|digital|tecnolog|literacia/i);
+    const idxQ7 = findQuestionColIndex(gameHeaders, 7, /explicaç|explicac|clareza|claras|compreens|clarity|explanation/i);
+    const idxQ8 = findQuestionColIndex(gameHeaders, 8, /dificuldade|adequaç|adequac|equilibrad|difficulty|suitability/i);
+    const idxQ9 = findQuestionColIndex(gameHeaders, 9, /realismo|cenário|cenario|prática real|pratica real|realism|scenario/i);
+    const idxQ10 = findQuestionColIndex(gameHeaders, 10, /calibraç|calibrac|utilidade|aprender|calibration|usefulness/i);
+    const idxQ11 = findQuestionColIndex(gameHeaders, 11, /lúdico|ludico|envolvimento|motiva|gamifi|engagement/i);
+    const idxQ12 = findQuestionColIndex(gameHeaders, 12, /expectativa|global|globais|expectations/i);
     let idxWordsGame = findColIndex(gameHeaders, /experiência.*serious game.*3 palavras|serious game.*3 palavras|3 palavras|palavras/i);
     if (idxWordsGame === -1) idxWordsGame = findColIndex(gameHeaders, /3 palavras|palavras/i);
 
     // Encontrar os 10 itens SUS do Game (Q13)
-    const reQ13 = /^\s*Q13\s*[.):\-]/i;
-    const susGameColIndices = [];
-    gameHeaders.forEach((h, i) => {
-      if (reQ13.test(String(h || "")) || (h.includes("SUS") && h.includes("Game"))) {
-        susGameColIndices.push(i);
-      }
-    });
+    const susGameColIndices = findSusColIndices(gameHeaders, 13, /game|jogo/i);
 
     // Mapear índices de colunas do Separador 2 (Simulador)
-    const idxQ15 = findColIndex(simHeaders, /^\s*Q15\b/i);
-    const idxQ16 = findColIndex(simHeaders, /^\s*Q16\b/i);
-    const idxQ17 = findColIndex(simHeaders, /^\s*Q17\b/i);
-    const idxQ18 = findColIndex(simHeaders, /^\s*Q18\b/i);
-    const idxQ19 = findColIndex(simHeaders, /^\s*Q19\b/i);
-    const idxQ20 = findColIndex(simHeaders, /^\s*Q20\b/i);
-    const idxQ21 = findColIndex(simHeaders, /^\s*Q21\b/i);
-    const idxQ22 = findColIndex(simHeaders, /^\s*Q22\b/i);
-    const idxQ23 = findColIndex(simHeaders, /^\s*Q23\b/i);
-    const idxQ25_sim = findColIndex(simHeaders, /^\s*Q25\b|confuso|falta/i);
-    const idxQ26_sim = findColIndex(simHeaders, /^\s*Q26\b/i);
-    const idxQ27_sim = findColIndex(simHeaders, /^\s*Q27\b/i);
-    const idxQ28_sim = findColIndex(simHeaders, /^\s*Q28\b/i);
-    const idxQ30_sim = findColIndex(simHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
+    const idxQ15 = findQuestionColIndex(simHeaders, 15, /navegaç|navegac|controlo|controles|controlos|interface|navigation|controls/i);
+    const idxQ16 = findQuestionColIndex(simHeaders, 16, /tutorial|tutoriais|menu|menus|instruç|instruc/i);
+    const idxQ17 = findQuestionColIndex(simHeaders, 17, /eficácia|eficacia|pedagóg|pedagog|aprendiz|efficacy/i);
+    const idxQ18 = findQuestionColIndex(simHeaders, 18, /sequência|sequencia|decisão|decisao|etapas|sequence|decision/i);
+    const idxQ19 = findQuestionColIndex(simHeaders, 19, /cálculo|calculo|fórmula|formula|contas|calculations|formulas/i);
+    const idxQ20 = findQuestionColIndex(simHeaders, 20, /bico|bicos|volume|calda|gotas|spray|nozzles/i);
+    const idxQ21 = findQuestionColIndex(simHeaders, 21, /seleção|selecao|rótulo|rotulo|etiqueta|label/i);
+    const idxQ22 = findQuestionColIndex(simHeaders, 22, /variável|variavel|campo|terreno|vento|variables/i);
+    const idxQ23 = findQuestionColIndex(simHeaders, 23, /expectativa.*simulador|expectativas globais.*simulador|satisfação global.*simulador|simulador.*expectativa|expectations.*sim/i);
+    const idxQ25_sim = findQuestionColIndex(simHeaders, 25, /confuso|falta|dúvida|duvida|sugest/i);
+    const idxQ26_sim = findQuestionColIndex(simHeaders, 26, /compreens|clareza|aplicabilidade/i);
+    const idxQ27_sim = findQuestionColIndex(simHeaders, 27, /confiança|confianca|autonomia/i);
+    const idxQ28_sim = findQuestionColIndex(simHeaders, 28, /valor|relevância|relevancia|adicionado/i);
+    const idxQ30_sim = findQuestionColIndex(simHeaders, 30, /erros|falhas|melhorias|comentário|comentario/i);
     let idxWordsSim = findColIndex(simHeaders, /experiência.*simulador.*3 palavras|simulador.*3 palavras|3 palavras|palavras/i);
     if (idxWordsSim === -1) idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
 
-    const reQ24 = /^\s*Q24\s*[.):\-]/i;
-    const susSimColIndices = [];
-    simHeaders.forEach((h, i) => {
-      if (reQ24.test(String(h || "")) || (h.includes("SUS") && h.includes("Simulador"))) {
-        susSimColIndices.push(i);
-      }
-    });
+    // Encontrar os 10 itens SUS do Simulador (Q24)
+    const susSimColIndices = findSusColIndices(simHeaders, 24, /simulador|sim/i);
 
     // Mapear índices de colunas do Separador 3 (Global)
-    const idxQ25_global = findColIndex(globalHeaders, /^\s*Q25\b|confuso|falta/i);
-    const idxQ26_global = findColIndex(globalHeaders, /^\s*Q26\b/i);
-    const idxQ27_global = findColIndex(globalHeaders, /^\s*Q27\b/i);
-    const idxQ28_global = findColIndex(globalHeaders, /^\s*Q28\b/i);
-    let idxQ29_global = findColIndex(globalHeaders, /^\s*Q29\s*[.):\-]/i);
-    if (idxQ29_global === -1) idxQ29_global = findColIndex(globalHeaders, /Q29/i);
-    const idxQ30_global = findColIndex(globalHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
-    const idxGlobalCode = findColIndex(globalHeaders, /código|codigo|participante/i);
+    const idxQ25_global = findQuestionColIndex(globalHeaders, 25, /confuso|falta/i);
+    const idxQ26_global = findQuestionColIndex(globalHeaders, 26, /compreens|clareza|geral/i);
+    const idxQ27_global = findQuestionColIndex(globalHeaders, 27, /confiança|confianca|autonomia/i);
+    const idxQ28_global = findQuestionColIndex(globalHeaders, 28, /valor|relevância|relevancia/i);
+    let idxQ29_global = findQuestionColIndex(globalHeaders, 29, /recomenda|recomendaria|provável|provavel|nps/i);
+    const idxQ30_global = findQuestionColIndex(globalHeaders, 30, /erros|falhas|melhorias|comentários|comentarios/i);
+    const idxGlobalCode = findQuestionColIndex(globalHeaders, 0, /código|codigo|participante|usercode/i);
 
     const idxQ25 = idxQ25_sim !== -1 ? idxQ25_sim : idxQ25_global;
     const idxQ26 = idxQ26_global !== -1 ? idxQ26_global : idxQ26_sim;
@@ -1522,7 +1749,7 @@ window.ResultsDashboard = (function () {
     if (susGameColIndices.length >= 10) {
       const itemCols = susGameColIndices.slice(0, 10);
       gameData.forEach(row => {
-        const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+        const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : (row ? row[ci] : null)));
         if (vals.every(v => v !== null)) {
           gameSusArrays.push(vals);
         }
@@ -1535,7 +1762,7 @@ window.ResultsDashboard = (function () {
     if (susSimColIndices.length >= 10) {
       const itemCols = susSimColIndices.slice(0, 10);
       simData.forEach(row => {
-        const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
+        const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : (row ? row[ci] : null)));
         if (vals.every(v => v !== null)) {
           simSusArrays.push(vals);
         }
@@ -1547,16 +1774,17 @@ window.ResultsDashboard = (function () {
     const q29Responses = [];
     if (idxQ29 !== -1) {
       globalData.forEach(row => {
-        if (row[idxQ29] && String(row[idxQ29]).trim()) {
-          q29Responses.push(row[idxQ29]);
+        const val = Array.isArray(row) ? row[idxQ29] : (row ? row[idxQ29] : null);
+        if (val && String(val).trim()) {
+          q29Responses.push(val);
         }
       });
     }
     const nps = calculateQ29Recommendation(q29Responses);
 
     // Nuvens de Palavras
-    const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? r[idxWordsGame] : "").filter(Boolean);
-    const rawWordsSim = simData.map(r => idxWordsSim !== -1 ? r[idxWordsSim] : "").filter(Boolean);
+    const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? (Array.isArray(r) ? r[idxWordsGame] : (r ? r[idxWordsGame] : "")) : "").filter(Boolean);
+    const rawWordsSim = simData.map(r => idxWordsSim !== -1 ? (Array.isArray(r) ? r[idxWordsSim] : (r ? r[idxWordsSim] : "")) : "").filter(Boolean);
     const wordsGame = extractWordFrequencies(rawWordsGame);
     const wordsSim = extractWordFrequencies(rawWordsSim);
 
@@ -1571,37 +1799,49 @@ window.ResultsDashboard = (function () {
 
     gameData.forEach(row => {
       // Q1 Perfil Profissional
-      if (idxProfile !== -1 && row[idxProfile] && String(row[idxProfile]).trim()) {
-        const p = normalizeProfile(row[idxProfile]);
-        profiles[p] = (profiles[p] || 0) + 1;
+      if (idxProfile !== -1) {
+        const val = Array.isArray(row) ? row[idxProfile] : (row ? row[idxProfile] : null);
+        if (val && String(val).trim()) {
+          const p = normalizeProfile(val);
+          profiles[p] = (profiles[p] || 0) + 1;
+        }
       }
 
       // Idade (Q2)
-      if (idxAge !== -1 && row[idxAge] && String(row[idxAge]).trim()) {
-        const a = row[idxAge].trim();
-        ages[a] = (ages[a] || 0) + 1;
+      if (idxAge !== -1) {
+        const val = Array.isArray(row) ? row[idxAge] : (row ? row[idxAge] : null);
+        if (val && String(val).trim()) {
+          const a = String(val).trim();
+          ages[a] = (ages[a] || 0) + 1;
+        }
       }
 
       // Q6 Literacia Digital
-      if (idxComfort !== -1 && row[idxComfort] && String(row[idxComfort]).trim()) {
-        const c = parseDigitalComfort(row[idxComfort]);
-        if (c !== null) {
-          digitalTotal += c;
-          digitalCount++;
+      if (idxComfort !== -1) {
+        const val = Array.isArray(row) ? row[idxComfort] : (row ? row[idxComfort] : null);
+        if (val && String(val).trim()) {
+          const c = parseDigitalComfort(val);
+          if (c !== null) {
+            digitalTotal += c;
+            digitalCount++;
+          }
         }
       }
 
       // Q5 Culturas Acompanhadas (múltipla escolha separada por vírgula)
-      if (idxCrops !== -1 && row[idxCrops] && String(row[idxCrops]).trim()) {
-        const cropItems = String(row[idxCrops]).split(/[,;]/);
-        const seenInRow = new Set();
-        cropItems.forEach(c => {
-          const normCrop = normalizeCrop(c);
-          if (normCrop && !seenInRow.has(normCrop)) {
-            seenInRow.add(normCrop);
-            crops[normCrop] = (crops[normCrop] || 0) + 1;
-          }
-        });
+      if (idxCrops !== -1) {
+        const val = Array.isArray(row) ? row[idxCrops] : (row ? row[idxCrops] : null);
+        if (val && String(val).trim()) {
+          const cropItems = String(val).split(/[,;]/);
+          const seenInRow = new Set();
+          cropItems.forEach(c => {
+            const normCrop = normalizeCrop(c);
+            if (normCrop && !seenInRow.has(normCrop)) {
+              seenInRow.add(normCrop);
+              crops[normCrop] = (crops[normCrop] || 0) + 1;
+            }
+          });
+        }
       }
     });
 
@@ -1646,11 +1886,14 @@ window.ResultsDashboard = (function () {
         }
         if (!code) code = "Participante";
 
-        const ts = parseSubmissionTimestamp(row[0]);
+        const firstCell = Array.isArray(row) ? row[0] : (row ? row[0] || row["Carimbo de data/hora"] || row.timestamp : null);
+        const ts = parseSubmissionTimestamp(firstCell);
 
         qList.forEach(qItem => {
-          if (qItem.colIdx === -1 || !row[qItem.colIdx]) return;
-          const text = String(row[qItem.colIdx]).trim();
+          if (qItem.colIdx === -1) return;
+          const cellVal = Array.isArray(row) ? row[qItem.colIdx] : (row ? row[qItem.colIdx] : null);
+          if (!cellVal) return;
+          const text = String(cellVal).trim();
           if (!isValidFeedbackText(text)) return;
 
           feedItems.push({
