@@ -208,8 +208,8 @@ window.I18nManager = (function () {
       "results.nps.zoneText": "(Muito ou Extremamente provável)",
       "results.feedback.title": "Voz dos Participantes: Sugestões & Bloqueios Identificados",
 
-      // Deliverable 1.4 & Media (Entregável 1.4)
-      "results.deliv.code": "Entregável 1.4",
+      // Deliverable 1.3 & Media (Entregável 1.3)
+      "results.deliv.code": "Entregável 1.3",
       "results.deliv.status": "Relatório Oficial • Horizonte Europa",
       "results.deliv.link": "Descarregar Relatório Oficial PDF (2.0 MB) →",
       "results.deliv.title": "Relatório de Análise de Expectativas de Formação e Resultados das Reuniões dos Grupos Focais",
@@ -560,7 +560,7 @@ window.I18nManager = (function () {
       "results.feedback.title": "Participants' Voice: Suggestions & Roadblocks Identified",
 
       // Deliverable 1.4 & Media
-      "results.deliv.code": "Deliverable 1.4",
+      "results.deliv.code": "Deliverable 1.3",
       "results.deliv.status": "Official Report • Horizon Europe",
       "results.deliv.link": "Download Official Report PDF (2.0 MB) →",
       "results.deliv.title": "Reports on analysis of expectation for training and results of Focus Group meetings",
