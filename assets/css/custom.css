@@ -198,6 +198,15 @@ header {
 .step-card.completed {
   border-color: #10B981;
 }
+.step-card.alert-jump {
+  border-color: #EF4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25), 0 4px 16px -2px rgba(239, 68, 68, 0.2) !important;
+  animation: pulse-border-red 2.5s infinite ease-in-out;
+}
+@keyframes pulse-border-red {
+  0%, 100% { border-color: #EF4444; }
+  50% { border-color: #DC2626; }
+}
 
 /* Locked Section - Opacidade reduzida e desativação de cliques */
 .locked-section {

@@ -21,6 +21,11 @@ window.SubmissionsTracker = (function () {
       sim: 0,
       global: 0
     },
+    submittedCodes: {
+      game: new Set(),
+      sim: new Set(),
+      global: new Set()
+    },
     registeredCodes: new Set(),
     totalParticipants: 0,
     isLive: false,
@@ -389,14 +394,17 @@ window.SubmissionsTracker = (function () {
             } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
               const parsed = countValidFormSubmissions(val);
               state.counts.game = parsed.count;
+              state.submittedCodes.game = new Set(parsed.codes);
               parsed.codes.forEach(c => state.registeredCodes.add(c));
             } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
               const parsed = countValidFormSubmissions(val);
               state.counts.sim = parsed.count;
+              state.submittedCodes.sim = new Set(parsed.codes);
               parsed.codes.forEach(c => state.registeredCodes.add(c));
             } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
               const parsed = countValidFormSubmissions(val);
               state.counts.global = parsed.count;
+              state.submittedCodes.global = new Set(parsed.codes);
               parsed.codes.forEach(c => state.registeredCodes.add(c));
             }
           }
@@ -447,6 +455,7 @@ window.SubmissionsTracker = (function () {
           if (snapshot.val() !== null) {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.game = parsed.count;
+            state.submittedCodes.game = new Set(parsed.codes);
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             updateAllCounters();
@@ -463,6 +472,7 @@ window.SubmissionsTracker = (function () {
           if (snapshot.val() !== null) {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.sim = parsed.count;
+            state.submittedCodes.sim = new Set(parsed.codes);
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             updateAllCounters();
@@ -479,6 +489,7 @@ window.SubmissionsTracker = (function () {
           if (snapshot.val() !== null) {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.global = parsed.count;
+            state.submittedCodes.global = new Set(parsed.codes);
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             updateAllCounters();
@@ -671,12 +682,90 @@ window.SubmissionsTracker = (function () {
     `;
   }
 
+  /**
+   * Verifica se um participante específico tem respostas registadas no Firebase para um formulário
+   * formTypeOrNum: 1 | 2 | 3 | "game" | "sim" | "global"
+   */
+  function hasParticipantSubmitted(formTypeOrNum, rawCode) {
+    if (!rawCode) return false;
+    const clean = String(rawCode).trim().toUpperCase();
+    let set = null;
+    if (formTypeOrNum === 1 || formTypeOrNum === "1" || formTypeOrNum === "game") {
+      set = state.submittedCodes.game;
+    } else if (formTypeOrNum === 2 || formTypeOrNum === "2" || formTypeOrNum === "sim") {
+      set = state.submittedCodes.sim;
+    } else if (formTypeOrNum === 3 || formTypeOrNum === "3" || formTypeOrNum === "global") {
+      set = state.submittedCodes.global;
+    }
+    if (set && set.has(clean)) return true;
+    return false;
+  }
+
+  /**
+   * Renderiza os indicadores visuais de estado nos acordeões do Menu 'Programa & Slides' (slots 4, 7 e 9):
+   * - Verde (Concluído): Exibido quando as respostas do respetivo formulário derem entrada no Firebase.
+   * - Vermelho (Alerta de Pendência): Exibido se o participante tentar avançar sem ter entregue o formulário desse acordeão.
+   * - Vazio: Sem contadores numéricos secundários (UI Cleanup).
+   */
+  function renderProgramStatusBadges() {
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const doneText = (window.I18nManager && window.I18nManager.t("live.badge.completed")) || (isEn ? "Completed" : "Concluído");
+    const pendingText = (window.I18nManager && window.I18nManager.t("live.badge.pending")) || (isEn ? "Pending" : "Pendente");
+
+    const currentCode = (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (window.LiveSession ? window.LiveSession.getParticipantCode() : "");
+
+    const isForm1Done = hasParticipantSubmitted(1, currentCode);
+    const isForm2Done = hasParticipantSubmitted(2, currentCode);
+    const isForm3Done = hasParticipantSubmitted(3, currentCode);
+
+    const isStep3Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(3);
+    const isStep4Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(4);
+
+    const greenBadge = `
+      <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+        <span>${doneText}</span>
+      </span>
+    `;
+
+    const redBadge = `
+      <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-300 shadow-2xs animate-pulse">
+        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-red-600"></i>
+        <span>${pendingText}</span>
+      </span>
+    `;
+
+    const slot4Container = document.getElementById("submission-counter-slot-4");
+    if (slot4Container) {
+      if (isForm1Done) slot4Container.innerHTML = greenBadge;
+      else if (isStep3Alert) slot4Container.innerHTML = redBadge;
+      else slot4Container.innerHTML = "";
+    }
+
+    const slot7Container = document.getElementById("submission-counter-slot-7");
+    if (slot7Container) {
+      if (isForm2Done) slot7Container.innerHTML = greenBadge;
+      else if (isStep4Alert) slot7Container.innerHTML = redBadge;
+      else slot7Container.innerHTML = "";
+    }
+
+    const slot9Container = document.getElementById("submission-counter-slot-9");
+    if (slot9Container) {
+      if (isForm3Done) slot9Container.innerHTML = greenBadge;
+      else slot9Container.innerHTML = "";
+    }
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
   let isUpdatingCounters = false;
 
   /**
    * Atualiza todos os contadores da interface em tempo real:
-   * 1. Menu "Programa & Slides" (dropdowns dos acordeões de avaliação: slots 4, 7 e 9)
-   * 2. Menu "Sessão ao Vivo" (cartões 3, 4 e 5)
+   * 1. Menu "Programa & Slides": Indicadores visuais de estado (Verde / Vermelho / Vazio)
+   * 2. Menu "Sessão ao Vivo": Limpeza de contadores secundários nos cartões 3, 4 e 5
    * 3. Menu "Resultados & Media" (cartão "Amostra Total")
    * 4. Menu "Painel de Moderação" (monitores de submissão 1, 2 e 3)
    */
@@ -684,38 +773,16 @@ window.SubmissionsTracker = (function () {
     if (isUpdatingCounters) return;
     isUpdatingCounters = true;
     try {
-      const TT = state.totalParticipants;
-      const n1 = state.counts.game;
-      const n2 = state.counts.sim;
-      const n3 = state.counts.global;
+      // 1. Menu "Programa & Slides": Indicadores visuais de estado nos acordeões (slots 4, 7 e 9)
+      renderProgramStatusBadges();
 
-      // 1. Menu "Programa & Slides": Dropdowns das 3 avaliações
-      const slot4Container = document.getElementById("submission-counter-slot-4");
-      if (slot4Container) {
-        slot4Container.innerHTML = generateBadgeHTML(n1, TT);
-      }
-      const slot7Container = document.getElementById("submission-counter-slot-7");
-      if (slot7Container) {
-        slot7Container.innerHTML = generateBadgeHTML(n2, TT);
-      }
-      const slot9Container = document.getElementById("submission-counter-slot-9");
-      if (slot9Container) {
-        slot9Container.innerHTML = generateBadgeHTML(n3, TT);
-      }
-
-      // 2. Menu "Sessão ao Vivo": Cartões 3, 4 e 5
+      // 2. Menu "Sessão ao Vivo": Limpeza de contadores secundários (cartões 3, 4 e 5)
       const step3Container = document.getElementById("submission-counter-step-3");
-      if (step3Container) {
-        step3Container.innerHTML = generateBadgeHTML(n1, TT);
-      }
+      if (step3Container) step3Container.innerHTML = "";
       const step4Container = document.getElementById("submission-counter-step-4");
-      if (step4Container) {
-        step4Container.innerHTML = generateBadgeHTML(n2, TT);
-      }
+      if (step4Container) step4Container.innerHTML = "";
       const step5Container = document.getElementById("submission-counter-step-5");
-      if (step5Container) {
-        step5Container.innerHTML = generateBadgeHTML(n3, TT);
-      }
+      if (step5Container) step5Container.innerHTML = "";
 
       // 3. Menu "Resultados & Media": Cartão "Amostra Total"
       if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
@@ -729,6 +796,11 @@ window.SubmissionsTracker = (function () {
         } catch (modErr) {
           console.warn("Aviso ao sincronizar contagens com ModeratorPanel:", modErr);
         }
+      }
+
+      // 5. Notificar a Sessão ao Vivo para reavaliar as condições dos passos em tempo real
+      if (window.LiveSession && typeof window.LiveSession.evaluateStepConditions === "function") {
+        window.LiveSession.evaluateStepConditions();
       }
     } finally {
       isUpdatingCounters = false;
@@ -750,6 +822,9 @@ window.SubmissionsTracker = (function () {
     fetchSubmissions: () => { updateAllCounters(); },
     updateAllCounters,
     generateBadgeHTML,
+    hasParticipantSubmitted,
+    getSubmittedCodes: (type) => Array.from((state.submittedCodes && state.submittedCodes[type]) || []),
+    renderProgramStatusBadges,
     getCounts: () => ({ ...state.counts }),
     getTotalParticipants: () => state.totalParticipants,
     setTotalParticipants: (tt, codes) => {

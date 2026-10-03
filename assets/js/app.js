@@ -649,6 +649,22 @@ function renderSchedule() {
           }
           return false;
         }
+
+        // Se o utilizador estiver a abrir o acordeão, valida a regra sequencial
+        if (!detailsEl.open && window.LiveSession && typeof window.LiveSession.validateAdvanceToStep === "function") {
+          if (detailsEl.id === "slot-7-details" && !window.LiveSession.validateAdvanceToStep(4)) {
+            e.preventDefault();
+            e.stopPropagation();
+            detailsEl.open = false;
+            return false;
+          }
+          if (detailsEl.id === "slot-9-details" && !window.LiveSession.validateAdvanceToStep(5)) {
+            e.preventDefault();
+            e.stopPropagation();
+            detailsEl.open = false;
+            return false;
+          }
+        }
       });
     }
 
@@ -1013,7 +1029,11 @@ function initParticipantCodeEvents() {
     const chk = document.getElementById(`step-checkbox-${i}`);
     if (chk) {
       chk.addEventListener("change", () => {
-        LiveSession.toggleStepCompleted(i);
+        if (window.LiveSession && typeof window.LiveSession.handleCheckboxInteraction === "function") {
+          window.LiveSession.handleCheckboxInteraction(i);
+        } else if (window.LiveSession && typeof window.LiveSession.toggleStepCompleted === "function") {
+          window.LiveSession.toggleStepCompleted(i);
+        }
       });
     }
   }
