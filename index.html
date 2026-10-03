@@ -37,6 +37,10 @@
   <!-- WordCloud2 para Nuvens de Palavras Interativas -->
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 
+  <!-- Firebase App & Realtime Database SDK (Compat v10 para integração Vanilla JS) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
   <!-- Anti-caching headers para garantir atualização imediata -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -213,6 +217,10 @@
               <span data-i18n="live.step1.activeCodeLabel" class="font-medium">Código Ativo:</span>
               <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview" data-i18n="live.step1.configuredTop">Configurado no Topo</span>
             </div>
+            <button type="button" id="btn-step1-logout" class="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span data-i18n="auth.logoutStep1">Terminar Sessão / Mudar Código</span>
+            </button>
             <label for="step-checkbox-1" id="step-checkbox-label-1" 
                    class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#FFCC66]">
               <div class="flex items-center gap-2.5">
@@ -1737,7 +1745,7 @@
 
   <!-- Navegação Inferior para Mobile (Fixed Bottom Bar estendida até à base física da tela) -->
   <nav class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-2 pt-1.5 shadow-lg">
-    <div id="mobile-nav-grid" class="grid grid-cols-4 gap-1 text-center">
+    <div id="mobile-nav-grid" class="grid grid-cols-5 gap-1 text-center">
       <button type="button" data-tab="live" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="radio" class="w-4 h-4 mb-0.5"></i>
         <span data-i18n="nav.mobile.live">Ao Vivo</span>
@@ -1757,6 +1765,10 @@
       <button type="button" data-tab="moderation" id="mobile-nav-tab-moderation" class="nav-tab-btn hidden flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold">
         <i data-lucide="lock" class="w-4 h-4 mb-0.5 text-amber-700"></i>
         <span data-i18n="nav.mobile.moderation">Moderação</span>
+      </button>
+      <button type="button" id="btn-mobile-nav-logout" class="flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition cursor-pointer" title="Terminar Sessão">
+        <i data-lucide="log-out" class="w-4 h-4 mb-0.5 text-rose-600"></i>
+        <span data-i18n="auth.exitBtn">Sair</span>
       </button>
     </div>
   </nav>
@@ -2077,15 +2089,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261003-1515"></script>
-  <script src="assets/js/i18n.js?v=20261003-1515"></script>
-  <script src="assets/js/content-data.js?v=20261003-1515"></script>
-  <script src="assets/js/auth.js?v=20261003-1515"></script>
-  <script src="assets/js/live-session.js?v=20261003-1515"></script>
-  <script src="assets/js/results-dashboard.js?v=20261003-1515"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261003-1515"></script>
-  <script src="assets/js/moderator-panel.js?v=20261003-1515"></script>
-  <script src="assets/js/app.js?v=20261003-1515"></script>
+  <script src="system-status.js?v=20261003-1700"></script>
+  <script src="assets/js/i18n.js?v=20261003-1700"></script>
+  <script src="assets/js/content-data.js?v=20261003-1700"></script>
+  <script src="assets/js/auth.js?v=20261003-1700"></script>
+  <script src="assets/js/live-session.js?v=20261003-1700"></script>
+  <script src="assets/js/results-dashboard.js?v=20261003-1700"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261003-1700"></script>
+  <script src="assets/js/moderator-panel.js?v=20261003-1700"></script>
+  <script src="assets/js/app.js?v=20261003-1700"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

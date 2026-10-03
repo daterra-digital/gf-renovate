@@ -451,7 +451,7 @@ window.ModeratorPanel = (function () {
   }
 
   /**
-   * Faz o fetch em segundo plano aos 3 CSVs públicos dos Google Sheets
+   * Sincroniza em tempo real as contagens de submissão a partir do SubmissionsTracker (Firebase Realtime Database)
    */
   async function fetchSubmissionsCount() {
     const refreshBtn = document.getElementById("btn-mod-refresh-submissions");
@@ -459,35 +459,30 @@ window.ModeratorPanel = (function () {
       refreshBtn.classList.add("animate-spin");
     }
 
-    const promises = FORMS_CONFIG.map(async (form) => {
-      const url = `${SHEETS_BASE}?gid=${form.gid}&single=true&output=csv&_t=${Date.now()}`;
-      state.submissions[form.id].loading = true;
+    const counts = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getCounts === "function")
+      ? window.SubmissionsTracker.getCounts()
+      : { game: 0, sim: 0, global: 0 };
 
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-        const text = await res.text();
-        const rowCount = countValidCsvResponses(text);
+    const totalTarget = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function")
+      ? window.SubmissionsTracker.getTotalParticipants()
+      : state.totalTarget;
 
-        state.submissions[form.id] = {
-          count: rowCount,
-          loading: false,
-          error: null,
-          lastUpdated: new Date()
-        };
-      } catch (err) {
-        console.warn(`Aviso ao consultar submissões de ${form.id}:`, err);
-        state.submissions[form.id].loading = false;
-        state.submissions[form.id].error = err.message;
-      }
+    if (totalTarget > 0) {
+      state.totalTarget = totalTarget;
+    }
+
+    const now = new Date();
+    FORMS_CONFIG.forEach((form) => {
+      state.submissions[form.id] = {
+        count: counts[form.id] || 0,
+        loading: false,
+        error: null,
+        lastUpdated: now
+      };
     });
 
-    await Promise.allSettled(promises);
-
     if (refreshBtn) {
-      refreshBtn.classList.remove("animate-spin");
+      setTimeout(() => refreshBtn.classList.remove("animate-spin"), 200);
     }
 
     state.pollingCountdown = state.pollingSeconds;

@@ -456,6 +456,28 @@ window.AuthModule = (function () {
       console.error("Erro ao gravar sessão no localStorage:", e);
     }
 
+    // Registo oficial de sessão via POST na API Google Apps Script (Alimenta separador Logins e Amostra Total)
+    try {
+      const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
+        || "https://script.google.com/a/macros/daterra.com.pt/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
+      const loginPayload = JSON.stringify({ code: finalCode });
+
+      // Disparo em background com tolerância a CORS / 302 redirects do Google Apps Script
+      fetch(loginEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: loginPayload
+      }).catch(() => {
+        fetch(loginEndpoint, {
+          method: "POST",
+          mode: "no-cors",
+          body: loginPayload
+        }).catch(err => console.warn("Aviso ao registar login no Google Apps Script:", err));
+      });
+    } catch (gasErr) {
+      console.warn("Aviso ao disparar registo de login:", gasErr);
+    }
+
     // Marcar código como ativo em uso
     addActiveCode(finalCode);
 
@@ -517,8 +539,11 @@ window.AuthModule = (function () {
       console.error("Erro ao limpar sessão:", e);
     }
 
-    // Limpar prefill dos formulários
+    // Limpar prefill dos formulários e sincronizar LiveSession
     injectParticipantCodeToForms("");
+    if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
+      window.LiveSession.setParticipantCode("");
+    }
 
     // Bloquear website e reabrir tela de login
     lockWebsite();
@@ -1021,10 +1046,10 @@ window.AuthModule = (function () {
       </div>
       <!-- Botão Sair (Logout) -->
       <button type="button" id="btn-header-logout" 
-              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold transition shadow-2xs cursor-pointer" 
+              class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold transition shadow-2xs cursor-pointer" 
               title="${isEn ? 'Log out of Restricted Area' : 'Terminar Sessão na Área Reservada'}">
-        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-        <span class="hidden sm:inline">${isEn ? 'Sair' : 'Sair'}</span>
+        <i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-600"></i>
+        <span class="inline text-[11px] font-bold text-rose-700">${isEn ? 'Log Out' : 'Sair'}</span>
       </button>
     `;
 
@@ -1206,6 +1231,15 @@ window.AuthModule = (function () {
         }
       });
     }
+
+    // Delegação global de cliques para botões de Logout (Cabeçalho, Mobile Bottom Nav, Passo 1)
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("#btn-header-logout, #btn-mobile-nav-logout, #btn-step1-logout, [data-action='logout']");
+      if (btn) {
+        e.preventDefault();
+        logout();
+      }
+    });
   }
 
   /**

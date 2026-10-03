@@ -624,17 +624,18 @@ const RENOVATE_CONFIG = {
     ]
   },
 
-  // Configuração do Dashboard de Resultados (Google Sheets com Múltiplos Separadores)
+  // Configuração do Dashboard de Resultados (Firebase Realtime Database & Google Apps Script)
   resultsDashboard: {
-    // ID da Folha de Cálculo Google Sheets partilhada (ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)
+    // URL da Firebase Realtime Database (WebSockets Push em Tempo Real)
+    firebaseUrl: "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app",
+    loginApiUrl: "https://script.google.com/a/macros/daterra.com.pt/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec",
+    // Configuração de compatibilidade retroativa
     spreadsheetId: "2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e", 
-    // GID de cada separador (extraído da URL: #gid=...)
     tabGids: {
       game: "1971530026", // Separador 1: Serious Game (Tallentto) + Dados Demográficos
       sim: "1882859537",   // Separador 2: Simulador RENOVATE (Virmedex)
       global: "914346842"  // Separador 3: Avaliação Global (NPS + Síntese)
     },
-    autoRefreshSeconds: 30,
 
     // Conjunto de dados de demonstração representativo de 18 peritos agrícolas na ESAS
     // Exibido automaticamente antes de serem inseridos os IDs ou quando a folha tem 0 respostas

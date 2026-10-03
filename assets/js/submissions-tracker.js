@@ -1,5 +1,6 @@
 /**
  * RENOVATE FG2 - Gestor de Submissões e Contadores em Tempo Real
+ * Arquitetura Serverless Push via Firebase Realtime Database (WebSockets onValue)
  * Controlo Automático de Participantes (TT) e Monitores de Questionários (nn/TT com Círculo de Percentagem)
  * Sincronizado em: Programa & Slides (dropdowns), Sessão ao Vivo (cartões 3, 4, 5) e Resultados & Media (Amostra Total)
  * 2ª Sessão do Grupo Focal RENOVATE | ESAS Santarém
@@ -11,13 +12,7 @@ window.SubmissionsTracker = (function () {
     CACHED_COUNTS: "renovate_cached_submissions_counts"
   };
 
-  const SHEETS_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e/pub";
-  
-  const FORMS = {
-    game: { gid: "1971530026", name: "Serious Game" },
-    sim: { gid: "1882859537", name: "Simulador" },
-    global: { gid: "914346842", name: "Avaliação Global" }
-  };
+  const DEFAULT_FIREBASE_URL = "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app";
 
   // Estado Interno do Rastreador de Submissões
   let state = {
@@ -29,9 +24,18 @@ window.SubmissionsTracker = (function () {
     registeredCodes: new Set(),
     totalParticipants: 0,
     isLive: false,
-    pollingIntervalId: null,
-    pollingSeconds: 10
+    firebaseConnected: false
   };
+
+  /**
+   * Obtém a URL da base de dados Firebase
+   */
+  function getFirebaseUrl() {
+    return (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.firebaseUrl) ||
+           localStorage.getItem("renovate_firebase_url") ||
+           window.RENOVATE_FIREBASE_URL ||
+           DEFAULT_FIREBASE_URL;
+  }
 
   /**
    * Carrega os códigos de participante previamente registados no localStorage
@@ -45,7 +49,7 @@ window.SubmissionsTracker = (function () {
           parsed.forEach(code => {
             if (code && typeof code === "string") {
               const clean = code.trim().toUpperCase();
-              if (!clean.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean)) {
+              if (!clean.endsWith("-MD") && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
                 state.registeredCodes.add(clean);
               }
             }
@@ -58,7 +62,7 @@ window.SubmissionsTracker = (function () {
         const currentCode = window.AuthModule.getParticipantCode();
         if (currentCode) {
           const clean = currentCode.trim().toUpperCase();
-          if (!clean.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean)) {
+          if (!clean.endsWith("-MD") && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
             state.registeredCodes.add(clean);
           }
         }
@@ -67,7 +71,9 @@ window.SubmissionsTracker = (function () {
       console.warn("Aviso ao carregar participantes registados:", e);
     }
 
-    recalculateTotalParticipants();
+    if (state.totalParticipants === 0 && state.registeredCodes.size > 0) {
+      state.totalParticipants = state.registeredCodes.size;
+    }
   }
 
   /**
@@ -86,169 +92,195 @@ window.SubmissionsTracker = (function () {
   function registerParticipantCode(rawCode) {
     if (!rawCode || typeof rawCode !== "string") return;
     const cleanCode = rawCode.trim().toUpperCase();
-    if (!cleanCode || cleanCode.endsWith("-MD") || !/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(cleanCode)) return;
+    if (!cleanCode || cleanCode.endsWith("-MD")) return;
 
     state.registeredCodes.add(cleanCode);
     saveRegisteredCodes();
-    recalculateTotalParticipants();
+    if (state.totalParticipants < state.registeredCodes.size) {
+      state.totalParticipants = state.registeredCodes.size;
+    }
     updateAllCounters();
   }
 
   /**
-   * Recalcula o número total de participantes (TT)
-   * TT é baseado nos códigos selecionados/registados e nas submissões recebidas
+   * Extrai a lista de códigos de participante únicos do nó /Logins
+   * Filtra duplicados e exclui códigos com o sufixo -MD
    */
-  function recalculateTotalParticipants() {
-    const { game, sim, global } = state.counts;
-    const maxResponses = Math.max(game, sim, global);
-    
-    // Contar apenas códigos válidos registados (exclui -MD e fora de FG2-PT01..FG2-PT50)
-    let validCodesCount = 0;
-    state.registeredCodes.forEach(code => {
-      if (code && !code.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(code)) {
-        validCodesCount++;
+  function extractValidLoginCodes(rawLogins) {
+    if (!rawLogins) return [];
+    const uniqueCodes = new Set();
+    const entries = Array.isArray(rawLogins) ? rawLogins : (typeof rawLogins === "object" ? Object.values(rawLogins) : [rawLogins]);
+
+    entries.forEach(entry => {
+      if (!entry) return;
+      let code = null;
+
+      if (typeof entry === "string") {
+        code = entry;
+      } else if (typeof entry === "object") {
+        if (entry.code) {
+          code = entry.code;
+        } else if (entry.userCode) {
+          code = entry.userCode;
+        } else if (Array.isArray(entry)) {
+          for (const cell of entry) {
+            const s = String(cell || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) {
+              code = s;
+              break;
+            }
+          }
+        } else {
+          for (const k of Object.keys(entry)) {
+            const v = String(entry[k] || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(v)) {
+              code = v;
+              break;
+            }
+          }
+        }
+      }
+
+      if (code && typeof code === "string") {
+        const clean = code.trim().toUpperCase();
+        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2") {
+          uniqueCodes.add(clean);
+        }
       }
     });
 
-    state.totalParticipants = Math.max(validCodesCount, maxResponses, 0);
+    return Array.from(uniqueCodes);
   }
 
   /**
-   * Analisa o CSV e extrai os códigos de participantes e a contagem de respostas
+   * Conta as submissões válidas num nó de respostas de formulário do Firebase
    */
-  function parseSheetData(csvText) {
-    if (!csvText || typeof csvText !== "string") {
-      return { count: 0, codes: [] };
+  function countValidFormSubmissions(rawNode) {
+    if (!rawNode) return { count: 0, codes: [] };
+    const list = Array.isArray(rawNode) ? rawNode : (typeof rawNode === "object" ? Object.values(rawNode) : []);
+    if (!list.length) return { count: 0, codes: [] };
+
+    let rows = list;
+    // Se a primeira linha for cabeçalho
+    if (Array.isArray(rows[0]) && rows[0].some(c => /c[oó]digo|carimbo/i.test(String(c)))) {
+      rows = rows.slice(1);
     }
 
-    const lines = csvText.trim().split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
-    if (lines.length <= 1) {
-      return { count: 0, codes: [] };
-    }
-
-    // Cabeçalho: descobrir a coluna "Código do Participante"
-    const headerLine = lines[0];
-    const headerParts = headerLine.split(",").map(p => p.replace(/^"|"$/g, "").trim().toLowerCase());
-    let codeColIndex = headerParts.findIndex(p => p.includes("código") || p.includes("codigo") || p.includes("participant"));
-    if (codeColIndex === -1) {
-      codeColIndex = 1; // Coluna 1 por padrão
-    }
-
+    const seenCodes = new Set();
     const codes = [];
-    let count = 0;
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      // Extração simples respeitando aspas
-      const cols = line.split(",").map(c => c.replace(/^"|"$/g, "").trim());
-      if (cols.length > codeColIndex) {
-        const potentialCode = cols[codeColIndex].toUpperCase();
-        // Filtro Global: excluir códigos com sufixo -MD e códigos inválidos
-        if (potentialCode && !potentialCode.endsWith("-MD") && /^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(potentialCode)) {
-          codes.push(potentialCode);
-          count++;
+    rows.forEach(r => {
+      if (!r) return;
+      let code = null;
+      if (typeof r === "object") {
+        if (r["Código de Participante"] || r["Código do Participante"] || r.code) {
+          code = r["Código de Participante"] || r["Código do Participante"] || r.code;
+        } else if (Array.isArray(r)) {
+          for (let i = 0; i < r.length; i++) {
+            const s = String(r[i] || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+          }
+        } else {
+          for (const k of Object.keys(r)) {
+            if (/c[oó]digo/i.test(k)) { code = String(r[k] || ""); break; }
+          }
         }
       }
-    }
 
-    return { count, codes };
+      if (code) {
+        const clean = String(code).trim().toUpperCase();
+        if (!clean.endsWith("-MD") && (clean.startsWith("FG2-PT") || clean.startsWith("NS-PT"))) {
+          if (!seenCodes.has(clean)) {
+            seenCodes.add(clean);
+            codes.push(clean);
+          }
+        }
+      }
+    });
+
+    const totalCount = seenCodes.size > 0 ? seenCodes.size : rows.length;
+    return { count: totalCount, codes };
   }
 
   /**
-   * Consulta os 3 CSVs públicos do Google Sheets em segundo plano
+   * Conecta à Realtime Database do Firebase via WebSockets (onValue)
+   * Subscreve: /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
    */
-  async function fetchSubmissions() {
+  function connectFirebase() {
+    if (typeof firebase === "undefined" || !firebase.database) {
+      console.warn("⚠️ Firebase SDK ainda não disponível para o SubmissionsTracker.");
+      return;
+    }
+
     try {
-      const fetchPromises = [
-        fetch(`${SHEETS_BASE}?gid=${FORMS.game.gid}&single=true&output=csv&_t=${Date.now()}`, { cache: "no-store" }),
-        fetch(`${SHEETS_BASE}?gid=${FORMS.sim.gid}&single=true&output=csv&_t=${Date.now()}`, { cache: "no-store" }),
-        fetch(`${SHEETS_BASE}?gid=${FORMS.global.gid}&single=true&output=csv&_t=${Date.now()}`, { cache: "no-store" })
-      ];
-
-      const responses = await Promise.allSettled(fetchPromises);
-
-      let anyLive = false;
-      let newCodesFound = false;
-
-      // Form 1: Game
-      if (responses[0].status === "fulfilled" && responses[0].value.ok) {
-        const text = await responses[0].value.text();
-        const parsed = parseSheetData(text);
-        if (parsed.count > 0) {
-          state.counts.game = parsed.count;
-          anyLive = true;
-          parsed.codes.forEach(c => {
-            if (!state.registeredCodes.has(c)) {
-              state.registeredCodes.add(c);
-              newCodesFound = true;
-            }
-          });
-        }
+      const url = getFirebaseUrl();
+      if (!firebase.apps.length) {
+        firebase.initializeApp({ databaseURL: url });
       }
+      const db = firebase.database();
 
-      // Form 2: Sim
-      if (responses[1].status === "fulfilled" && responses[1].value.ok) {
-        const text = await responses[1].value.text();
-        const parsed = parseSheetData(text);
-        if (parsed.count > 0) {
-          state.counts.sim = parsed.count;
-          anyLive = true;
-          parsed.codes.forEach(c => {
-            if (!state.registeredCodes.has(c)) {
-              state.registeredCodes.add(c);
-              newCodesFound = true;
-            }
-          });
-        }
-      }
-
-      // Form 3: Global
-      if (responses[2].status === "fulfilled" && responses[2].value.ok) {
-        const text = await responses[2].value.text();
-        const parsed = parseSheetData(text);
-        if (parsed.count > 0) {
-          state.counts.global = parsed.count;
-          anyLive = true;
-          parsed.codes.forEach(c => {
-            if (!state.registeredCodes.has(c)) {
-              state.registeredCodes.add(c);
-              newCodesFound = true;
-            }
-          });
-        }
-      }
-
-      if (anyLive) {
-        state.isLive = true;
-      }
-
-      if (newCodesFound) {
+      // 1. /Logins (Amostra Total TT)
+      db.ref("/Logins").on("value", snapshot => {
+        const validLogins = extractValidLoginCodes(snapshot.val());
+        state.totalParticipants = validLogins.length;
+        validLogins.forEach(c => state.registeredCodes.add(c));
         saveRegisteredCodes();
-      }
+        state.isLive = true;
+        updateAllCounters();
 
-      recalculateTotalParticipants();
-      updateAllCounters();
+        if (window.AuthModule && typeof window.AuthModule.renderCodesDropdown === "function") {
+          window.AuthModule.renderCodesDropdown();
+        }
+        if (window.ResultsDashboard && typeof window.ResultsDashboard.setLiveParticipantCount === "function") {
+          window.ResultsDashboard.setLiveParticipantCount(state.totalParticipants);
+        }
+      }, err => {
+        console.warn("Aviso Firebase /Logins no SubmissionsTracker:", err);
+      });
 
-      // Atualizar dropdown de login com os códigos em uso em tempo real
-      if (window.AuthModule && typeof window.AuthModule.renderCodesDropdown === "function") {
-        window.AuthModule.renderCodesDropdown();
-      }
+      // 2. /RespostasdoFormulário1 (Game)
+      db.ref("/RespostasdoFormulário1").on("value", snapshot => {
+        const parsed = countValidFormSubmissions(snapshot.val());
+        state.counts.game = parsed.count;
+        state.isLive = true;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+        updateAllCounters();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário1 no SubmissionsTracker:", err);
+      });
 
-      // Notificar Dashboard de Resultados se disponível
-      if (state.isLive && window.ResultsDashboard && typeof window.ResultsDashboard.setLiveParticipantCount === "function") {
-        window.ResultsDashboard.setLiveParticipantCount(state.totalParticipants);
-      }
-    } catch (err) {
-      console.warn("Aviso ao sincronizar submissões dos formulários:", err);
+      // 3. /RespostasdoFormulário2 (Simulador)
+      db.ref("/RespostasdoFormulário2").on("value", snapshot => {
+        const parsed = countValidFormSubmissions(snapshot.val());
+        state.counts.sim = parsed.count;
+        state.isLive = true;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+        updateAllCounters();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário2 no SubmissionsTracker:", err);
+      });
+
+      // 4. /RespostasdoFormulário3 (Global)
+      db.ref("/RespostasdoFormulário3").on("value", snapshot => {
+        const parsed = countValidFormSubmissions(snapshot.val());
+        state.counts.global = parsed.count;
+        state.isLive = true;
+        parsed.codes.forEach(c => state.registeredCodes.add(c));
+        updateAllCounters();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário3 no SubmissionsTracker:", err);
+      });
+
+      state.firebaseConnected = true;
+    } catch (e) {
+      console.error("Erro ao inicializar subscrições Firebase no SubmissionsTracker:", e);
     }
   }
 
   /**
    * Gera o componente visual com o círculo e a percentagem no interior + ratio simples nn/TT
    * @param {number} nn - Número de questionários submetidos
-   * @param {number} TT - Número total de participantes
+   * @param {number} TT - Número total de participantes (Amostra Total do /Logins)
    * @param {boolean} isGlobal - Se é o rácio global dos 3 formulários
    */
   function generateBadgeHTML(nn, TT, isGlobal = false) {
@@ -259,7 +291,6 @@ window.SubmissionsTracker = (function () {
 
     const isEn = window.I18nManager && typeof window.I18nManager.isEnglish === "function" && window.I18nManager.isEnglish();
 
-    const strokeColor = isCompleted ? "#059669" : (percent > 0 ? "#D97706" : "#94A3B8");
     const strokeClass = isCompleted ? "text-emerald-500" : (percent > 0 ? "text-amber-500" : "text-slate-300");
     const containerBg = isCompleted 
       ? "bg-emerald-50/90 text-emerald-950 border-emerald-300" 
@@ -348,27 +379,8 @@ window.SubmissionsTracker = (function () {
     }
 
     // 3. Menu "Resultados & Media": Cartão "Amostra Total"
-    // Gerido por ResultsDashboard.renderKpiCards (Regra Global de Filtragem -MD e alvo N × 32 respostas)
     if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
       window.ResultsDashboard.renderKpiCards();
-    }
-  }
-
-  /**
-   * Inicia o polling automático a cada 10 segundos
-   */
-  function startPolling() {
-    stopPolling();
-    fetchSubmissions();
-    state.pollingIntervalId = setInterval(() => {
-      fetchSubmissions();
-    }, state.pollingSeconds * 1000);
-  }
-
-  function stopPolling() {
-    if (state.pollingIntervalId) {
-      clearInterval(state.pollingIntervalId);
-      state.pollingIntervalId = null;
     }
   }
 
@@ -378,17 +390,22 @@ window.SubmissionsTracker = (function () {
   function init() {
     loadRegisteredCodes();
     updateAllCounters();
-    startPolling();
+    connectFirebase();
   }
 
   return {
     init,
     registerParticipantCode,
-    fetchSubmissions,
+    fetchSubmissions: () => { updateAllCounters(); },
     updateAllCounters,
     generateBadgeHTML,
     getCounts: () => ({ ...state.counts }),
     getTotalParticipants: () => state.totalParticipants,
+    setTotalParticipants: (tt, codes) => {
+      if (typeof tt === "number") state.totalParticipants = tt;
+      if (Array.isArray(codes)) codes.forEach(c => state.registeredCodes.add(c));
+      updateAllCounters();
+    },
     getRegisteredCodes: () => Array.from(state.registeredCodes)
   };
 })();

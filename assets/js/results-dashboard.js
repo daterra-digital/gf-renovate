@@ -678,15 +678,21 @@ window.ResultsDashboard = (function () {
     let k = state.kpis;
     let participantCount;
 
-    if (k) {
-      // N = participantes válidos com sessão ativa (inclui quem já submeteu respostas)
+    // Amostra Total (N) extraída do comprimento do nó /Logins (filtrando duplicados e excluindo -MD)
+    if (state.totalLogins > 0) {
+      participantCount = state.totalLogins;
+    } else if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function" && window.SubmissionsTracker.getTotalParticipants() > 0) {
+      participantCount = window.SubmissionsTracker.getTotalParticipants();
+    } else if (k) {
       const codes = getActiveSessionCodes();
-      k.submissionCodes.forEach(c => codes.add(c));
+      if (k.submissionCodes) k.submissionCodes.forEach(c => codes.add(c));
       participantCount = codes.size;
     } else {
-      // Sem dados ou a aguardar conexão: estado estritamente a zeros
       const codes = getActiveSessionCodes();
       participantCount = codes.size;
+    }
+
+    if (!k) {
       k = {
         answeredUnits: 0,
         susGame: { average: null },
@@ -794,29 +800,38 @@ window.ResultsDashboard = (function () {
     };
   }
 
-  // Configuração Oficial e Permanente das Folhas Google Sheets (Focus Group 2)
-  const OFFICIAL_SHEET_CONFIG = {
-    spreadsheetId: "2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e",
-    tabGids: {
-      game: "1971530026",  // Questionário 1: Serious Game (Tallentto) + Demografia
-      sim: "1882859537",    // Questionário 2: Simulador 3D (Virmedex)
-      global: "914346842"   // Questionário 3: Avaliação Global (NPS + Síntese)
-    },
-    autoRefreshSeconds: 10
-  };
+  // Configuração Oficial da Firebase Realtime Database (Focus Group 2)
+  const DEFAULT_FIREBASE_URL = "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app";
+
+  function getFirebaseUrl() {
+    return (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.firebaseUrl) ||
+           localStorage.getItem("renovate_firebase_url") ||
+           window.RENOVATE_FIREBASE_URL ||
+           DEFAULT_FIREBASE_URL;
+  }
+
+  // Objeto centralizado para instâncias Chart.js v4 (Previne Flickering e destruição)
+  window.chartInstances = window.chartInstances || {};
 
   // Estado interno
   let state = {
-    config: Object.assign({}, OFFICIAL_SHEET_CONFIG),
+    firebaseUrl: getFirebaseUrl(),
     isLive: false,
     isLoading: false,
+    isWaitingAnswers: true,
     lastUpdated: null,
     activeTabFilter: "all",
     activeWordCloudTool: "game", // "game" ou "sim"
+    totalLogins: 0,
+    uniqueLoginCodes: new Set(),
+    rawFirebaseData: {
+      game: null,
+      sim: null,
+      global: null
+    },
     metrics: getZeroMetrics(),
     kpis: null, // dados reais (filtrados) dos 4 cartões de resumo
-    charts: {},
-    refreshTimer: null
+    charts: window.chartInstances
   };
 
   /**
@@ -825,28 +840,17 @@ window.ResultsDashboard = (function () {
   function init() {
     loadConfig();
     bindEvents();
+    initAllCharts();
     renderAllDashboardMetrics();
-    fetchData();
+    connectFirebase();
   }
 
   /**
-   * Carrega a configuração oficial dos Google Sheets
+   * Carrega a configuração oficial do Firebase / Sheets
    */
   function loadConfig() {
-    state.config = Object.assign({}, OFFICIAL_SHEET_CONFIG);
-
-    // Se houver personalização válida no localStorage com ID não-vazio
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.spreadsheetId && parsed.spreadsheetId.trim()) {
-          state.config = Object.assign({}, state.config, parsed);
-        }
-      } catch (e) {
-        console.warn("Aviso ao carregar configuração guardada do Google Sheets:", e);
-      }
-    }
+    state.firebaseUrl = getFirebaseUrl();
+    state.charts = window.chartInstances;
   }
 
   /**
@@ -1074,131 +1078,218 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Descarrega dados da Google Sheet ou recorre ao conjunto de demonstração
+   * Converte nós arbitrários do Firebase Realtime Database (Array, Object ou Push IDs)
+   * numa estrutura padrão { headers: string[], data: any[][] }
    */
-  async function fetchData(isManualRefresh = false) {
-    if (state.isLoading) return;
-    state.isLoading = true;
-    updateRefreshButtonState(true);
+  function normalizeFirebaseTable(val) {
+    if (!val) return { headers: [], data: [] };
 
-    const sheetId = state.config.spreadsheetId ? state.config.spreadsheetId.trim() : "";
+    let arr = [];
+    if (Array.isArray(val)) {
+      arr = val;
+    } else if (typeof val === "object") {
+      const keys = Object.keys(val);
+      const areNumeric = keys.every(k => !isNaN(Number(k)));
+      if (areNumeric) {
+        arr = keys.sort((a, b) => Number(a) - Number(b)).map(k => val[k]);
+      } else {
+        arr = Object.values(val);
+      }
+    }
 
-    // Se não tiver ID definido, manter o estado a zeros (sem dados de demonstração)
-    if (!sheetId) {
-      state.metrics = getZeroMetrics();
-      state.kpis = null;
-      state.isLive = false;
-      state.isWaitingAnswers = true;
-      finishFetch(isManualRefresh, false);
+    if (!arr.length) return { headers: [], data: [] };
+
+    // Caso 1: Array 2D [ [headers...], [row1...], [row2...] ]
+    if (Array.isArray(arr[0])) {
+      const headers = arr[0].map(h => String(h || "").trim());
+      const data = arr.slice(1).filter(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim() !== ""));
+      return { headers, data };
+    }
+
+    // Caso 2: Array de Objetos [ { col1: "val", col2: "val" }, ... ]
+    if (typeof arr[0] === "object" && arr[0] !== null) {
+      const headerSet = new Set();
+      arr.forEach(item => {
+        if (item && typeof item === "object") {
+          Object.keys(item).forEach(k => headerSet.add(k));
+        }
+      });
+      const headers = Array.from(headerSet);
+      const data = arr.map(item => headers.map(h => (item && item[h] !== undefined && item[h] !== null) ? item[h] : ""));
+      return { headers, data };
+    }
+
+    return { headers: [], data: [] };
+  }
+
+  /**
+   * Extrai a lista de códigos de participante únicos do nó /Logins
+   * Filtra duplicados e exclui códigos com o sufixo -MD
+   */
+  function extractValidLoginCodes(rawLogins) {
+    if (!rawLogins) return [];
+    const uniqueCodes = new Set();
+    const entries = Array.isArray(rawLogins) ? rawLogins : (typeof rawLogins === "object" ? Object.values(rawLogins) : [rawLogins]);
+
+    entries.forEach(entry => {
+      if (!entry) return;
+      let code = null;
+
+      if (typeof entry === "string") {
+        code = entry;
+      } else if (typeof entry === "object") {
+        if (entry.code) code = entry.code;
+        else if (entry.userCode) code = entry.userCode;
+        else if (Array.isArray(entry)) {
+          for (const cell of entry) {
+            const s = String(cell || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+          }
+        } else {
+          for (const k of Object.keys(entry)) {
+            const v = String(entry[k] || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(v)) { code = v; break; }
+          }
+        }
+      }
+
+      if (code && typeof code === "string") {
+        const clean = code.trim().toUpperCase();
+        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2") {
+          uniqueCodes.add(clean);
+        }
+      }
+    });
+
+    return Array.from(uniqueCodes);
+  }
+
+  /**
+   * Conecta à Firebase Realtime Database via WebSockets (onValue)
+   * Subscreve: /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
+   */
+  function connectFirebase() {
+    if (typeof firebase === "undefined" || !firebase.database) {
+      console.warn("⚠️ Firebase SDK ainda não disponível. A aguardar carregamento...");
+      setTimeout(connectFirebase, 400);
       return;
     }
 
     try {
-      const gids = state.config.tabGids;
-      const bust = `&_t=${Date.now()}`; // evita respostas em cache do "Publicar na Web"
-      const gameUrl = buildTabUrl(sheetId, gids.game, "0") + bust;
-      const simUrl = gids.sim ? buildTabUrl(sheetId, gids.sim) + bust : null;
-      const globalUrl = gids.global ? buildTabUrl(sheetId, gids.global) + bust : null;
-      const noStore = { cache: "no-store" };
-
-      const [gameRes, simRes, globalRes] = await Promise.all([
-        fetch(gameUrl, noStore),
-        simUrl ? fetch(simUrl, noStore).catch(() => null) : Promise.resolve(null),
-        globalUrl ? fetch(globalUrl, noStore).catch(() => null) : Promise.resolve(null)
-      ]);
-
-      if (!gameRes || !gameRes.ok) {
-        throw new Error(`Erro ao aceder ao Separador 1 (${gameRes ? gameRes.status : "rede"})`);
+      const url = getFirebaseUrl();
+      if (!firebase.apps.length) {
+        firebase.initializeApp({ databaseURL: url });
       }
+      const db = firebase.database();
 
-      const gameCsv = await gameRes.text();
-      const simCsv = simRes && simRes.ok ? await simRes.text() : "";
-      const globalCsv = globalRes && globalRes.ok ? await globalRes.text() : "";
+      // 1. /Logins (Amostra Total TT)
+      db.ref("/Logins").on("value", snapshot => {
+        const validLogins = extractValidLoginCodes(snapshot.val());
+        state.totalLogins = validLogins.length;
+        state.uniqueLoginCodes = new Set(validLogins);
 
-      // Regra Global de Filtragem: apenas códigos FG2-PT01..FG2-PT50 (exclui sufixo -MD do moderador)
-      const game = filterValidParticipantRows(parseCSV(gameCsv));
-      const sim = filterValidParticipantRows(simCsv ? parseCSV(simCsv) : []);
-      const global = filterValidParticipantRows(globalCsv ? parseCSV(globalCsv) : []);
+        if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+          window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+        }
 
-      // Dados dos 4 cartões de resumo calculados sempre a partir dos dados reais filtrados
+        renderKpiCards();
+        updateConnectionBadge(true);
+      }, err => {
+        console.warn("Aviso Firebase /Logins no ResultsDashboard:", err);
+      });
+
+      // 2. /RespostasdoFormulário1 (Game + Demografia)
+      db.ref("/RespostasdoFormulário1").on("value", snapshot => {
+        state.rawFirebaseData.game = snapshot.val();
+        syncAllFirebaseData();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário1:", err);
+      });
+
+      // 3. /RespostasdoFormulário2 (Simulador)
+      db.ref("/RespostasdoFormulário2").on("value", snapshot => {
+        state.rawFirebaseData.sim = snapshot.val();
+        syncAllFirebaseData();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário2:", err);
+      });
+
+      // 4. /RespostasdoFormulário3 (Global NPS + Síntese)
+      db.ref("/RespostasdoFormulário3").on("value", snapshot => {
+        state.rawFirebaseData.global = snapshot.val();
+        syncAllFirebaseData();
+      }, err => {
+        console.warn("Aviso Firebase /RespostasdoFormulário3:", err);
+      });
+
+      state.isLive = true;
+      updateConnectionBadge(true);
+    } catch (err) {
+      console.error("Erro ao inicializar Firebase Realtime Database no ResultsDashboard:", err);
+    }
+  }
+
+  /**
+   * Sincroniza e processa os dados reais recebidos dos nós do Firebase
+   */
+  function syncAllFirebaseData() {
+    try {
+      const game = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.game));
+      const sim = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.sim));
+      const global = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.global));
+
       state.kpis = computeKpis(game, sim, global);
 
       const hasValidAnswers = game.data.length + sim.data.length + global.data.length > 0;
-      if (!hasValidAnswers) {
-        state.metrics = getZeroMetrics();
-        state.isLive = true;
-        state.isWaitingAnswers = true;
-      } else {
+      if (hasValidAnswers) {
         processRealData(
           [game.headers, ...game.data],
           [sim.headers, ...sim.data],
           [global.headers, ...global.data]
         );
-        state.isLive = true;
         state.isWaitingAnswers = false;
+      } else {
+        state.isWaitingAnswers = true;
       }
 
-      finishFetch(isManualRefresh, true);
+      state.isLive = true;
+      renderAllDashboardMetrics();
+      updateConnectionBadge(true);
     } catch (err) {
-      console.warn("⚠️ Não foi possível obter dados em tempo real do Google Sheets. A manter painel a zeros.", err);
-      state.metrics = getZeroMetrics();
-      state.isLive = false;
-      state.isWaitingAnswers = false;
-      finishFetch(isManualRefresh, false, err.message);
+      console.warn("⚠️ Aviso ao processar dados do Firebase:", err);
+      // REGRA DE OURO: NÃO apagar state.metrics nem fazer reset a zeros em caso de erro!
     }
   }
 
   /**
-   * Finaliza o ciclo de busca atualizando a UI e os temporizadores
+   * Atualiza o número de participantes da amostra total e sincroniza os cartões KPI
    */
-  function finishFetch(isManual, success, errorMsg = null) {
-    state.isLoading = false;
-    updateRefreshButtonState(false);
-    updateConnectionBadge();
-    renderAllDashboardMetrics();
+  function setLiveParticipantCount(count) {
+    if (typeof count === "number" && count >= 0) {
+      state.totalLogins = count;
+      renderKpiCards();
+    }
+  }
 
-    if (isManual) {
+  /**
+   * Sincronização sob demanda (acionada pelo botão 'Sincronizar Agora' ou atalhos)
+   */
+  function fetchData(isManualRefresh = false) {
+    syncAllFirebaseData();
+    if (isManualRefresh) {
       const isEn = window.I18nManager && window.I18nManager.isEnglish();
-      const msg = state.isLive && state.isWaitingAnswers
-        ? (isEn ? "Google Sheets connected! Awaiting participant responses." : "Google Sheets conectado aos 3 separadores! A aguardar primeiras respostas dos participantes.")
-        : state.isLive
-        ? (isEn ? `Results synced in real-time (${state.kpis ? state.kpis.submissionCodes.size : 0} participants with responses)` : `Resultados sincronizados em tempo real (${state.kpis ? state.kpis.submissionCodes.size : 0} participantes com respostas)`)
-        : (isEn ? "Google Sheets connection pending. Dashboard at zeros." : "Sincronização pendente. Painel a zeros.");
-      showToast(msg, state.isLive ? "success" : "info");
-    }
-
-    // Agendar próximo auto-refresh a cada 10 segundos
-    if (state.refreshTimer) clearTimeout(state.refreshTimer);
-    if (state.config.spreadsheetId && state.config.autoRefreshSeconds > 0) {
-      state.refreshTimer = setTimeout(() => {
-        fetchData(false);
-      }, state.config.autoRefreshSeconds * 1000);
+      const count = state.kpis ? state.kpis.submissionCodes.size : 0;
+      const msg = isEn
+        ? `Firebase WebSockets connected in real-time (${count} respondents registered)`
+        : `Firebase conectado em tempo real via WebSockets (${count} respondentes registados)`;
+      showToast(msg, "success");
     }
   }
 
   /**
-   * Atualiza o estado visual do botão de atualização
+   * Atualiza o badge de estado de ligação em tempo real
    */
-  function updateRefreshButtonState(loading) {
-    const btn = document.getElementById("btn-refresh-results");
-    const icon = document.getElementById("icon-refresh-results");
-    if (!btn || !icon) return;
-
-    if (loading) {
-      btn.disabled = true;
-      btn.classList.add("opacity-75");
-      icon.classList.add("animate-spin");
-    } else {
-      btn.disabled = false;
-      btn.classList.remove("opacity-75");
-      icon.classList.remove("animate-spin");
-    }
-  }
-
-  /**
-   * Atualiza o badge de estado de ligação
-   */
-  function updateConnectionBadge() {
+  function updateConnectionBadge(isConnected = false) {
     const badge = document.getElementById("results-live-status-badge");
     const timeEl = document.getElementById("results-last-sync-time");
     if (!badge) return;
@@ -1209,26 +1300,20 @@ window.ResultsDashboard = (function () {
     state.lastUpdated = timeStr;
 
     if (timeEl) {
-      timeEl.textContent = isEn ? `Last sync: ${timeStr}` : `Última sincronização: ${timeStr}`;
+      timeEl.textContent = isEn ? `Firebase live: ${timeStr}` : `Firebase em tempo real: ${timeStr}`;
     }
 
-    if (state.isLive && state.isWaitingAnswers) {
+    if (isConnected || state.isLive) {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>${isEn ? "Google Sheets Connected (Awaiting Responses)" : "Google Sheets Conectado (Aguardando Respostas)"}</span>
-      `;
-    } else if (state.isLive) {
-      badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs";
-      badge.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>${isEn ? "Google Sheets Connected (Real-Time)" : "Google Sheets Conectado (Em Tempo Real)"}</span>
+        <span>${isEn ? "Firebase Connected (Real-Time Push)" : "Firebase Conectado (WebSockets em Tempo Real)"}</span>
       `;
     } else {
       badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs";
       badge.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-        <span>${isEn ? "Sync Pending (Awaiting Data)" : "Sincronização Pendente (Aguardando Dados)"}</span>
+        <span>${isEn ? "Connecting to Firebase..." : "A conectar ao Firebase..."}</span>
       `;
     }
   }
@@ -2068,65 +2153,43 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Gráfico 1: Comparativo SUS (Serious Game vs Simulador nas 10 dimensões)
+   * =====================================================================
+   * INICIALIZAÇÃO E GESTÃO DE ESTADO CHART.JS v4 (FIM DO FLICKERING)
+   * Regra de Ouro: No evento onValue do Firebase, NUNCA chamar chart.destroy()
+   * Gráficos inicializados com data: [] no DOMContentLoaded/init
+   * Instâncias armazenadas centralmente em window.chartInstances
+   * Atualizações via mutação direta de datasets e chart.update()
+   * =====================================================================
    */
-  function renderSusComparisonChart() {
-    const ctx = document.getElementById("chart-sus-comparison")?.getContext("2d");
-    if (!ctx || !window.Chart) return;
 
-    if (state.charts.susComparison) {
-      state.charts.susComparison.destroy();
-    }
+  /**
+   * Inicialização do Gráfico 1: Comparativo SUS
+   */
+  function initSusComparisonChart() {
+    const canvas = document.getElementById("chart-sus-comparison");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.susComparison) return;
 
+    const ctx = canvas.getContext("2d");
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-
-    // 3. Mapeamento do Eixo X (10 grupos de barras com rótulos positivos otimizados)
     const susLabels = isEn ? [
-      "1. Frequency of Use",
-      "2. Low Complexity",
-      "3. Ease of Use",
-      "4. Tech Independence",
-      "5. Well Integrated",
-      "6. Overall Consistency",
-      "7. Quick Learning",
-      "8. Usability Comfort",
-      "9. Confidence in Use",
-      "10. Easy Onboarding"
+      "1. Frequency of Use", "2. Low Complexity", "3. Ease of Use", "4. Tech Independence",
+      "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
+      "9. Confidence in Use", "10. Easy Onboarding"
     ] : [
-      "1. Frequência de Uso",
-      "2. Baixa Complexidade",
-      "3. Facilidade de Uso",
-      "4. Independência Técnica",
-      "5. Boa Integração",
-      "6. Consistência Geral",
-      "7. Aprendizagem Rápida",
-      "8. Conforto de Uso",
-      "9. Confiança Operacional",
-      "10. Fácil Iniciação"
+      "1. Frequência de Uso", "2. Baixa Complexidade", "3. Facilidade de Uso", "4. Independência Técnica",
+      "5. Boa Integração", "6. Consistência Geral", "7. Aprendizagem Rápida", "8. Conforto de Uso",
+      "9. Confiança Operacional", "10. Fácil Iniciação"
     ];
 
-    // Verificar existência de respostas válidas (zero-state = array de 10 zeros)
-    const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||
-                        (state.metrics?.susGame?.average !== null && state.metrics?.susGame?.average !== undefined);
-    const simHasData = (state.kpis?.susSim?.average !== null && state.kpis?.susSim?.average !== undefined) ||
-                       (state.metrics?.susSim?.average !== null && state.metrics?.susSim?.average !== undefined);
-
-    const gameItems = gameHasData
-      ? (state.kpis?.susGame?.itemsAvg || state.metrics?.susGame?.itemsAvg || new Array(10).fill(0))
-      : new Array(10).fill(0);
-
-    const simItems = simHasData
-      ? (state.kpis?.susSim?.itemsAvg || state.metrics?.susSim?.itemsAvg || new Array(10).fill(0))
-      : new Array(10).fill(0);
-
-    state.charts.susComparison = new Chart(ctx, {
+    window.chartInstances.susComparison = new Chart(ctx, {
       type: "bar",
       data: {
         labels: susLabels,
         datasets: [
           {
             label: "Serious Game (Tallentto)",
-            data: gameItems,
+            data: new Array(10).fill(0),
             backgroundColor: "#F5B842",
             borderColor: "#D97706",
             borderWidth: 1.5,
@@ -2135,7 +2198,7 @@ window.ResultsDashboard = (function () {
           },
           {
             label: isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)",
-            data: simItems,
+            data: new Array(10).fill(0),
             backgroundColor: "#0F172A",
             borderColor: "#0F172A",
             borderWidth: 1.5,
@@ -2173,11 +2236,11 @@ window.ResultsDashboard = (function () {
               afterLabel: function(context) {
                 const idx = context.dataIndex;
                 if (idx % 2 === 1) {
-                  return isEn
+                  return (window.I18nManager && window.I18nManager.isEnglish())
                     ? "(Even item inverted: 6 − raw mean; higher = better usability)"
                     : "(Item par invertido: 6 − média bruta; maior = melhor usabilidade)";
                 }
-                return isEn
+                return (window.I18nManager && window.I18nManager.isEnglish())
                   ? "(Direct mean: higher = better usability)"
                   : "(Média direta: maior = melhor usabilidade)";
               }
@@ -2217,43 +2280,82 @@ window.ResultsDashboard = (function () {
         }
       }
     });
+    state.charts.susComparison = window.chartInstances.susComparison;
   }
 
   /**
-   * Gráfico 2: SERIOUS GAME (Q7 A Q12) - Gráfico de Barras Horizontais (Eixo X de 0 a 5)
+   * Renderização / Atualização do Gráfico 1: Comparativo SUS (In-Place Mutation)
    */
-  function renderGamePedagogyChart() {
-    const ctx = document.getElementById("chart-game-pedagogy")?.getContext("2d");
-    if (!ctx || !window.Chart || !state.metrics) return;
-
-    if (state.charts.gamePedagogy) {
-      state.charts.gamePedagogy.destroy();
+  function renderSusComparisonChart() {
+    if (!window.chartInstances.susComparison) {
+      initSusComparisonChart();
     }
+    const chart = window.chartInstances.susComparison;
+    if (!chart) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const p = state.metrics.gamePedagogy || { q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0 };
+    const susLabels = isEn ? [
+      "1. Frequency of Use", "2. Low Complexity", "3. Ease of Use", "4. Tech Independence",
+      "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
+      "9. Confidence in Use", "10. Easy Onboarding"
+    ] : [
+      "1. Frequência de Uso", "2. Baixa Complexidade", "3. Facilidade de Uso", "4. Independência Técnica",
+      "5. Boa Integração", "6. Consistência Geral", "7. Aprendizagem Rápida", "8. Conforto de Uso",
+      "9. Confiança Operacional", "10. Fácil Iniciação"
+    ];
 
-    state.charts.gamePedagogy = new Chart(ctx, {
+    const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||
+                        (state.metrics?.susGame?.average !== null && state.metrics?.susGame?.average !== undefined);
+    const simHasData = (state.kpis?.susSim?.average !== null && state.kpis?.susSim?.average !== undefined) ||
+                       (state.metrics?.susSim?.average !== null && state.metrics?.susSim?.average !== undefined);
+
+    const gameItems = gameHasData
+      ? (state.kpis?.susGame?.itemsAvg || state.metrics?.susGame?.itemsAvg || new Array(10).fill(0))
+      : new Array(10).fill(0);
+
+    const simItems = simHasData
+      ? (state.kpis?.susSim?.itemsAvg || state.metrics?.susSim?.itemsAvg || new Array(10).fill(0))
+      : new Array(10).fill(0);
+
+    chart.data.labels = susLabels;
+    if (chart.data.datasets[0]) {
+      chart.data.datasets[0].data = gameItems;
+    }
+    if (chart.data.datasets[1]) {
+      chart.data.datasets[1].data = simItems;
+      chart.data.datasets[1].label = isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)";
+    }
+    if (chart.options.scales?.y?.title) {
+      chart.options.scales.y.title.text = isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)";
+    }
+    chart.update();
+  }
+
+  /**
+   * Inicialização do Gráfico 2: Serious Game Pedagogia (Q7 a Q12)
+   */
+  function initGamePedagogyChart() {
+    const canvas = document.getElementById("chart-game-pedagogy");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.gamePedagogy) return;
+
+    const ctx = canvas.getContext("2d");
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const labels = isEn ? [
+      "Q7. Explanation Clarity", "Q8. Difficulty Suitability", "Q9. Scenario Realism",
+      "Q10. Calibration Usefulness", "Q11. Gamified Engagement", "Q12. Global Expectations"
+    ] : [
+      "Q7. Clareza das Explicações", "Q8. Adequação da Dificuldade", "Q9. Realismo dos Cenários",
+      "Q10. Utilidade na Calibração", "Q11. Envolvimento Lúdico", "Q12. Expectativas Globais"
+    ];
+
+    window.chartInstances.gamePedagogy = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: isEn ? [
-          "Q7. Explanation Clarity",
-          "Q8. Difficulty Suitability",
-          "Q9. Scenario Realism",
-          "Q10. Calibration Usefulness",
-          "Q11. Gamified Engagement",
-          "Q12. Global Expectations"
-        ] : [
-          "Q7. Clareza das Explicações",
-          "Q8. Adequação da Dificuldade",
-          "Q9. Realismo dos Cenários",
-          "Q10. Utilidade na Calibração",
-          "Q11. Envolvimento Lúdico",
-          "Q12. Expectativas Globais"
-        ],
+        labels: labels,
         datasets: [{
           label: isEn ? "Mean Rating (1 to 5)" : "Média (1 a 5)",
-          data: [p.q7, p.q8, p.q9, p.q10, p.q11, p.q12],
+          data: [0, 0, 0, 0, 0, 0],
           backgroundColor: "#F5B842",
           borderColor: "#D97706",
           borderWidth: 1.5,
@@ -2276,12 +2378,13 @@ window.ResultsDashboard = (function () {
             callbacks: {
               label: function(context) {
                 const val = context.parsed.x;
-                if (val === 0) return isEn ? "Awaiting data" : "A aguardar dados";
+                const isE = window.I18nManager && window.I18nManager.isEnglish();
+                if (val === 0) return isE ? "Awaiting data" : "A aguardar dados";
                 return `${context.dataset.label || "Média"}: ${val.toFixed(1)} / 5.0`;
               },
               afterLabel: function(context) {
                 if (context.dataIndex === 1) {
-                  return isEn
+                  return (window.I18nManager && window.I18nManager.isEnglish())
                     ? "(Adequacy Index: 3=Ideal (5.0), 2/4=Moderate (3.0), 1/5=Extreme (1.0))"
                     : "(Índice de Adequação: 3=Ideal (5.0), 2/4=Moderado (3.0), 1/5=Extremo (1.0))";
                 }
@@ -2322,51 +2425,66 @@ window.ResultsDashboard = (function () {
         }
       }
     });
+    state.charts.gamePedagogy = window.chartInstances.gamePedagogy;
   }
 
   /**
-   * Gráfico 3: SIMULADOR (Q15 A Q23) - Gráfico de Barras Horizontais (Eixo X de 0 a 5)
+   * Renderização / Atualização do Gráfico 2: Serious Game Pedagogia (In-Place Mutation)
    */
-  function renderSimModulesChart() {
-    const ctx = document.getElementById("chart-sim-modules")?.getContext("2d");
-    if (!ctx || !window.Chart || !state.metrics) return;
-
-    if (state.charts.simModules) {
-      state.charts.simModules.destroy();
+  function renderGamePedagogyChart() {
+    if (!window.chartInstances.gamePedagogy) {
+      initGamePedagogyChart();
     }
+    const chart = window.chartInstances.gamePedagogy;
+    if (!chart || !state.metrics) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const s = state.metrics.simModules || {
-      q15: 0, q16: 0, q17: 0, q18: 0, q19: 0, q20: 0, q21: 0, q22: 0, q23: 0
-    };
+    const p = state.metrics.gamePedagogy || { q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0 };
 
-    state.charts.simModules = new Chart(ctx, {
+    chart.data.labels = isEn ? [
+      "Q7. Explanation Clarity", "Q8. Difficulty Suitability", "Q9. Scenario Realism",
+      "Q10. Calibration Usefulness", "Q11. Gamified Engagement", "Q12. Global Expectations"
+    ] : [
+      "Q7. Clareza das Explicações", "Q8. Adequação da Dificuldade", "Q9. Realismo dos Cenários",
+      "Q10. Utilidade na Calibração", "Q11. Envolvimento Lúdico", "Q12. Expectativas Globais"
+    ];
+    if (chart.data.datasets[0]) {
+      chart.data.datasets[0].label = isEn ? "Mean Rating (1 to 5)" : "Média (1 a 5)";
+      chart.data.datasets[0].data = [p.q7, p.q8, p.q9, p.q10, p.q11, p.q12];
+    }
+    if (chart.options.scales?.x?.title) {
+      chart.options.scales.x.title.text = isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)";
+    }
+    chart.update();
+  }
+
+  /**
+   * Inicialização do Gráfico 3: Simulador RENOVATE Módulos (Q15 a Q23)
+   */
+  function initSimModulesChart() {
+    const canvas = document.getElementById("chart-sim-modules");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.simModules) return;
+
+    const ctx = canvas.getContext("2d");
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const labels = isEn ? [
+      "Q15. Navigation & Controls", "Q16. Tutorials & Menus", "Q17. Pedagogical Efficacy",
+      "Q18. Decision Sequence", "Q19. Calculations & Formulas", "Q20. Nozzles & Spray Volume",
+      "Q21. Selection & Label", "Q22. Field Variables", "Q23. Global Expectations"
+    ] : [
+      "Q15. Navegação e Controlos", "Q16. Tutoriais e Menus", "Q17. Eficácia Pedagógica",
+      "Q18. Sequência de Decisão", "Q19. Cálculos e Fórmulas", "Q20. Bicos e Vol. de Calda",
+      "Q21. Seleção e Rótulo", "Q22. Variáveis de Campo", "Q23. Expectativas Globais"
+    ];
+
+    window.chartInstances.simModules = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: isEn ? [
-          "Q15. Navigation & Controls",
-          "Q16. Tutorials & Menus",
-          "Q17. Pedagogical Efficacy",
-          "Q18. Decision Sequence",
-          "Q19. Calculations & Formulas",
-          "Q20. Nozzles & Spray Volume",
-          "Q21. Selection & Label",
-          "Q22. Field Variables",
-          "Q23. Global Expectations"
-        ] : [
-          "Q15. Navegação e Controlos",
-          "Q16. Tutoriais e Menus",
-          "Q17. Eficácia Pedagógica",
-          "Q18. Sequência de Decisão",
-          "Q19. Cálculos e Fórmulas",
-          "Q20. Bicos e Vol. de Calda",
-          "Q21. Seleção e Rótulo",
-          "Q22. Variáveis de Campo",
-          "Q23. Expectativas Globais"
-        ],
+        labels: labels,
         datasets: [{
           label: isEn ? "Mean Score (1 to 5)" : "Média (1 a 5)",
-          data: [s.q15, s.q16, s.q17, s.q18, s.q19, s.q20, s.q21, s.q22, s.q23],
+          data: new Array(9).fill(0),
           backgroundColor: "#059669",
           borderColor: "#047857",
           borderWidth: 1.5,
@@ -2389,7 +2507,8 @@ window.ResultsDashboard = (function () {
             callbacks: {
               label: function(context) {
                 const val = context.parsed.x;
-                if (val === 0) return isEn ? "Awaiting data" : "A aguardar dados";
+                const isE = window.I18nManager && window.I18nManager.isEnglish();
+                if (val === 0) return isE ? "Awaiting data" : "A aguardar dados";
                 return `${context.dataset.label || "Média"}: ${val.toFixed(1)} / 5.0`;
               }
             }
@@ -2427,21 +2546,152 @@ window.ResultsDashboard = (function () {
         }
       }
     });
+    state.charts.simModules = window.chartInstances.simModules;
   }
 
   /**
-   * Gráficos 4 & 5: Demografia (Perfis Profissionais e Culturas Agrícolas)
+   * Renderização / Atualização do Gráfico 3: Simulador RENOVATE Módulos (In-Place Mutation)
+   */
+  function renderSimModulesChart() {
+    if (!window.chartInstances.simModules) {
+      initSimModulesChart();
+    }
+    const chart = window.chartInstances.simModules;
+    if (!chart || !state.metrics) return;
+
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const s = state.metrics.simModules || {
+      q15: 0, q16: 0, q17: 0, q18: 0, q19: 0, q20: 0, q21: 0, q22: 0, q23: 0
+    };
+
+    chart.data.labels = isEn ? [
+      "Q15. Navigation & Controls", "Q16. Tutorials & Menus", "Q17. Pedagogical Efficacy",
+      "Q18. Decision Sequence", "Q19. Calculations & Formulas", "Q20. Nozzles & Spray Volume",
+      "Q21. Selection & Label", "Q22. Field Variables", "Q23. Global Expectations"
+    ] : [
+      "Q15. Navegação e Controlos", "Q16. Tutoriais e Menus", "Q17. Eficácia Pedagógica",
+      "Q18. Sequência de Decisão", "Q19. Cálculos e Fórmulas", "Q20. Bicos e Vol. de Calda",
+      "Q21. Seleção e Rótulo", "Q22. Variáveis de Campo", "Q23. Expectativas Globais"
+    ];
+    if (chart.data.datasets[0]) {
+      chart.data.datasets[0].label = isEn ? "Mean Score (1 to 5)" : "Média (1 a 5)";
+      chart.data.datasets[0].data = [s.q15, s.q16, s.q17, s.q18, s.q19, s.q20, s.q21, s.q22, s.q23];
+    }
+    if (chart.options.scales?.x?.title) {
+      chart.options.scales.x.title.text = isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)";
+    }
+    chart.update();
+  }
+
+  /**
+   * Inicialização do Gráfico 4: Demografia - Perfis Profissionais (Q1)
+   */
+  function initDemoProfilesChart() {
+    const canvas = document.getElementById("chart-demo-profiles");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.demoProfiles) return;
+
+    const ctx = canvas.getContext("2d");
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    window.chartInstances.demoProfiles = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: [isEn ? "Awaiting responses" : "A aguardar respostas"],
+        datasets: [{
+          data: [1],
+          backgroundColor: ["#E2E8F0"],
+          borderWidth: 2,
+          borderColor: "#FFFFFF"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const totalProfiles = OFFICIAL_PROFILES.reduce((acc, p) => acc + (state.metrics?.demographics?.profiles?.[p] || 0), 0);
+                const isZero = totalProfiles === 0;
+                const isE = window.I18nManager && window.I18nManager.isEnglish();
+                if (isZero) {
+                  return isE ? " Awaiting responses: 0" : " A aguardar respostas: 0";
+                }
+                const val = context.raw || 0;
+                const pct = Math.round((val / totalProfiles) * 100);
+                return ` ${context.label}: ${val} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    state.charts.demoProfiles = window.chartInstances.demoProfiles;
+  }
+
+  /**
+   * Inicialização do Gráfico 5: Demografia - Culturas Agrícolas (Q5)
+   */
+  function initDemoCropsChart() {
+    const canvas = document.getElementById("chart-demo-crops");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.demoCrops) return;
+
+    const ctx = canvas.getContext("2d");
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    window.chartInstances.demoCrops = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: OFFICIAL_CROPS.map(c => isEn ? (CROP_TRANSLATIONS[c] || c) : c),
+        datasets: [{
+          label: isEn ? "Involved Participants" : "Participantes Envolvidos",
+          data: new Array(OFFICIAL_CROPS.length).fill(0),
+          backgroundColor: "#2563EB",
+          borderColor: "#1D4ED8",
+          borderWidth: 1.5,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            beginAtZero: true,
+            suggestedMax: 5,
+            ticks: { stepSize: 1, precision: 0, font: { size: 10 } }
+          },
+          y: {
+            ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" }
+          }
+        }
+      }
+    });
+    state.charts.demoCrops = window.chartInstances.demoCrops;
+  }
+
+  /**
+   * Renderização / Atualização dos Gráficos de Demografia (Perfis e Culturas - In-Place Mutation)
    */
   function renderDemographicsCharts() {
     if (!state.metrics?.demographics) return;
     const demo = state.metrics.demographics;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
-    // Gráfico de Perfis Profissionais (Q1 - Donut)
-    const ctxProfiles = document.getElementById("chart-demo-profiles")?.getContext("2d");
-    if (ctxProfiles && window.Chart) {
-      if (state.charts.demoProfiles) state.charts.demoProfiles.destroy();
-
+    // 1. Gráfico de Perfis Profissionais (Q1 - Donut)
+    if (!window.chartInstances.demoProfiles) {
+      initDemoProfilesChart();
+    }
+    const chartProfiles = window.chartInstances.demoProfiles;
+    if (chartProfiles) {
       const totalProfiles = OFFICIAL_PROFILES.reduce((acc, p) => acc + (demo.profiles[p] || 0), 0);
       const isZero = totalProfiles === 0;
 
@@ -2469,82 +2719,31 @@ window.ResultsDashboard = (function () {
         pColors = activeEntries.map((_, i) => palette[i % palette.length]);
       }
 
-      state.charts.demoProfiles = new Chart(ctxProfiles, {
-        type: "doughnut",
-        data: {
-          labels: pLabels,
-          datasets: [{
-            data: pData,
-            backgroundColor: pColors,
-            borderWidth: 2,
-            borderColor: "#FFFFFF"
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: { font: { size: 9, weight: "bold" }, boxWidth: 10, padding: 6 }
-            },
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  if (isZero) {
-                    return isEn ? " Awaiting responses: 0" : " A aguardar respostas: 0";
-                  }
-                  const val = context.raw || 0;
-                  const pct = Math.round((val / totalProfiles) * 100);
-                  return ` ${context.label}: ${val} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
+      chartProfiles.data.labels = pLabels;
+      if (chartProfiles.data.datasets[0]) {
+        chartProfiles.data.datasets[0].data = pData;
+        chartProfiles.data.datasets[0].backgroundColor = pColors;
+      }
+      chartProfiles.update();
     }
 
-    // Gráfico de Culturas com Maior Representatividade (Q5 - Barras Horizontais Ordenadas Decrescente)
-    const ctxCrops = document.getElementById("chart-demo-crops")?.getContext("2d");
-    if (ctxCrops && window.Chart) {
-      if (state.charts.demoCrops) state.charts.demoCrops.destroy();
-
+    // 2. Gráfico de Culturas Agrícolas (Q5 - Barras Horizontais)
+    if (!window.chartInstances.demoCrops) {
+      initDemoCropsChart();
+    }
+    const chartCrops = window.chartInstances.demoCrops;
+    if (chartCrops) {
       const cEntries = OFFICIAL_CROPS.map(c => ({
         label: isEn ? (CROP_TRANSLATIONS[c] || c) : c,
         count: demo.crops[c] || 0
       })).sort((a, b) => b.count - a.count);
 
-      state.charts.demoCrops = new Chart(ctxCrops, {
-        type: "bar",
-        data: {
-          labels: cEntries.map(e => e.label),
-          datasets: [{
-            label: isEn ? "Involved Participants" : "Participantes Envolvidos",
-            data: cEntries.map(e => e.count),
-            backgroundColor: "#2563EB",
-            borderColor: "#1D4ED8",
-            borderWidth: 1.5,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: {
-              beginAtZero: true,
-              suggestedMax: 5,
-              ticks: { stepSize: 1, precision: 0, font: { size: 10 } }
-            },
-            y: {
-              ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" }
-            }
-          }
-        }
-      });
+      chartCrops.data.labels = cEntries.map(e => e.label);
+      if (chartCrops.data.datasets[0]) {
+        chartCrops.data.datasets[0].label = isEn ? "Involved Participants" : "Participantes Envolvidos";
+        chartCrops.data.datasets[0].data = cEntries.map(e => e.count);
+      }
+      chartCrops.update();
     }
 
     // Atualizar Média de Literacia Digital (Q6)
@@ -2564,13 +2763,64 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Gráfico 6: Recomendação RENOVATE (Q29)
+   * Inicialização do Gráfico 6: Recomendação RENOVATE Gauge / Donut (Q29)
+   */
+  function initNpsGaugeChart() {
+    const canvas = document.getElementById("chart-nps-gauge");
+    if (!canvas || !window.Chart) return;
+    if (window.chartInstances.npsGauge) return;
+
+    const ctx = canvas.getContext("2d");
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+
+    window.chartInstances.npsGauge = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: [isEn ? "Awaiting responses" : "A aguardar respostas"],
+        datasets: [{
+          data: [1],
+          backgroundColor: ["#E2E8F0"],
+          borderWidth: 2,
+          borderColor: "#FFFFFF"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const n = state.metrics?.nps;
+                const isZero = !n || !n.total || n.total === 0;
+                const isE = window.I18nManager && window.I18nManager.isEnglish();
+                if (isZero) {
+                  return isE ? " Awaiting responses: 0" : " A aguardar respostas: 0";
+                }
+                const val = context.raw || 0;
+                const total = n.total || 1;
+                const pct = Math.round((val / total) * 100);
+                return ` ${context.label}: ${val} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    state.charts.npsGauge = window.chartInstances.npsGauge;
+  }
+
+  /**
+   * Renderização / Atualização do Gráfico 6: Recomendação RENOVATE (In-Place Mutation)
    */
   function renderNpsChart() {
-    const ctx = document.getElementById("chart-nps-gauge")?.getContext("2d");
-    if (!ctx || !window.Chart || !state.metrics?.nps) return;
-
-    if (state.charts.npsGauge) state.charts.npsGauge.destroy();
+    if (!window.chartInstances.npsGauge) {
+      initNpsGaugeChart();
+    }
+    const chart = window.chartInstances.npsGauge;
+    if (!chart || !state.metrics?.nps) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const n = state.metrics.nps;
@@ -2589,41 +2839,12 @@ window.ResultsDashboard = (function () {
       colors = order.map(k => Q29_COLORS[k]);
     }
 
-    state.charts.npsGauge = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: "#FFFFFF"
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "68%",
-        plugins: {
-          legend: {
-            display: false // Mapeamento de Legenda Oculta: fatias limpas e informativas via tooltip
-          },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                if (isZero) {
-                  return isEn ? " Awaiting responses: 0" : " A aguardar respostas: 0";
-                }
-                const val = context.raw || 0;
-                const total = n.total || 1;
-                const pct = Math.round((val / total) * 100);
-                return ` ${context.label}: ${val} (${pct}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
+    chart.data.labels = labels;
+    if (chart.data.datasets[0]) {
+      chart.data.datasets[0].data = data;
+      chart.data.datasets[0].backgroundColor = colors;
+    }
+    chart.update();
 
     const npsScoreEl = document.getElementById("nps-center-score");
     if (npsScoreEl) {
@@ -2638,6 +2859,18 @@ window.ResultsDashboard = (function () {
         ? (isEn ? "(Awaiting responses)" : "(A aguardar respostas)")
         : getQ29DynamicZoneLabel(n.average, isEn);
     }
+  }
+
+  /**
+   * Inicializa todos os gráficos em window.chartInstances com datasets vazios no DOMContentLoaded
+   */
+  function initAllCharts() {
+    initSusComparisonChart();
+    initGamePedagogyChart();
+    initSimModulesChart();
+    initDemoProfilesChart();
+    initDemoCropsChart();
+    initNpsGaugeChart();
   }
 
   /**
@@ -2810,6 +3043,8 @@ window.ResultsDashboard = (function () {
   // API pública do módulo
   return {
     init,
+    initAllCharts,
+    setLiveParticipantCount,
     fetchData,
     onTabShown,
     resizeAllCharts,
@@ -2817,3 +3052,20 @@ window.ResultsDashboard = (function () {
     renderKpiCards
   };
 })();
+
+// Inicialização preventiva dos gráficos com data: [] no DOMContentLoaded
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.ResultsDashboard && typeof window.ResultsDashboard.initAllCharts === "function") {
+        window.ResultsDashboard.initAllCharts();
+      }
+    });
+  } else {
+    setTimeout(() => {
+      if (window.ResultsDashboard && typeof window.ResultsDashboard.initAllCharts === "function") {
+        window.ResultsDashboard.initAllCharts();
+      }
+    }, 0);
+  }
+}
