@@ -707,3 +707,5 @@ const RENOVATE_CONFIG = {
   }
 };
 
+// Fallback global de inicialização da Firebase Realtime Database
+window.RENOVATE_FIREBASE_URL = "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app";
