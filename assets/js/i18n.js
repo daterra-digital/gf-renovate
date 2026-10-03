@@ -181,6 +181,8 @@ window.I18nManager = (function () {
       "results.sus.risk": "Zona de Risco (<50)",
       "results.sus.acceptable": "Zona de Aceitação Média (68-80)",
       "results.sus.excellence": "Zona de Excelência (>80)",
+      "results.sus.chartTitle": "Comparação das 10 Dimensões do SUS (Escala Positiva 1 a 5)",
+      "results.sus.chartNote": "Itens pares invertidos (maior barra = melhor usabilidade)",
 
       // Pedagogical
       "results.ped.title": "Eficácia Pedagógica & Módulos Técnicos de Calibração",
@@ -532,6 +534,8 @@ window.I18nManager = (function () {
       "results.sus.risk": "Risk Zone (<50)",
       "results.sus.acceptable": "Average Acceptance Zone (68-80)",
       "results.sus.excellence": "Excellence Zone (>80)",
+      "results.sus.chartTitle": "Comparison of the 10 SUS Dimensions (Positive Scale 1 to 5)",
+      "results.sus.chartNote": "Even items inverted (higher bar = better usability)",
 
       // Pedagogical
       "results.ped.title": "Pedagogical Effectiveness & Calibration Technical Modules",

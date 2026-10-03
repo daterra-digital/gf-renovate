@@ -496,12 +496,24 @@ window.ResultsDashboard = (function () {
     const re = new RegExp(`^\\s*Q${questionNumber}\\s*[.):\\-]`, "i");
     const cols = [];
     tab.headers.forEach((h, i) => { if (re.test(String(h || ""))) cols.push(i); });
-    if (cols.length < 10) return { average: null, n: 0 };
+    if (cols.length < 10) return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
 
     const itemCols = cols.slice(0, 10); // ordem das colunas = ordem oficial dos itens SUS
     let sum = 0;
     let n = 0;
+    const itemSums = new Array(10).fill(0);
+    const itemCounts = new Array(10).fill(0);
+
     tab.data.forEach(row => {
+      // Acumular coluna a coluna para as 10 dimensões individuais do gráfico
+      itemCols.forEach((ci, idx) => {
+        const v = parseLikertStrict(row[ci]);
+        if (v !== null) {
+          itemSums[idx] += v;
+          itemCounts[idx]++;
+        }
+      });
+
       const vals = itemCols.map(ci => parseLikertStrict(row[ci]));
       if (vals.some(v => v === null)) return;
       let raw = 0;
@@ -511,7 +523,18 @@ window.ResultsDashboard = (function () {
       sum += raw * 2.5;
       n++;
     });
-    return { average: n > 0 ? sum / n : null, n };
+
+    // Transformação para escala positiva 1 a 5:
+    // Ímpares (1, 3, 5, 7, 9): Média Bruta
+    // Pares (2, 4, 6, 8, 10): 6 - Média Bruta
+    const itemsAvg = itemCounts.map((count, idx) => {
+      if (count === 0) return 0;
+      const rawMean = itemSums[idx] / count;
+      const val = (idx % 2 === 0) ? rawMean : (6 - rawMean);
+      return parseFloat(val.toFixed(1));
+    });
+
+    return { average: n > 0 ? sum / n : null, n, itemsAvg };
   }
 
   /**
@@ -1500,8 +1523,16 @@ window.ResultsDashboard = (function () {
     }
 
     const averageScore = totalScore / count;
-    const itemsAvg = itemsSum.map(s => parseFloat((s / count).toFixed(1)));
     const roundedAvg = parseFloat(averageScore.toFixed(1));
+
+    // Mapeamento e Inversão das 10 dimensões SUS para escala positiva 1 a 5:
+    // Ímpares (1, 3, 5, 7, 9 -> índices 0, 2, 4, 6, 8): Média bruta (1 a 5)
+    // Pares (2, 4, 6, 8, 10 -> índices 1, 3, 5, 7, 9): 6 - Média bruta
+    const itemsAvg = itemsSum.map((s, idx) => {
+      const rawMean = s / count;
+      const val = (idx % 2 === 0) ? rawMean : (6 - rawMean);
+      return parseFloat(val.toFixed(1));
+    });
 
     return {
       average: roundedAvg,
@@ -1819,7 +1850,7 @@ window.ResultsDashboard = (function () {
    */
   function renderSusComparisonChart() {
     const ctx = document.getElementById("chart-sus-comparison")?.getContext("2d");
-    if (!ctx || !window.Chart || !state.metrics) return;
+    if (!ctx || !window.Chart) return;
 
     if (state.charts.susComparison) {
       state.charts.susComparison.destroy();
@@ -1827,6 +1858,7 @@ window.ResultsDashboard = (function () {
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
+    // 3. Mapeamento do Eixo X (10 grupos de barras com rótulos positivos otimizados)
     const susLabels = isEn ? [
       "1. Frequency of Use",
       "2. Low Complexity",
@@ -1851,11 +1883,18 @@ window.ResultsDashboard = (function () {
       "10. Fácil Iniciação"
     ];
 
-    const gameItems = (state.metrics.susGame?.average !== null && state.metrics.susGame?.itemsAvg)
-      ? state.metrics.susGame.itemsAvg
+    // Verificar existência de respostas válidas (zero-state = array de 10 zeros)
+    const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||
+                        (state.metrics?.susGame?.average !== null && state.metrics?.susGame?.average !== undefined);
+    const simHasData = (state.kpis?.susSim?.average !== null && state.kpis?.susSim?.average !== undefined) ||
+                       (state.metrics?.susSim?.average !== null && state.metrics?.susSim?.average !== undefined);
+
+    const gameItems = gameHasData
+      ? (state.kpis?.susGame?.itemsAvg || state.metrics?.susGame?.itemsAvg || new Array(10).fill(0))
       : new Array(10).fill(0);
-    const simItems = (state.metrics.susSim?.average !== null && state.metrics.susSim?.itemsAvg)
-      ? state.metrics.susSim.itemsAvg
+
+    const simItems = simHasData
+      ? (state.kpis?.susSim?.itemsAvg || state.metrics?.susSim?.itemsAvg || new Array(10).fill(0))
       : new Array(10).fill(0);
 
     state.charts.susComparison = new Chart(ctx, {
@@ -1869,7 +1908,8 @@ window.ResultsDashboard = (function () {
             backgroundColor: "#F5B842",
             borderColor: "#D97706",
             borderWidth: 1.5,
-            borderRadius: 6
+            borderRadius: 6,
+            maxBarThickness: 28
           },
           {
             label: isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)",
@@ -1877,7 +1917,8 @@ window.ResultsDashboard = (function () {
             backgroundColor: "#0F172A",
             borderColor: "#0F172A",
             borderWidth: 1.5,
-            borderRadius: 6
+            borderRadius: 6,
+            maxBarThickness: 28
           }
         ]
       },
@@ -1885,15 +1926,38 @@ window.ResultsDashboard = (function () {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "top", labels: { font: { weight: "bold", size: 11 } } },
+          legend: {
+            position: "top",
+            labels: {
+              font: { weight: "bold", size: 12 },
+              usePointStyle: true,
+              pointStyle: "rectRounded",
+              padding: 16
+            }
+          },
           tooltip: {
+            backgroundColor: "#0F172A",
+            titleFont: { size: 12, weight: "bold" },
+            bodyFont: { size: 11 },
+            padding: 10,
+            cornerRadius: 8,
             callbacks: {
+              label: function(context) {
+                const val = context.parsed.y;
+                const label = context.dataset.label || "";
+                if (val === 0) return `${label}: —`;
+                return `${label}: ${val.toFixed(1)} / 5.0`;
+              },
               afterLabel: function(context) {
                 const idx = context.dataIndex;
-                if (isEn) {
-                  return (idx % 2 === 1) ? "(Inverted item: lower score means better usability)" : "(Higher score means better usability)";
+                if (idx % 2 === 1) {
+                  return isEn
+                    ? "(Even item inverted: 6 − raw mean; higher = better usability)"
+                    : "(Item par invertido: 6 − média bruta; maior = melhor usabilidade)";
                 }
-                return (idx % 2 === 1) ? "(Nota invertida: quanto menor, melhor usabilidade)" : "(Quanto maior, melhor usabilidade)";
+                return isEn
+                  ? "(Direct mean: higher = better usability)"
+                  : "(Média direta: maior = melhor usabilidade)";
               }
             }
           }
@@ -1902,11 +1966,31 @@ window.ResultsDashboard = (function () {
           y: {
             min: 0,
             max: 5,
-            ticks: { stepSize: 1, font: { size: 10 } },
-            title: { display: true, text: isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)", font: { size: 11, weight: "bold" } }
+            ticks: {
+              stepSize: 1,
+              font: { size: 11, weight: "bold" },
+              color: "#475569"
+            },
+            title: {
+              display: true,
+              text: isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)",
+              font: { size: 12, weight: "bold" },
+              color: "#334155"
+            },
+            grid: {
+              color: "#F1F5F9"
+            }
           },
           x: {
-            ticks: { font: { size: 10, weight: "600" } }
+            ticks: {
+              font: { size: 10, weight: "600" },
+              color: "#1E293B",
+              maxRotation: 35,
+              minRotation: 20
+            },
+            grid: {
+              display: false
+            }
           }
         }
       }
