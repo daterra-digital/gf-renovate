@@ -452,63 +452,126 @@ window.ResultsDashboard = (function () {
   }
 
   /**
+   * Desembrulha recursivamente qualquer árvore ou invólucro exportado pelo Google Apps Script
+   * ou pelo Firebase Realtime Database (Array, Objeto com propriedade única/array, Push-IDs, etc.)
+   */
+  function unwrapFirebasePayload(rawVal) {
+    if (rawVal === null || rawVal === undefined) return [];
+    let current = rawVal;
+
+    for (let depth = 0; depth < 6; depth++) {
+      if (!current || typeof current !== "object") break;
+
+      if (Array.isArray(current)) {
+        if (current.length === 1 && Array.isArray(current[0])) {
+          current = current[0];
+          continue;
+        }
+        if (current.length > 0 && Array.isArray(current[0]) && current[0].length > 0 && typeof current[0][0] === "object" && !Array.isArray(current[0][0])) {
+          current = current[0];
+          continue;
+        }
+        break;
+      }
+
+      const keys = Object.keys(current);
+      if (keys.length === 0) return [];
+
+      const arrayKey = keys.find(k => Array.isArray(current[k]));
+      if (arrayKey) {
+        current = current[arrayKey];
+        continue;
+      }
+
+      if (keys.length === 1 && current[keys[0]] && typeof current[keys[0]] === "object") {
+        current = current[keys[0]];
+        continue;
+      }
+
+      const allNumeric = keys.every(k => /^\d+$/.test(k));
+      if (allNumeric) {
+        current = Object.values(current);
+        continue;
+      }
+
+      const allObjects = keys.every(k => current[k] && typeof current[k] === "object");
+      if (allObjects) {
+        current = keys.map(k => {
+          const v = current[k];
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v._participantCode) {
+              return Object.assign({ _participantCode: k, code: k }, v);
+            }
+          }
+          return v;
+        });
+        continue;
+      }
+
+      break;
+    }
+
+    return current;
+  }
+
+  /**
    * Converte qualquer entrada do Firebase (Array de Objetos, Objeto de Push-IDs, ou Matriz 2D)
    * para um Array padronizado de Linhas de Objeto: Array<Record<string, any>>
    */
   function extractRowObjects(rawVal) {
     if (!rawVal) return [];
+    const unwrapped = unwrapFirebasePayload(rawVal);
+    if (!unwrapped) return [];
+
     let items = [];
-    if (Array.isArray(rawVal)) {
-      items = rawVal.filter(item => item !== null && item !== undefined);
-    } else if (typeof rawVal === "object") {
-      if (Array.isArray(rawVal.data)) {
-        items = rawVal.data.filter(item => item !== null && item !== undefined);
-      } else {
-        const entries = Object.entries(rawVal);
-        const maxEntries = Math.min(entries.length, 500);
-        for (let i = 0; i < maxEntries; i++) {
-          const [k, v] = entries[i];
-          if (v && typeof v === "object" && !Array.isArray(v)) {
-            if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v["Código de Participante"]) {
-              items.push(Object.assign({ _participantCode: k, code: k }, v));
-            } else {
-              items.push(v);
-            }
-          } else if (v !== null && v !== undefined) {
-            items.push(v);
-          }
-        }
-      }
+    if (Array.isArray(unwrapped)) {
+      items = unwrapped.filter(item => item !== null && item !== undefined);
+    } else if (typeof unwrapped === "object") {
+      items = Object.values(unwrapped).filter(item => item !== null && item !== undefined);
+    } else {
+      return [];
     }
+
     if (!items.length) return [];
 
-    // Se for uma matriz 2D: [ [headers...], [row1...], ... ]
+    if (Array.isArray(items[0]) && items[0].length > 0 && typeof items[0][0] === "object") {
+      items = items.flat();
+    }
+
     if (Array.isArray(items[0])) {
-      const headers = items[0].map(h => String(h !== null && h !== undefined ? h : "").trim());
-      const dataRows = items.slice(1);
-      const maxRows = Math.min(dataRows.length, 500);
-      const result = [];
-      for (let rIdx = 0; rIdx < maxRows; rIdx++) {
-        const rowArr = dataRows[rIdx];
-        if (!Array.isArray(rowArr)) continue;
-        const rowObj = {};
-        for (let hIdx = 0; hIdx < headers.length; hIdx++) {
-          const h = headers[hIdx];
-          if (h) {
-            rowObj[h] = rowArr[hIdx] !== undefined && rowArr[hIdx] !== null ? String(rowArr[hIdx]).trim() : "";
+      const firstRow = items[0];
+      const isHeaderRow = firstRow.every(c => c === null || c === undefined || typeof c !== "object");
+      if (isHeaderRow) {
+        const headers = firstRow.map(h => String(h !== null && h !== undefined ? h : "").trim());
+        const dataRows = items.slice(1);
+        const maxRows = Math.min(dataRows.length, 500);
+        const result = [];
+        for (let rIdx = 0; rIdx < maxRows; rIdx++) {
+          const rowArr = dataRows[rIdx];
+          if (!Array.isArray(rowArr)) continue;
+          const rowObj = {};
+          for (let hIdx = 0; hIdx < headers.length; hIdx++) {
+            const h = headers[hIdx];
+            if (h) {
+              rowObj[h] = rowArr[hIdx] !== undefined && rowArr[hIdx] !== null ? String(rowArr[hIdx]).trim() : "";
+            }
           }
+          result.push(rowObj);
         }
-        result.push(rowObj);
+        return result;
+      } else {
+        items = items.flat();
       }
-      return result;
     }
 
     const maxItems = Math.min(items.length, 500);
     const result = [];
     for (let i = 0; i < maxItems; i++) {
       const item = items[i];
-      if (item && typeof item === "object") {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
         result.push(item);
+      } else if (typeof item === "string" && isValidParticipantCode(item)) {
+        result.push({ code: item.trim().toUpperCase(), _participantCode: item.trim().toUpperCase() });
       }
     }
     return result;
@@ -518,29 +581,50 @@ window.ResultsDashboard = (function () {
    * Extrai o código do participante de uma linha objeto de forma resiliente
    */
   function extractParticipantCodeFromRow(row) {
-    if (!row || typeof row !== "object") return "";
-    if (row._participantCode) {
-      const c = normalizeParticipantCode(row._participantCode);
-      if (c) return c;
+    if (!row) return "";
+    if (typeof row === "string") {
+      const s = normalizeParticipantCode(row);
+      return isValidParticipantCode(s) ? s : "";
     }
-    if (row.code || row.userCode || row.participantCode) {
-      const c = normalizeParticipantCode(row.code || row.userCode || row.participantCode);
-      if (c) return c;
+    if (typeof row !== "object") return "";
+
+    // 1. Chaves diretas conhecidas
+    const directKeys = [
+      "_participantCode", "code", "userCode", "user_code", "participantCode",
+      "participant_code", "participant", "id", "ID",
+      "Código de Participante", "Código do Participante", "Código", "Codigo",
+      "Codigo de Participante", "Código de participante", "Código de Participante:",
+      "Código:"
+    ];
+    for (let i = 0; i < directKeys.length; i++) {
+      const dk = directKeys[i];
+      if (row[dk] !== undefined && row[dk] !== null) {
+        const c = normalizeParticipantCode(row[dk]);
+        if (isValidParticipantCode(c)) return c;
+      }
     }
+
+    // 2. Chaves que correspondam a cabeçalhos de código
     const keys = Object.keys(row);
     const maxK = Math.min(keys.length, 120);
     for (let i = 0; i < maxK; i++) {
       const k = keys[i];
       if (isCodeHeader(k)) {
         const c = normalizeParticipantCode(row[k]);
-        if (c) return c;
+        if (isValidParticipantCode(c)) return c;
       }
     }
+
+    // 3. Varrer todos os valores do objeto procurando padrão de código FG2-PTxx ou NS-PTxx
     for (let i = 0; i < maxK; i++) {
       const k = keys[i];
-      const c = normalizeParticipantCode(row[k]);
-      if (isValidParticipantCode(c)) return c;
+      const val = row[k];
+      if (val !== undefined && val !== null && typeof val !== "object") {
+        const c = normalizeParticipantCode(val);
+        if (isValidParticipantCode(c)) return c;
+      }
     }
+
     return "";
   }
 
@@ -939,6 +1023,10 @@ window.ResultsDashboard = (function () {
       } else {
         const codes = getActiveSessionCodes();
         participantCount = codes.size;
+      }
+
+      if (k && k.submissionCodes && k.submissionCodes.size > participantCount) {
+        participantCount = k.submissionCodes.size;
       }
 
       if (!k) {
@@ -1424,8 +1512,9 @@ window.ResultsDashboard = (function () {
    */
   function extractValidLoginCodes(rawLogins) {
     if (!rawLogins) return [];
+    const unwrapped = unwrapFirebasePayload(rawLogins);
     const uniqueCodes = new Set();
-    const entries = Array.isArray(rawLogins) ? rawLogins : (typeof rawLogins === "object" ? Object.values(rawLogins) : [rawLogins]);
+    const entries = Array.isArray(unwrapped) ? unwrapped : (typeof unwrapped === "object" ? Object.values(unwrapped) : [unwrapped]);
 
     entries.forEach(entry => {
       if (!entry) return;
@@ -1434,35 +1523,32 @@ window.ResultsDashboard = (function () {
       if (typeof entry === "string") {
         code = entry;
       } else if (typeof entry === "object") {
-        if (entry.code) code = entry.code;
-        else if (entry.userCode) code = entry.userCode;
-        else if (Array.isArray(entry)) {
-          for (const cell of entry) {
-            const s = String(cell || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
-          }
-        } else {
-          for (const k of Object.keys(entry)) {
-            const v = String(entry[k] || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(v)) { code = v; break; }
+        code = extractParticipantCodeFromRow(entry);
+        if (!code && Array.isArray(entry)) {
+          for (let i = 0; i < entry.length; i++) {
+            const s = normalizeParticipantCode(entry[i]);
+            if (isValidParticipantCode(s)) { code = s; break; }
           }
         }
       }
 
-      if (code && typeof code === "string") {
-        const clean = code.trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2") {
+      if (code) {
+        const clean = normalizeParticipantCode(code);
+        if (isValidParticipantCode(clean)) {
           uniqueCodes.add(clean);
         }
       }
     });
 
-    return Array.from(uniqueCodes);
+    const result = Array.from(uniqueCodes);
+    console.log("[Firebase Parser] /Logins payload:", rawLogins, "-> parsed codes:", result);
+    return result;
   }
 
   /**
    * Conecta à Firebase Realtime Database via WebSockets (onValue)
-   * Subscreve: /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
+   * Subscreve: Raiz / (descoberta automática de nós) e nós diretos
+   * /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
    */
   function connectFirebase() {
     if (typeof firebase === "undefined" || !firebase.database) {
@@ -1487,58 +1573,100 @@ window.ResultsDashboard = (function () {
         }
       });
 
+      // 0. Listener na Raiz "/" para mapear dinamicamente as tabelas exportadas pelo Apps Script
+      db.ref("/").on("value", rootSnap => {
+        try {
+          const rootVal = rootSnap.val();
+          if (!rootVal || typeof rootVal !== "object") return;
+          console.log("[Firebase Parser] Root keys in RTDB:", Object.keys(rootVal));
+
+          for (const k of Object.keys(rootVal)) {
+            const val = rootVal[k];
+            if (!val) continue;
+            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (normKey.includes("login")) {
+              const validLogins = extractValidLoginCodes(val);
+              if (validLogins.length > 0) {
+                state.totalLogins = validLogins.length;
+                state.uniqueLoginCodes = new Set(validLogins);
+                if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+                  window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+                }
+              }
+            } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
+              state.rawFirebaseData.game = val;
+            } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
+              state.rawFirebaseData.sim = val;
+            } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
+              state.rawFirebaseData.global = val;
+            }
+          }
+          syncAllFirebaseData();
+        } catch (rootErr) {
+          console.warn("Aviso ao processar nó raiz / do Firebase:", rootErr);
+        }
+      });
+
       // 1. /Logins (Amostra Total TT)
-      db.ref("/Logins").on("value", snapshot => {
+      const handleLoginsSnapshot = snapshot => {
         try {
           const validLogins = extractValidLoginCodes(snapshot.val());
           if (validLogins.length > 0) {
             state.totalLogins = validLogins.length;
             state.uniqueLoginCodes = new Set(validLogins);
+            if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+              window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+            }
           }
           renderKpiCards();
           updateConnectionBadge(true);
         } catch (err) {
           console.warn("Aviso ao processar /Logins no ResultsDashboard:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /Logins no ResultsDashboard:", err);
-      });
+      };
+      db.ref("/Logins").on("value", handleLoginsSnapshot);
 
       // 2. /RespostasdoFormulário1 (Game + Demografia)
-      db.ref("/RespostasdoFormulário1").on("value", snapshot => {
+      const handleGameSnapshot = snapshot => {
         try {
-          state.rawFirebaseData.game = snapshot.val();
-          syncAllFirebaseData();
+          if (snapshot.val() !== null) {
+            state.rawFirebaseData.game = snapshot.val();
+            syncAllFirebaseData();
+          }
         } catch (err) {
           console.warn("Aviso /RespostasdoFormulário1:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário1:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário1").on("value", handleGameSnapshot);
+      db.ref("/RespostasdoFormulario1").on("value", handleGameSnapshot);
 
       // 3. /RespostasdoFormulário2 (Simulador)
-      db.ref("/RespostasdoFormulário2").on("value", snapshot => {
+      const handleSimSnapshot = snapshot => {
         try {
-          state.rawFirebaseData.sim = snapshot.val();
-          syncAllFirebaseData();
+          if (snapshot.val() !== null) {
+            state.rawFirebaseData.sim = snapshot.val();
+            syncAllFirebaseData();
+          }
         } catch (err) {
           console.warn("Aviso /RespostasdoFormulário2:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário2:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário2").on("value", handleSimSnapshot);
+      db.ref("/RespostasdoFormulario2").on("value", handleSimSnapshot);
 
       // 4. /RespostasdoFormulário3 (Global NPS + Síntese)
-      db.ref("/RespostasdoFormulário3").on("value", snapshot => {
+      const handleGlobalSnapshot = snapshot => {
         try {
-          state.rawFirebaseData.global = snapshot.val();
-          syncAllFirebaseData();
+          if (snapshot.val() !== null) {
+            state.rawFirebaseData.global = snapshot.val();
+            syncAllFirebaseData();
+          }
         } catch (err) {
           console.warn("Aviso /RespostasdoFormulário3:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário3:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário3").on("value", handleGlobalSnapshot);
+      db.ref("/RespostasdoFormulario3").on("value", handleGlobalSnapshot);
 
       state.isLive = true;
       updateConnectionBadge(true);
@@ -1619,11 +1747,44 @@ window.ResultsDashboard = (function () {
         const db = firebase.database();
         try { db.goOnline(); } catch (e) {}
 
+        // 1. Tentar ler raiz "/" para obter toda a árvore de forma unificada
+        try {
+          const rootSnap = await db.ref("/").once("value");
+          if (rootSnap && rootSnap.val()) {
+            const rootVal = rootSnap.val();
+            console.log("[Firebase Parser] Manual refresh root keys:", Object.keys(rootVal));
+            for (const k of Object.keys(rootVal)) {
+              const val = rootVal[k];
+              if (!val) continue;
+              const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              if (normKey.includes("login")) {
+                const validLogins = extractValidLoginCodes(val);
+                if (validLogins.length > 0) {
+                  state.totalLogins = validLogins.length;
+                  state.uniqueLoginCodes = new Set(validLogins);
+                  if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+                    window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+                  }
+                }
+              } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
+                state.rawFirebaseData.game = val;
+              } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
+                state.rawFirebaseData.sim = val;
+              } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
+                state.rawFirebaseData.global = val;
+              }
+            }
+          }
+        } catch (rootErr) {
+          console.warn("Aviso na leitura da raiz no fetchData:", rootErr);
+        }
+
+        // 2. Leituras pontuais diretas como redundância
         const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
-          db.ref("/Logins").once("value").catch(err => { console.warn("Aviso /Logins once:", err); return null; }),
-          db.ref("/RespostasdoFormulário1").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário1 once:", err); return null; }),
-          db.ref("/RespostasdoFormulário2").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário2 once:", err); return null; }),
-          db.ref("/RespostasdoFormulário3").once("value").catch(err => { console.warn("Aviso /RespostasdoFormulário3 once:", err); return null; })
+          db.ref("/Logins").once("value").catch(() => null),
+          db.ref("/RespostasdoFormulário1").once("value").catch(() => db.ref("/RespostasdoFormulario1").once("value").catch(() => null)),
+          db.ref("/RespostasdoFormulário2").once("value").catch(() => db.ref("/RespostasdoFormulario2").once("value").catch(() => null)),
+          db.ref("/RespostasdoFormulário3").once("value").catch(() => db.ref("/RespostasdoFormulario3").once("value").catch(() => null))
         ]);
 
         if (snapLogins && snapLogins.val() !== null) {
@@ -2013,7 +2174,7 @@ window.ResultsDashboard = (function () {
     const finalSuggestions = feedItems.filter(f => f.tagType === "issue");
 
     state.metrics = {
-      participantCount: Math.max(gameRows.length, simRows.length, globalRows.length),
+      participantCount: Math.max(gameRows.length, simRows.length, globalRows.length, state.totalLogins || 0, state.kpis?.submissionCodes?.size || 0),
       susGame,
       susSim,
       nps,

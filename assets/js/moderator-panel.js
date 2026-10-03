@@ -9,11 +9,7 @@ window.ModeratorPanel = (function () {
   const MODERATOR_PASSWORDS = ["renovate26", "2026"];
   const SESSION_AUTH_KEY = "renovate_mod_authenticated";
   const STORAGE_KEYS = {
-    TOTAL_TARGET: "total_target",
-    DELAY_STAGE_ID: "renovate_delay_stage_id",
-    DELAY_REAL_START: "renovate_delay_real_start",
-    STOPWATCH_ELAPSED: "renovate_stopwatch_elapsed",
-    STOPWATCH_RUNNING: "renovate_stopwatch_running"
+    TOTAL_TARGET: "total_target"
   };
 
   // Endpoints Oficiais Google Sheets (Separadores Públicos em CSV)
@@ -53,7 +49,7 @@ window.ModeratorPanel = (function () {
 
   // Estado Interno do Painel de Moderação
   let state = {
-    activeTab: "access", // 'access' | 'participants' | 'timing'
+    activeTab: "access",
     totalTarget: 22,
     submissions: {
       game: { count: 0, loading: false, error: null, lastUpdated: null },
@@ -63,21 +59,7 @@ window.ModeratorPanel = (function () {
     pollingIntervalId: null,
     pollingSeconds: 10,
     pollingCountdown: 10,
-    countdownIntervalId: null,
-    // Gestão de Tempo / Cronómetro
-    stopwatch: {
-      seconds: 0,
-      intervalId: null,
-      isRunning: false
-    },
-    // Delay Tracker
-    delayTracker: {
-      selectedStageId: "slot-4", // Pré-seleção: Prática Serious Game
-      scheduledStart: "10:30",
-      scheduledEnd: "11:10",
-      durationMinutes: 40,
-      realStartTime: ""
-    }
+    countdownIntervalId: null
   };
 
   /**
@@ -206,34 +188,10 @@ window.ModeratorPanel = (function () {
   function switchTab(tabId) {
     state.activeTab = tabId || "access";
 
-    const tabButtons = document.querySelectorAll(".mod-tab-btn");
-    tabButtons.forEach(btn => {
-      const t = btn.getAttribute("data-mod-tab");
-      if (t === state.activeTab) {
-        btn.className = "mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-sm transition";
-      } else {
-        btn.className = "mod-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition";
-      }
-    });
-
-    const panes = {
-      access: document.getElementById("mod-tab-content-access"),
-      timing: document.getElementById("mod-tab-content-timing")
-    };
-
-    Object.entries(panes).forEach(([k, pane]) => {
-      if (!pane) return;
-      if (k === state.activeTab) {
-        pane.classList.remove("hidden");
-        pane.classList.add("animate-fadeIn");
-      } else {
-        pane.classList.add("hidden");
-        pane.classList.remove("animate-fadeIn");
-      }
-    });
-
-    if (state.activeTab === "timing") {
-      updateDelayCalculation();
+    const pane = document.getElementById("mod-tab-content-access");
+    if (pane) {
+      pane.classList.remove("hidden");
+      pane.classList.add("animate-fadeIn");
     }
 
     if (window.lucide) {
@@ -343,65 +301,6 @@ window.ModeratorPanel = (function () {
         sessionLabel.className = "font-mono font-medium text-slate-400 text-xs italic";
       }
     }
-
-    // 5. Renderizar Toggles dos Passos 1 a 5 da Sessão ao Vivo
-    renderStepToggles();
-
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }
-
-  /**
-   * Renderiza os toggles individuais dos passos da Sessão ao Vivo
-   */
-  function renderStepToggles() {
-    const container = document.getElementById("mod-step-toggles-container");
-    if (!container || !window.LiveSession) return;
-
-    const stateLS = window.LiveSession.getState();
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-
-    const stepNames = {
-      1: isEn ? "Step 1: Welcome & Participant Code" : "Passo 1: Abertura & Identificação de Participante",
-      2: isEn ? "Step 2: Presentation & Slides" : "Passo 2: Apresentação Oficial (Slides)",
-      3: isEn ? "Step 3: Serious Game & Form 1" : "Passo 3: Serious Game & Form 1 (Tallentto)",
-      4: isEn ? "Step 4: Virtual Simulator & Form 2" : "Passo 4: Simulador PC & Form 2 (Virmedex)",
-      5: isEn ? "Step 5: Global Evaluation & NPS" : "Passo 5: Avaliação Global & Encerramento"
-    };
-
-    container.innerHTML = [1, 2, 3, 4, 5].map(step => {
-      const isUnlocked = stateLS && stateLS.unlockedSteps && stateLS.unlockedSteps.includes(step);
-      return `
-        <div class="flex items-center justify-between p-3 rounded-xl border ${isUnlocked ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-slate-50'} transition">
-          <div class="flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-full ${isUnlocked ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-200'} text-xs font-black flex items-center justify-center shrink-0">
-              ${step}
-            </span>
-            <span class="text-xs font-bold text-slate-800">${stepNames[step]}</span>
-          </div>
-          <button type="button" 
-                  data-step="${step}" 
-                  class="btn-mod-toggle-step px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 shadow-2xs
-                         ${isUnlocked ? 'bg-rose-100 text-rose-800 hover:bg-rose-200 border border-rose-300' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'}">
-            <i data-lucide="${isUnlocked ? 'lock' : 'unlock'}" class="w-3.5 h-3.5"></i>
-            ${isUnlocked ? (isEn ? 'Lock' : 'Bloquear') : (isEn ? 'Unlock' : 'Desbloquear')}
-          </button>
-        </div>
-      `;
-    }).join("");
-
-    container.querySelectorAll(".btn-mod-toggle-step").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const step = parseInt(btn.getAttribute("data-step"), 10);
-        if (stateLS && stateLS.unlockedSteps && stateLS.unlockedSteps.includes(step)) {
-          window.LiveSession.lockStep(step);
-        } else {
-          window.LiveSession.unlockStep(step);
-        }
-        renderStepToggles();
-      });
-    });
 
     if (window.lucide) {
       window.lucide.createIcons();
@@ -638,252 +537,6 @@ window.ModeratorPanel = (function () {
   }
 
   /* ==========================================================================
-     MÓDULO 4: GESTÃO DE TEMPO E DESVIOS DE AGENDA (DELAY TRACKER)
-     ========================================================================== */
-
-  /**
-   * Povoa o select com as 11 etapas do programa oficial a partir de RENOVATE_CONFIG.schedule
-   */
-  function populateStageSelect() {
-    const select = document.getElementById("mod-delay-stage-select");
-    if (!select || !window.RENOVATE_CONFIG || !RENOVATE_CONFIG.schedule) return;
-
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const schedule = RENOVATE_CONFIG.schedule;
-
-    let savedStageId = state.delayTracker.selectedStageId;
-    try {
-      const s = localStorage.getItem(STORAGE_KEYS.DELAY_STAGE_ID);
-      if (s) savedStageId = s;
-    } catch (e) {}
-
-    select.innerHTML = schedule.map(slot => {
-      const title = (isEn && slot.titleEn) ? slot.titleEn : slot.title;
-      const isSelected = slot.id === savedStageId;
-      return `<option value="${slot.id}" ${isSelected ? 'selected' : ''}>${slot.time} • ${title}</option>`;
-    }).join("");
-
-    onStageSelected(select.value);
-  }
-
-  /**
-   * Trata a seleção de uma etapa no dropdown
-   */
-  function onStageSelected(stageId) {
-    if (!window.RENOVATE_CONFIG || !RENOVATE_CONFIG.schedule) return;
-    const slot = RENOVATE_CONFIG.schedule.find(s => s.id === stageId) || RENOVATE_CONFIG.schedule[0];
-    if (!slot) return;
-
-    state.delayTracker.selectedStageId = slot.id;
-    try {
-      localStorage.setItem(STORAGE_KEYS.DELAY_STAGE_ID, slot.id);
-    } catch (e) {}
-
-    // Extrair horário agendado de início e fim a partir de "10:20 - 11:00"
-    const timeParts = slot.time.split("-").map(p => p.trim());
-    const schedStart = timeParts[0] || "10:00";
-    const schedEnd = timeParts[1] || "10:10";
-
-    state.delayTracker.scheduledStart = schedStart;
-    state.delayTracker.scheduledEnd = schedEnd;
-
-    // Calcular duração agendada em minutos
-    const startMin = timeToMinutes(schedStart);
-    const endMin = timeToMinutes(schedEnd);
-    state.delayTracker.durationMinutes = Math.max(5, endMin - startMin);
-
-    // Carregar hora real guardada ou manter atual
-    let savedReal = "";
-    try {
-      savedReal = localStorage.getItem(`${STORAGE_KEYS.DELAY_REAL_START}_${slot.id}`) || "";
-    } catch (e) {}
-
-    const realInput = document.getElementById("mod-real-start-input");
-    if (realInput) {
-      realInput.value = savedReal || schedStart;
-      state.delayTracker.realStartTime = realInput.value;
-    }
-
-    updateDelayCalculation();
-  }
-
-  /**
-   * Converte string HH:MM em minutos a partir da meia-noite
-   */
-  function timeToMinutes(timeStr) {
-    if (!timeStr || !timeStr.includes(":")) return 0;
-    const [h, m] = timeStr.split(":").map(n => parseInt(n, 10) || 0);
-    return h * 60 + m;
-  }
-
-  /**
-   * Converte minutos a partir da meia-noite para formato HH:MM
-   */
-  function minutesToTime(minutes) {
-    const normalized = (minutes % 1440 + 1440) % 1440;
-    const h = String(Math.floor(normalized / 60)).padStart(2, "0");
-    const m = String(normalized % 60).padStart(2, "0");
-    return `${h}:${m}`;
-  }
-
-  /**
-   * Calcula o desvio entre a Hora Agendada e a Hora Real de Início
-   */
-  function updateDelayCalculation() {
-    const realInput = document.getElementById("mod-real-start-input");
-    if (realInput) {
-      state.delayTracker.realStartTime = realInput.value;
-    }
-
-    const schedStart = state.delayTracker.scheduledStart;
-    const realStart = state.delayTracker.realStartTime || schedStart;
-    const duration = state.delayTracker.durationMinutes;
-
-    const schedStartMin = timeToMinutes(schedStart);
-    const realStartMin = timeToMinutes(realStart);
-    const driftMinutes = realStartMin - schedStartMin;
-
-    // Calcular Nova Estimativa de Conclusão: Hora Real de Início + Duração Prevista
-    const newEstimatedEndMin = realStartMin + duration;
-    const newEstimatedEnd = minutesToTime(newEstimatedEndMin);
-
-    // Atualizar Elementos na UI
-    const schedStartDisplay = document.getElementById("mod-sched-start-display");
-    const schedEndDisplay = document.getElementById("mod-sched-end-display");
-    const durationDisplay = document.getElementById("mod-sched-duration-display");
-    const estimatedEndDisplay = document.getElementById("mod-estimated-end-display");
-    const driftBadge = document.getElementById("mod-drift-badge");
-    const driftAdvice = document.getElementById("mod-drift-advice");
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-
-    if (schedStartDisplay) schedStartDisplay.textContent = schedStart;
-    if (schedEndDisplay) schedEndDisplay.textContent = state.delayTracker.scheduledEnd;
-    if (durationDisplay) durationDisplay.textContent = `${duration} min`;
-    if (estimatedEndDisplay) estimatedEndDisplay.textContent = newEstimatedEnd;
-
-    // Selo de Desvio (Verde: 0-2min, Laranja: 3-10min, Vermelho: >10min)
-    if (driftBadge && driftAdvice) {
-      if (driftMinutes <= 2) {
-        // VERDE: Dentro do previsto
-        const label = driftMinutes <= 0 
-          ? (isEn ? "On Schedule (0 min)" : "Dentro do previsto (No horário)")
-          : (isEn ? `On Schedule (+${driftMinutes} min)` : `Dentro do previsto (+${driftMinutes} min)`);
-        driftBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs";
-        driftBadge.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-700"></i> <span>${label}</span>`;
-        driftAdvice.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium space-y-1";
-        driftAdvice.innerHTML = `
-          <div class="font-black flex items-center gap-1.5 text-emerald-800">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-            ${isEn ? "Excellent Pace" : "Excelente Ritmo de Gestão"}
-          </div>
-          <p>${isEn ? "The session is running strictly as planned. Proceed normally without adjustments." : "A sessão decorre estritamente dentro da tolerância normal. Manter o guião previsto."}</p>
-        `;
-      } else if (driftMinutes <= 10) {
-        // LARANJA: 3 a 10 min de atraso
-        driftBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs";
-        driftBadge.innerHTML = `<i data-lucide="clock" class="w-4 h-4 text-amber-700"></i> <span>${isEn ? `Moderate Delay (+${driftMinutes} min)` : `Atraso Moderado (+${driftMinutes} min)`}</span>`;
-        driftAdvice.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium space-y-1";
-        driftAdvice.innerHTML = `
-          <div class="font-black flex items-center gap-1.5 text-amber-800">
-            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
-            ${isEn ? "Suggested Time Compensation" : "Compensação de Tempo Recomendada"}
-          </div>
-          <p>${isEn ? `A slight drift of +${driftMinutes} min detected. Recommend shortening the coffee break or rounding the discussion to keep the 13:00 lunch.` : `Desvio moderado de +${driftMinutes} min. Sugerir compensação encurtando o intervalo de café ou acelerando a introdução teórica para salvaguardar o almoço das 13:00.`}</p>
-        `;
-      } else {
-        // VERMELHO: > 10 min de atraso
-        driftBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-rose-100 text-rose-900 border border-rose-300 shadow-2xs animate-pulse";
-        driftBadge.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-700"></i> <span>${isEn ? `Critical Delay (+${driftMinutes} min)` : `Aviso de Gestão de Tempo (+${driftMinutes} min)`}</span>`;
-        driftAdvice.className = "p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-medium space-y-1";
-        driftAdvice.innerHTML = `
-          <div class="font-black flex items-center gap-1.5 text-rose-800">
-            <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i>
-            ${isEn ? "Critical Time Management Alert" : "Aviso Crítico de Gestão de Tempo"}
-          </div>
-          <p>${isEn ? `Significant delay (+${driftMinutes} min). Active intervention recommended: shorten non-critical steps or merge feedback discussions.` : `Atraso substancial acumulado (+${driftMinutes} min). Recomenda-se avançar objetivamente para os formulários de teste e encurtar as intervenções livres da sala.`}</p>
-        `;
-      }
-    }
-
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }
-
-  /**
-   * Lógica do Cronómetro Progressivo (Stopwatch 00:00:00)
-   */
-  function startStopwatch() {
-    if (state.stopwatch.isRunning) return;
-
-    // Se a hora real de início ainda não estiver definida, captura automaticamente a hora atual
-    const now = new Date();
-    const currentH = String(now.getHours()).padStart(2, "0");
-    const currentM = String(now.getMinutes()).padStart(2, "0");
-    const realInput = document.getElementById("mod-real-start-input");
-
-    if (realInput && (!realInput.value || realInput.value === state.delayTracker.scheduledStart)) {
-      realInput.value = `${currentH}:${currentM}`;
-      state.delayTracker.realStartTime = realInput.value;
-      try {
-        localStorage.setItem(`${STORAGE_KEYS.DELAY_REAL_START}_${state.delayTracker.selectedStageId}`, realInput.value);
-      } catch (e) {}
-      updateDelayCalculation();
-    }
-
-    state.stopwatch.isRunning = true;
-    state.stopwatch.intervalId = setInterval(() => {
-      state.stopwatch.seconds++;
-      renderStopwatchDisplay();
-    }, 1000);
-
-    updateStopwatchButtons();
-  }
-
-  function pauseStopwatch() {
-    if (!state.stopwatch.isRunning) return;
-    state.stopwatch.isRunning = false;
-    if (state.stopwatch.intervalId) {
-      clearInterval(state.stopwatch.intervalId);
-      state.stopwatch.intervalId = null;
-    }
-    updateStopwatchButtons();
-  }
-
-  function resetStopwatch() {
-    pauseStopwatch();
-    state.stopwatch.seconds = 0;
-    renderStopwatchDisplay();
-    updateStopwatchButtons();
-  }
-
-  function renderStopwatchDisplay() {
-    const display = document.getElementById("mod-stopwatch-display");
-    if (!display) return;
-
-    const s = state.stopwatch.seconds;
-    const hours = String(Math.floor(s / 3600)).padStart(2, "0");
-    const minutes = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-    const seconds = String(s % 60).padStart(2, "0");
-
-    display.textContent = `${hours}:${minutes}:${seconds}`;
-  }
-
-  function updateStopwatchButtons() {
-    const startBtn = document.getElementById("btn-mod-timer-start");
-    const pauseBtn = document.getElementById("btn-mod-timer-pause");
-    if (startBtn && pauseBtn) {
-      if (state.stopwatch.isRunning) {
-        startBtn.classList.add("hidden");
-        pauseBtn.classList.remove("hidden");
-      } else {
-        startBtn.classList.remove("hidden");
-        pauseBtn.classList.add("hidden");
-      }
-    }
-  }
-
-  /* ==========================================================================
      MÓDULO 5: BOTÃO DE PROJEÇÃO RÁPIDA DE QR CODE (MODAL EM ECRÃ INTEIRO)
      ========================================================================== */
 
@@ -944,9 +597,6 @@ window.ModeratorPanel = (function () {
   function renderAllModeratorControls() {
     renderAccessControls();
     loadTotalTarget();
-    populateStageSelect();
-    renderStopwatchDisplay();
-    updateStopwatchButtons();
   }
 
   function initEvents() {
@@ -1131,37 +781,6 @@ window.ModeratorPanel = (function () {
       });
     }
 
-    // 10. Desbloquear Passos em Bloco
-    const unlockAllBtn = document.getElementById("btn-mod-unlock-all");
-    const resetStepsBtn = document.getElementById("btn-mod-reset-steps");
-    if (unlockAllBtn && window.LiveSession) {
-      unlockAllBtn.addEventListener("click", () => {
-        LiveSession.unlockAllSteps();
-        renderStepToggles();
-        if (window.showToast) window.showToast("Todos os 5 passos foram desbloqueados!");
-      });
-    }
-    if (resetStepsBtn && window.LiveSession) {
-      resetStepsBtn.addEventListener("click", () => {
-        LiveSession.lockStep(2);
-        LiveSession.lockStep(3);
-        LiveSession.lockStep(4);
-        LiveSession.lockStep(5);
-        renderStepToggles();
-        if (window.showToast) window.showToast("Passos repostos ao padrão inicial.");
-      });
-    }
-
-    document.querySelectorAll(".btn-mod-unlock-upto").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const targetStep = parseInt(btn.getAttribute("data-target-step"), 10);
-        if (window.LiveSession) {
-          LiveSession.unlockUpToStep(targetStep);
-          renderStepToggles();
-          if (window.showToast) window.showToast(`Passos desbloqueados até ao Passo ${targetStep}!`);
-        }
-      });
-    });
 
     // 11. Gestão de Participantes: Input Total Target e Presets
     const targetInput = document.getElementById("mod-total-target-input");
@@ -1189,48 +808,6 @@ window.ModeratorPanel = (function () {
       });
     }
 
-    // 12. Gestão de Tempo: Dropdown de Etapas
-    const stageSelect = document.getElementById("mod-delay-stage-select");
-    if (stageSelect) {
-      stageSelect.addEventListener("change", (e) => {
-        onStageSelected(e.target.value);
-      });
-    }
-
-    const realStartInput = document.getElementById("mod-real-start-input");
-    if (realStartInput) {
-      realStartInput.addEventListener("input", () => {
-        state.delayTracker.realStartTime = realStartInput.value;
-        try {
-          localStorage.setItem(`${STORAGE_KEYS.DELAY_REAL_START}_${state.delayTracker.selectedStageId}`, realStartInput.value);
-        } catch (e) {}
-        updateDelayCalculation();
-      });
-    }
-
-    const setNowBtn = document.getElementById("btn-mod-set-real-now");
-    if (setNowBtn && realStartInput) {
-      setNowBtn.addEventListener("click", () => {
-        const now = new Date();
-        const currentH = String(now.getHours()).padStart(2, "0");
-        const currentM = String(now.getMinutes()).padStart(2, "0");
-        realStartInput.value = `${currentH}:${currentM}`;
-        state.delayTracker.realStartTime = realStartInput.value;
-        try {
-          localStorage.setItem(`${STORAGE_KEYS.DELAY_REAL_START}_${state.delayTracker.selectedStageId}`, realStartInput.value);
-        } catch (e) {}
-        updateDelayCalculation();
-      });
-    }
-
-    // Cronómetro: Iniciar, Pausar e Reset
-    const timerStartBtn = document.getElementById("btn-mod-timer-start");
-    const timerPauseBtn = document.getElementById("btn-mod-timer-pause");
-    const timerResetBtn = document.getElementById("btn-mod-timer-reset");
-
-    if (timerStartBtn) timerStartBtn.addEventListener("click", startStopwatch);
-    if (timerPauseBtn) timerPauseBtn.addEventListener("click", pauseStopwatch);
-    if (timerResetBtn) timerResetBtn.addEventListener("click", resetStopwatch);
 
     // 13. Projeção de QR Code
     document.querySelectorAll(".btn-open-mod-qrcode").forEach(btn => {

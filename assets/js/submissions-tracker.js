@@ -103,13 +103,77 @@ window.SubmissionsTracker = (function () {
   }
 
   /**
+   * Desembrulha recursivamente qualquer árvore ou invólucro exportado pelo Google Apps Script
+   * ou pelo Firebase Realtime Database (Array, Objeto com propriedade única/array, Push-IDs, etc.)
+   */
+  function unwrapFirebasePayload(rawVal) {
+    if (rawVal === null || rawVal === undefined) return [];
+    let current = rawVal;
+
+    for (let depth = 0; depth < 6; depth++) {
+      if (!current || typeof current !== "object") break;
+
+      if (Array.isArray(current)) {
+        if (current.length === 1 && Array.isArray(current[0])) {
+          current = current[0];
+          continue;
+        }
+        if (current.length > 0 && Array.isArray(current[0]) && current[0].length > 0 && typeof current[0][0] === "object" && !Array.isArray(current[0][0])) {
+          current = current[0];
+          continue;
+        }
+        break;
+      }
+
+      const keys = Object.keys(current);
+      if (keys.length === 0) return [];
+
+      const arrayKey = keys.find(k => Array.isArray(current[k]));
+      if (arrayKey) {
+        current = current[arrayKey];
+        continue;
+      }
+
+      if (keys.length === 1 && current[keys[0]] && typeof current[keys[0]] === "object") {
+        current = current[keys[0]];
+        continue;
+      }
+
+      const allNumeric = keys.every(k => /^\d+$/.test(k));
+      if (allNumeric) {
+        current = Object.values(current);
+        continue;
+      }
+
+      const allObjects = keys.every(k => current[k] && typeof current[k] === "object");
+      if (allObjects) {
+        current = keys.map(k => {
+          const v = current[k];
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v._participantCode) {
+              return Object.assign({ _participantCode: k, code: k }, v);
+            }
+          }
+          return v;
+        });
+        continue;
+      }
+
+      break;
+    }
+
+    return current;
+  }
+
+  /**
    * Extrai a lista de códigos de participante únicos do nó /Logins
    * Filtra duplicados e exclui códigos com o sufixo -MD
    */
   function extractValidLoginCodes(rawLogins) {
     if (!rawLogins) return [];
+    const unwrapped = unwrapFirebasePayload(rawLogins);
     const uniqueCodes = new Set();
-    const entries = Array.isArray(rawLogins) ? rawLogins : (typeof rawLogins === "object" ? Object.values(rawLogins) : [rawLogins]);
+    const entries = Array.isArray(unwrapped) ? unwrapped : (typeof unwrapped === "object" ? Object.values(unwrapped) : [unwrapped]);
 
     entries.forEach(entry => {
       if (!entry) return;
@@ -118,26 +182,37 @@ window.SubmissionsTracker = (function () {
       if (typeof entry === "string") {
         code = entry;
       } else if (typeof entry === "object") {
-        if (entry.code) {
-          code = entry.code;
-        } else if (entry.userCode) {
-          code = entry.userCode;
-        } else if (entry["Código de Participante"] || entry["Código do Participante"] || entry["Código"]) {
-          code = entry["Código de Participante"] || entry["Código do Participante"] || entry["Código"];
-        } else if (Array.isArray(entry)) {
-          for (const cell of entry) {
-            const s = String(cell || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) {
-              code = s;
-              break;
+        const directKeys = [
+          "_participantCode", "code", "userCode", "user_code", "participantCode",
+          "participant_code", "participant", "id", "ID",
+          "Código de Participante", "Código do Participante", "Código", "Codigo",
+          "Codigo de Participante", "Código de participante", "Código de Participante:",
+          "Código:"
+        ];
+        for (let i = 0; i < directKeys.length; i++) {
+          const dk = directKeys[i];
+          if (entry[dk] !== undefined && entry[dk] !== null) {
+            const c = String(entry[dk]).trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(c)) { code = c; break; }
+          }
+        }
+
+        if (!code && Array.isArray(entry)) {
+          for (let i = 0; i < entry.length; i++) {
+            const s = String(entry[i] || "").trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+          }
+        } else if (!code) {
+          for (const k of Object.keys(entry)) {
+            if (/c[oó]digo|participant|usercode/i.test(k)) {
+              const s = String(entry[k] || "").trim().toUpperCase();
+              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
             }
           }
-        } else {
-          for (const k of Object.keys(entry)) {
-            const v = String(entry[k] || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(v)) {
-              code = v;
-              break;
+          if (!code) {
+            for (const k of Object.keys(entry)) {
+              const s = String(entry[k] || "").trim().toUpperCase();
+              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
             }
           }
         }
@@ -145,13 +220,15 @@ window.SubmissionsTracker = (function () {
 
       if (code && typeof code === "string") {
         const clean = code.trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2") {
+        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
           uniqueCodes.add(clean);
         }
       }
     });
 
-    return Array.from(uniqueCodes);
+    const result = Array.from(uniqueCodes);
+    console.log("[SubmissionsTracker] /Logins payload parsed codes:", result);
+    return result;
   }
 
   /**
@@ -160,19 +237,22 @@ window.SubmissionsTracker = (function () {
   function countValidFormSubmissions(rawNode) {
     if (!rawNode) return { count: 0, codes: [] };
 
+    const unwrapped = unwrapFirebasePayload(rawNode);
     let rows = [];
-    if (rawNode && typeof rawNode === "object" && Array.isArray(rawNode.data)) {
-      rows = rawNode.data;
-    } else if (Array.isArray(rawNode)) {
-      rows = rawNode;
-    } else if (typeof rawNode === "object") {
-      rows = Object.values(rawNode);
+    if (Array.isArray(unwrapped)) {
+      rows = unwrapped.filter(item => item !== null && item !== undefined);
+    } else if (typeof unwrapped === "object") {
+      rows = Object.values(unwrapped).filter(item => item !== null && item !== undefined);
     }
 
     if (!rows.length) return { count: 0, codes: [] };
 
-    // Se a primeira linha for cabeçalho
-    if (Array.isArray(rows[0]) && rows[0].some(c => /c[oó]digo|carimbo|timestamp/i.test(String(c || "")))) {
+    if (Array.isArray(rows[0]) && rows[0].length > 0 && typeof rows[0][0] === "object") {
+      rows = rows.flat();
+    }
+
+    // Se a primeira linha for cabeçalho de matriz 2D
+    if (Array.isArray(rows[0]) && rows[0].every(c => c === null || c === undefined || typeof c !== "object")) {
       rows = rows.slice(1);
     }
 
@@ -182,19 +262,32 @@ window.SubmissionsTracker = (function () {
     rows.forEach(r => {
       if (!r) return;
       let code = null;
-      if (typeof r === "object") {
-        if (r._participantCode) {
-          code = r._participantCode;
-        } else if (r["Código de Participante"] || r["Código do Participante"] || r.code || r.userCode) {
-          code = r["Código de Participante"] || r["Código do Participante"] || r.code || r.userCode;
-        } else if (Array.isArray(r)) {
+      if (typeof r === "string") {
+        code = r;
+      } else if (typeof r === "object") {
+        const directKeys = [
+          "_participantCode", "code", "userCode", "user_code", "participantCode",
+          "participant_code", "participant", "id", "ID",
+          "Código de Participante", "Código do Participante", "Código", "Codigo",
+          "Codigo de Participante", "Código de participante", "Código de Participante:",
+          "Código:"
+        ];
+        for (let i = 0; i < directKeys.length; i++) {
+          const dk = directKeys[i];
+          if (r[dk] !== undefined && r[dk] !== null) {
+            const c = String(r[dk]).trim().toUpperCase();
+            if (/^(FG2-PT|NS-PT)\d+$/i.test(c)) { code = c; break; }
+          }
+        }
+
+        if (!code && Array.isArray(r)) {
           for (let i = 0; i < r.length; i++) {
             const s = String(r[i] || "").trim().toUpperCase();
             if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
           }
-        } else {
+        } else if (!code) {
           for (const k of Object.keys(r)) {
-            if (/c[oó]digo|participant|code/i.test(k)) {
+            if (/c[oó]digo|participant|usercode/i.test(k)) {
               const s = String(r[k] || "").trim().toUpperCase();
               if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
             }
@@ -210,7 +303,7 @@ window.SubmissionsTracker = (function () {
 
       if (code) {
         const clean = String(code).trim().toUpperCase();
-        if (!clean.endsWith("-MD") && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
+        if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
           if (!seenCodes.has(clean)) {
             seenCodes.add(clean);
             codes.push(clean);
@@ -225,7 +318,8 @@ window.SubmissionsTracker = (function () {
 
   /**
    * Conecta à Realtime Database do Firebase via WebSockets (onValue)
-   * Subscreve: /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
+   * Subscreve: Raiz / (descoberta automática de nós) e nós diretos
+   * /Logins, /RespostasdoFormulário1, /RespostasdoFormulário2, /RespostasdoFormulário3
    */
   function connectFirebase() {
     if (typeof firebase === "undefined" || !firebase.database) {
@@ -248,8 +342,47 @@ window.SubmissionsTracker = (function () {
         }
       });
 
+      // 0. Listener na Raiz "/" para mapear dinamicamente as tabelas exportadas pelo Apps Script
+      db.ref("/").on("value", rootSnap => {
+        try {
+          const rootVal = rootSnap.val();
+          if (!rootVal || typeof rootVal !== "object") return;
+          console.log("[SubmissionsTracker] Root keys in RTDB:", Object.keys(rootVal));
+
+          for (const k of Object.keys(rootVal)) {
+            const val = rootVal[k];
+            if (!val) continue;
+            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (normKey.includes("login")) {
+              const validLogins = extractValidLoginCodes(val);
+              if (validLogins.length > 0) {
+                state.totalParticipants = validLogins.length;
+                validLogins.forEach(c => state.registeredCodes.add(c));
+                saveRegisteredCodes();
+              }
+            } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.game = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.sim = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.global = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            }
+          }
+          state.isLive = true;
+          updateAllCounters();
+        } catch (rootErr) {
+          console.warn("Aviso ao processar nó raiz / no SubmissionsTracker:", rootErr);
+        }
+      });
+
       // 1. /Logins (Amostra Total TT)
-      db.ref("/Logins").on("value", snapshot => {
+      const handleLoginsSnapshot = snapshot => {
         try {
           const validLogins = extractValidLoginCodes(snapshot.val());
           if (validLogins.length > 0) {
@@ -271,54 +404,59 @@ window.SubmissionsTracker = (function () {
         } catch (err) {
           console.warn("Aviso ao processar /Logins no SubmissionsTracker:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /Logins no SubmissionsTracker:", err);
-      });
+      };
+      db.ref("/Logins").on("value", handleLoginsSnapshot);
 
       // 2. /RespostasdoFormulário1 (Game)
-      db.ref("/RespostasdoFormulário1").on("value", snapshot => {
+      const handleGameSnapshot = snapshot => {
         try {
-          const parsed = countValidFormSubmissions(snapshot.val());
-          state.counts.game = parsed.count;
-          state.isLive = true;
-          parsed.codes.forEach(c => state.registeredCodes.add(c));
-          updateAllCounters();
+          if (snapshot.val() !== null) {
+            const parsed = countValidFormSubmissions(snapshot.val());
+            state.counts.game = parsed.count;
+            state.isLive = true;
+            parsed.codes.forEach(c => state.registeredCodes.add(c));
+            updateAllCounters();
+          }
         } catch (err) {
           console.warn("Aviso ao processar /RespostasdoFormulário1 no SubmissionsTracker:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário1 no SubmissionsTracker:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário1").on("value", handleGameSnapshot);
+      db.ref("/RespostasdoFormulario1").on("value", handleGameSnapshot);
 
       // 3. /RespostasdoFormulário2 (Simulador)
-      db.ref("/RespostasdoFormulário2").on("value", snapshot => {
+      const handleSimSnapshot = snapshot => {
         try {
-          const parsed = countValidFormSubmissions(snapshot.val());
-          state.counts.sim = parsed.count;
-          state.isLive = true;
-          parsed.codes.forEach(c => state.registeredCodes.add(c));
-          updateAllCounters();
+          if (snapshot.val() !== null) {
+            const parsed = countValidFormSubmissions(snapshot.val());
+            state.counts.sim = parsed.count;
+            state.isLive = true;
+            parsed.codes.forEach(c => state.registeredCodes.add(c));
+            updateAllCounters();
+          }
         } catch (err) {
           console.warn("Aviso ao processar /RespostasdoFormulário2 no SubmissionsTracker:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário2 no SubmissionsTracker:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário2").on("value", handleSimSnapshot);
+      db.ref("/RespostasdoFormulario2").on("value", handleSimSnapshot);
 
       // 4. /RespostasdoFormulário3 (Global)
-      db.ref("/RespostasdoFormulário3").on("value", snapshot => {
+      const handleGlobalSnapshot = snapshot => {
         try {
-          const parsed = countValidFormSubmissions(snapshot.val());
-          state.counts.global = parsed.count;
-          state.isLive = true;
-          parsed.codes.forEach(c => state.registeredCodes.add(c));
-          updateAllCounters();
+          if (snapshot.val() !== null) {
+            const parsed = countValidFormSubmissions(snapshot.val());
+            state.counts.global = parsed.count;
+            state.isLive = true;
+            parsed.codes.forEach(c => state.registeredCodes.add(c));
+            updateAllCounters();
+          }
         } catch (err) {
           console.warn("Aviso ao processar /RespostasdoFormulário3 no SubmissionsTracker:", err);
         }
-      }, err => {
-        console.warn("Aviso Firebase /RespostasdoFormulário3 no SubmissionsTracker:", err);
-      });
+      };
+      db.ref("/RespostasdoFormulário3").on("value", handleGlobalSnapshot);
+      db.ref("/RespostasdoFormulario3").on("value", handleGlobalSnapshot);
 
       state.firebaseConnected = true;
     } catch (e) {
@@ -351,11 +489,48 @@ window.SubmissionsTracker = (function () {
     try {
       const db = firebase.database();
       db.goOnline();
+
+      // 1. Tentar ler raiz "/"
+      try {
+        const rootSnap = await db.ref("/").once("value");
+        if (rootSnap && rootSnap.val()) {
+          const rootVal = rootSnap.val();
+          for (const k of Object.keys(rootVal)) {
+            const val = rootVal[k];
+            if (!val) continue;
+            const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (normKey.includes("login")) {
+              const validLogins = extractValidLoginCodes(val);
+              if (validLogins.length > 0) {
+                state.totalParticipants = validLogins.length;
+                validLogins.forEach(c => state.registeredCodes.add(c));
+                saveRegisteredCodes();
+              }
+            } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.game = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.sim = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
+              const parsed = countValidFormSubmissions(val);
+              state.counts.global = parsed.count;
+              parsed.codes.forEach(c => state.registeredCodes.add(c));
+            }
+          }
+        }
+      } catch (rootErr) {
+        console.warn("Aviso na leitura da raiz no refreshFromFirebase:", rootErr);
+      }
+
+      // 2. Leituras pontuais diretas
       const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
         db.ref("/Logins").once("value").catch(() => null),
-        db.ref("/RespostasdoFormulário1").once("value").catch(() => null),
-        db.ref("/RespostasdoFormulário2").once("value").catch(() => null),
-        db.ref("/RespostasdoFormulário3").once("value").catch(() => null)
+        db.ref("/RespostasdoFormulário1").once("value").catch(() => db.ref("/RespostasdoFormulario1").once("value").catch(() => null)),
+        db.ref("/RespostasdoFormulário2").once("value").catch(() => db.ref("/RespostasdoFormulario2").once("value").catch(() => null)),
+        db.ref("/RespostasdoFormulário3").once("value").catch(() => db.ref("/RespostasdoFormulario3").once("value").catch(() => null))
       ]);
 
       if (snapLogins && snapLogins.val() !== null) {
