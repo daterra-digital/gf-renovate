@@ -390,26 +390,21 @@ const LiveSession = (function () {
   }
 
   /**
-   * Regra de Validação Sequencial e Alerta Vermelho (Bloqueio / Erro de Salto):
-   * Se o participante tentar aceder a um questionário avançado (ex.: Form 2 ou Form 3)
+   * Validação Sequencial NÃO-BLOQUEANTE (Sinalização Visual Apenas):
+   * Se o participante aceder a um passo ou formulário avançado (ex.: Form 2 ou Form 3)
    * sem ter submetido o formulário anterior obrigatório:
-   * A checkbox do passo não concluído ("Passo X Concluído") passa a VERMELHO (bg-red-500 / text-red-600 / border-red-600).
+   * - Permite o acesso normal (NÃO bloqueia navegação ou abertura)
+   * - O passo/questionário anterior que ficou por responder passa imediatamente a VERMELHO
+   *   (bg-red-500 / text-red-600 / border-red-600 / badge 'Pendente')
    */
   function validateAdvanceToStep(targetStep) {
     const code = state.participantCode;
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const tracker = window.SubmissionsTracker;
 
     if (targetStep === 4) {
       const form1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
       if (!form1Done) {
         triggerJumpAlert(3);
-        const msg = isEn
-          ? "Please submit Assessment 1 (Serious Game) before proceeding to Assessment 2."
-          : "Por favor, conclua e submeta a Avaliação 1 (Serious Game) antes de avançar para a Avaliação 2.";
-        if (window.showToast) window.showToast(msg, "warning");
-        else alert(msg);
-        return false;
       } else {
         clearJumpAlert(3);
       }
@@ -419,21 +414,11 @@ const LiveSession = (function () {
 
       if (!form1Done) {
         triggerJumpAlert(3);
-        const msg = isEn
-          ? "Please submit Assessment 1 (Serious Game) before proceeding to the Final Evaluation."
-          : "Por favor, conclua e submeta a Avaliação 1 (Serious Game) antes de avançar para a Avaliação Global.";
-        if (window.showToast) window.showToast(msg, "warning");
-        else alert(msg);
-        return false;
-      } else if (!form2Done) {
+      }
+      if (!form2Done) {
         triggerJumpAlert(4);
-        const msg = isEn
-          ? "Please submit Assessment 2 (Simulator) before proceeding to the Final Evaluation."
-          : "Por favor, conclua e submeta a Avaliação 2 (Simulador) antes de avançar para a Avaliação Global.";
-        if (window.showToast) window.showToast(msg, "warning");
-        else alert(msg);
-        return false;
-      } else {
+      }
+      if (form1Done && form2Done) {
         clearJumpAlert(3);
         clearJumpAlert(4);
       }
@@ -442,7 +427,7 @@ const LiveSession = (function () {
   }
 
   /**
-   * Gere a interação direta pelo participante na checkbox da Sessão ao Vivo
+   * Gere a interação direta pelo participante na checkbox da Sessão ao Vivo (NÃO-BLOQUEANTE)
    */
   function handleCheckboxInteraction(stepNumber) {
     const code = state.participantCode;
@@ -456,38 +441,24 @@ const LiveSession = (function () {
       } else {
         const input = document.getElementById("participant-code-input");
         if (input) input.focus();
-        const msg = isEn ? "Please enter your participant code at the top." : "Por favor introduza o seu código de participante no topo.";
-        if (window.showToast) window.showToast(msg, "warning");
       }
       evaluateStepConditions();
       return;
     }
 
     if (stepNumber === 2) {
-      if (!state.clickedSlides) {
-        state.clickedSlides = true;
-        saveStorageState();
-        evaluateStepConditions();
-        const msg = isEn ? "Step 2 marked as completed!" : "Passo 2 marcado como concluído!";
-        if (window.showToast) window.showToast(msg);
-      } else {
-        evaluateStepConditions();
-      }
+      state.clickedSlides = true;
+      saveStorageState();
+      evaluateStepConditions();
       return;
     }
 
     if (stepNumber === 3) {
       const isForm1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
-      if (!state.clickedGame) {
-        const msg = isEn ? "Please click 'Play Tallentto' to start the Serious Game." : "Por favor clique em 'Jogar Tallentto' para iniciar o Serious Game.";
-        if (window.showToast) window.showToast(msg, "warning");
-      } else if (!isForm1Done) {
+      if (!isForm1Done) {
         const msg = isEn 
-          ? "Awaiting Question 1 (Serious Game) submission in Firebase to complete Step 3." 
+          ? "Awaiting Question 1 (Serious Game) submission in Firebase to mark Step 3 as completed." 
           : "Aguardando submissão do Questionário 1 (Serious Game) no Firebase para concluir o Passo 3.";
-        if (window.showToast) window.showToast(msg, "warning");
-      } else {
-        const msg = isEn ? "Step 3 completed with success!" : "Passo 3 concluído com sucesso!";
         if (window.showToast) window.showToast(msg);
       }
       evaluateStepConditions();
@@ -495,27 +466,12 @@ const LiveSession = (function () {
     }
 
     if (stepNumber === 4) {
-      const isForm1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
-      if (!isForm1Done) {
-        triggerJumpAlert(3);
-        const msg = isEn
-          ? "Please submit Assessment 1 (Serious Game) before completing Step 4."
-          : "Por favor conclua e submeta a Avaliação 1 (Serious Game) antes de concluir o Passo 4.";
-        if (window.showToast) window.showToast(msg, "warning");
-        evaluateStepConditions();
-        return;
-      }
       const isForm2Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(2, code));
-      if (!state.clickedSim) {
-        const msg = isEn ? "Please click 'Open Simulator' to test the 3D Simulator." : "Por favor clique em 'Abrir Simulador' para testar o simulador 3D.";
-        if (window.showToast) window.showToast(msg, "warning");
-      } else if (!isForm2Done) {
+      validateAdvanceToStep(4);
+      if (!isForm2Done) {
         const msg = isEn 
-          ? "Awaiting Question 2 (Simulator) submission in Firebase to complete Step 4." 
+          ? "Awaiting Question 2 (Simulator) submission in Firebase to mark Step 4 as completed." 
           : "Aguardando submissão do Questionário 2 (Simulador) no Firebase para concluir o Passo 4.";
-        if (window.showToast) window.showToast(msg, "warning");
-      } else {
-        const msg = isEn ? "Step 4 completed with success!" : "Passo 4 concluído com sucesso!";
         if (window.showToast) window.showToast(msg);
       }
       evaluateStepConditions();
@@ -523,18 +479,12 @@ const LiveSession = (function () {
     }
 
     if (stepNumber === 5) {
-      if (!validateAdvanceToStep(5)) {
-        evaluateStepConditions();
-        return;
-      }
       const isForm3Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(3, code));
+      validateAdvanceToStep(5);
       if (!isForm3Done) {
         const msg = isEn 
-          ? "Awaiting Final Global Evaluation submission in Firebase to complete Step 5." 
+          ? "Awaiting Final Global Evaluation submission in Firebase to mark Step 5 as completed." 
           : "Aguardando submissão da Avaliação Global no Firebase para concluir o Passo 5.";
-        if (window.showToast) window.showToast(msg, "warning");
-      } else {
-        const msg = isEn ? "Session fully completed!" : "Sessão totalmente concluída!";
         if (window.showToast) window.showToast(msg);
       }
       evaluateStepConditions();
@@ -555,13 +505,13 @@ const LiveSession = (function () {
   }
 
   /**
-   * Liga os gatilhos automáticos aos botões de ação e fluxo de trabalho de cada fase
+   * Liga os gatilhos automáticos aos botões de ação e fluxo de trabalho de cada fase (Navegação 100% Livre)
    */
   function bindAutomaticStepTriggers() {
     if (window._renovateAutoTriggersBound) return;
     window._renovateAutoTriggersBound = true;
 
-    // Usar capture phase (true) para intercetar antes da navegação do link e bloquear saltos
+    // Escuta cliques para registar cliques e atualizar estados visuais SEM bloquear a navegação
     document.addEventListener("click", (e) => {
       // 1. Passo 2: Diapositivos ("Ver Slides no Programa")
       const slidesBtn = e.target.closest("#btn-goto-slides");
@@ -579,15 +529,11 @@ const LiveSession = (function () {
         evaluateStepConditions();
       }
 
-      // 3. Passo 4: Simulador PC Virmedex ou Avaliação Form 2 (Bloqueia salto se Form 1 não tiver sido submetido)
+      // 3. Passo 4: Simulador PC Virmedex ou Avaliação Form 2 (NÃO-BLOQUEANTE: sinaliza pendência visualmente se Form 1 faltar)
       const simBtn = e.target.closest("#btn-simulator-virmedex, .simulator-link-virmedex, #btn-schedule-simulator");
       const form2Btn = e.target.closest("#btn-form-3, .form-link-sim");
       if (simBtn || form2Btn) {
-        if (!validateAdvanceToStep(4)) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
+        validateAdvanceToStep(4);
         if (simBtn) {
           state.clickedSim = true;
           saveStorageState();
@@ -595,16 +541,12 @@ const LiveSession = (function () {
         }
       }
 
-      // 4. Passo 5: Avaliação Global & Encerramento (Bloqueia salto se Form 1 ou Form 2 não tiverem sido submetidos)
+      // 4. Passo 5: Avaliação Global & Encerramento (NÃO-BLOQUEANTE: sinaliza pendência visualmente se Form 1 ou 2 faltarem)
       const formGlobalBtn = e.target.closest("#btn-form-global, .form-link-global");
       if (formGlobalBtn) {
-        if (!validateAdvanceToStep(5)) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
+        validateAdvanceToStep(5);
       }
-    }, true);
+    });
   }
 
   /**
@@ -613,27 +555,6 @@ const LiveSession = (function () {
   function renderLiveSessionUI() {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const notSetText = window.I18nManager ? window.I18nManager.t("live.notSet") : (isEn ? "Not set" : "Não definido");
-    let unlockedText = isEn ? "Unlocked" : "Desbloqueado";
-    if (window.I18nManager) {
-      const tVal = window.I18nManager.t("live.unlocked");
-      if (tVal && tVal !== "live.unlocked") {
-        unlockedText = tVal;
-      } else {
-        const altVal = window.I18nManager.t("live.badge.unlocked");
-        if (altVal && altVal !== "live.badge.unlocked") unlockedText = altVal;
-      }
-    }
-
-    let waitingText = isEn ? "Awaiting Moderator" : "Aguarda Moderador";
-    if (window.I18nManager) {
-      const tVal = window.I18nManager.t("live.waitingModerator");
-      if (tVal && tVal !== "live.waitingModerator") {
-        waitingText = tVal;
-      } else {
-        const altVal = window.I18nManager.t("live.badge.waiting");
-        if (altVal && altVal !== "live.badge.waiting") waitingText = altVal;
-      }
-    }
 
     // 1. Atualizar ícone de calendário em tempo real (pt-PT)
     updateLiveCalendar();
@@ -682,25 +603,19 @@ const LiveSession = (function () {
       }
     }
 
-    // 2. Atualizar estado dos cartões de fases e checkboxes estilizadas
+    // 2. Atualizar estado dos cartões de fases e checkboxes estilizadas (100% Desbloqueados)
     for (let step = 1; step <= TOTAL_STEPS; step++) {
       const card = document.getElementById(`step-card-${step}`);
       const lockBadge = document.getElementById(`step-lock-badge-${step}`);
       const actionContainer = document.getElementById(`step-actions-${step}`);
       const completeCheckbox = document.getElementById(`step-checkbox-${step}`);
 
-      const isUnlocked = state.unlockedSteps.includes(step);
       const isCompleted = state.completedSteps.includes(step);
       const isAlert = state.jumpAlertSteps.includes(step) && !isCompleted;
 
       if (card) {
-        if (isUnlocked) {
-          card.classList.remove("locked", "locked-section", "opacity-60", "grayscale");
-          card.classList.add("active");
-        } else {
-          card.classList.add("locked", "locked-section");
-          card.classList.remove("active");
-        }
+        card.classList.remove("locked", "locked-section", "opacity-60", "grayscale");
+        card.classList.add("active");
 
         if (isCompleted) {
           card.classList.add("completed", "border-emerald-500");
@@ -720,13 +635,8 @@ const LiveSession = (function () {
       if (actionContainer) {
         const interactiveElements = actionContainer.querySelectorAll("a, button:not(.btn-unlock-trigger)");
         interactiveElements.forEach(el => {
-          if (isUnlocked) {
-            el.removeAttribute("disabled");
-            el.classList.remove("pointer-events-none", "opacity-50");
-          } else {
-            el.setAttribute("disabled", "true");
-            el.classList.add("pointer-events-none", "opacity-50");
-          }
+          el.removeAttribute("disabled");
+          el.classList.remove("pointer-events-none", "opacity-50", "opacity-40", "cursor-not-allowed");
         });
       }
 
@@ -797,66 +707,39 @@ const LiveSession = (function () {
         }
       }
 
-      // Sincronizar também com os acordeões do Programa (Tab 2)
+      // Sincronizar também com os acordeões do Programa (Tab 2) - 100% Desbloqueados
       document.querySelectorAll(`.accordion-step-${step}`).forEach(acc => {
         const summary = acc.querySelector("summary");
-        if (isUnlocked) {
-          acc.classList.remove("accordion-locked", "opacity-60", "grayscale-[30%]");
-          acc.classList.add("hover:border-[#F5B842]");
-          acc.removeAttribute("data-locked");
-          if (summary) {
-            summary.classList.remove("cursor-not-allowed", "opacity-75");
-            summary.classList.add("cursor-pointer", "hover:bg-slate-50");
-            summary.removeAttribute("title");
-          }
-        } else {
-          acc.open = false;
-          acc.classList.add("accordion-locked", "opacity-60", "grayscale-[30%]");
-          acc.classList.remove("hover:border-[#F5B842]");
-          acc.setAttribute("data-locked", "true");
-          if (summary) {
-            summary.classList.add("cursor-not-allowed", "opacity-75");
-            summary.classList.remove("cursor-pointer", "hover:bg-slate-50");
-            summary.setAttribute("title", isEn ? "Activity locked by moderator" : "Atividade bloqueada pelo moderador");
-          }
+        acc.classList.remove("accordion-locked", "opacity-60", "grayscale-[30%]");
+        acc.classList.add("hover:border-[#F5B842]");
+        acc.removeAttribute("data-locked");
+        if (summary) {
+          summary.classList.remove("cursor-not-allowed", "opacity-75");
+          summary.classList.add("cursor-pointer", "hover:bg-slate-50");
+          summary.removeAttribute("title");
         }
       });
 
-      // Indicadores visuais de cadeado no cabeçalho do acordeão
+      // Indicadores visuais de cadeado no cabeçalho do acordeão (ocultar sempre)
       document.querySelectorAll(`.accordion-header-lock-${step}`).forEach(ind => {
-        if (isUnlocked) {
-          ind.classList.add("hidden");
-        } else {
-          ind.classList.remove("hidden");
-        }
+        ind.classList.add("hidden");
       });
 
+      // Badges de bloqueio (remover qualquer texto ou etiqueta de "Bloqueado" / "Aguarda Moderador")
       document.querySelectorAll(`.accordion-lock-badge-${step}`).forEach(badge => {
-        if (isUnlocked) {
-          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3 h-3"></i> ${unlockedText}</span>`;
-        } else {
-          badge.innerHTML = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3 h-3"></i> ${waitingText}</span>`;
-        }
+        badge.innerHTML = "";
       });
 
+      // Links e botões interativos nos acordeões (sempre disponíveis)
       document.querySelectorAll(`.accordion-actions-${step}`).forEach(container => {
         const interactiveElements = container.querySelectorAll("a, button:not(.btn-unlock-trigger)");
         interactiveElements.forEach(el => {
-          if (isUnlocked) {
-            el.removeAttribute("disabled");
-            el.removeAttribute("tabindex");
-            el.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
-            if (el.dataset.origHref) {
-              el.href = el.dataset.origHref;
-              delete el.dataset.origHref;
-            }
-          } else {
-            el.setAttribute("disabled", "true");
-            el.setAttribute("tabindex", "-1");
-            el.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
-            if (el.tagName === "A" && el.href && !el.dataset.origHref) {
-              el.dataset.origHref = el.href;
-            }
+          el.removeAttribute("disabled");
+          el.removeAttribute("tabindex");
+          el.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+          if (el.dataset.origHref) {
+            el.href = el.dataset.origHref;
+            delete el.dataset.origHref;
           }
         });
       });
