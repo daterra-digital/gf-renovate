@@ -1162,6 +1162,18 @@ window.AuthModule = (function () {
       });
     }
 
+    // 1.0 Scroll Suave Automático no Foco (Prevenção de sobreposição pelo teclado virtual em mobile)
+    const loginInputs = document.querySelectorAll('#auth-login-form input');
+    loginInputs.forEach(input => {
+      input.addEventListener('focus', (e) => {
+        setTimeout(() => {
+          if (e.target && typeof e.target.scrollIntoView === 'function') {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300); // Aguarda a animação de subida do teclado virtual
+      });
+    });
+
     // 1.1 Combobox do Código de Participante (Input Pesquisável + Dropdown)
     const codeInput = document.getElementById("auth-participant-code");
     const toggleDropdownBtn = document.getElementById("btn-toggle-codes-dropdown");

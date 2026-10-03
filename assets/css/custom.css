@@ -134,6 +134,11 @@ header {
   #auth-login-form input[type="password"] {
     font-size: 16px !important;
   }
+
+  /* Espaçamento de Scroll do Contentor de Login (evita que o teclado virtual cubra os inputs) */
+  #auth-login-modal {
+    padding-bottom: 7rem !important; /* pb-28 em mobile */
+  }
 }
 
 /* Custom Scrollbar */
