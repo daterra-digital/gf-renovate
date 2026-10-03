@@ -521,16 +521,16 @@ const RENOVATE_CONFIG = {
       abstract: "Relatório oficial que consolida as expectativas de 153 intervenientes do setor agrícola em 6 países europeus (PT, ES, FR, IT, BE, PL), estabelecendo as diretrizes técnicas e pedagógicas da plataforma RENOVATE, Serious Games e simuladores 3D.",
       abstractEn: "Official report consolidating expectations from 153 agricultural stakeholders across 6 European countries (PT, ES, FR, IT, BE, PL), establishing the technical and pedagogical guidelines for the RENOVATE platform, Serious Games, and 3D simulators.",
       highlights: [
-        "Priorização da simplicidade de interface em ferramentas para operadores no terreno.",
-        "Identificação do elevado potencial dos Serious Games para formação contínua certificada.",
-        "Necessidade de ligação direta entre simulações e cálculos de custos/poupança real.",
-        "Consenso sobre a relevância de criar recursos acessíveis em dispositivos móveis."
+        "Necessidade de formação prática com recurso a demonstrações no campo e simuladores interativos.",
+        "Adaptação dos conteúdos formativos aos contextos locais, utilizando linguagem simples e direta.",
+        "Integração de simuladores para avaliação de cenários práticos e análise de custo-benefício.",
+        "Desenvolvimento de uma plataforma intuitiva com conteúdos audiovisuais e elementos de gamificação."
       ],
       highlightsEn: [
-        "Prioritisation of interface simplicity in tools for operators in the field.",
-        "Identification of the high potential of Serious Games for certified ongoing training.",
-        "Need for a direct link between simulations and real cost/savings calculations.",
-        "Consensus on the relevance of creating resources accessible on mobile devices."
+        "Need for practical training using field demonstrations and interactive simulators.",
+        "Adaptation of training content to local contexts, using simple and direct language.",
+        "Integration of simulators for practical scenario evaluation and cost-benefit analysis.",
+        "Development of an intuitive platform with audiovisual content and gamification elements."
       ]
     },
     gf2Video: {
