@@ -459,7 +459,7 @@ window.AuthModule = (function () {
     // Registo oficial de sessão via POST na API Google Apps Script (Alimenta separador Logins e Amostra Total)
     try {
       const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
-        || "https://script.google.com/a/macros/daterra.com.pt/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
+        || "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
       const loginPayload = JSON.stringify({ code: finalCode });
 
       // Disparo em background com tolerância a CORS / 302 redirects do Google Apps Script

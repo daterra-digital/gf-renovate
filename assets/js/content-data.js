@@ -628,7 +628,7 @@ const RENOVATE_CONFIG = {
   resultsDashboard: {
     // URL da Firebase Realtime Database (WebSockets Push em Tempo Real)
     firebaseUrl: "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app",
-    loginApiUrl: "https://script.google.com/a/macros/daterra.com.pt/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec",
+    loginApiUrl: "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec",
     // Configuração de compatibilidade retroativa
     spreadsheetId: "2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e", 
     tabGids: {
