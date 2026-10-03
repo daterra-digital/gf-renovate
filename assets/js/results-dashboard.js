@@ -464,14 +464,20 @@ window.ResultsDashboard = (function () {
       if (Array.isArray(rawVal.data)) {
         items = rawVal.data.filter(item => item !== null && item !== undefined);
       } else {
-        items = Object.entries(rawVal).map(([k, v]) => {
+        const entries = Object.entries(rawVal);
+        const maxEntries = Math.min(entries.length, 500);
+        for (let i = 0; i < maxEntries; i++) {
+          const [k, v] = entries[i];
           if (v && typeof v === "object" && !Array.isArray(v)) {
             if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v["Código de Participante"]) {
-              return Object.assign({ _participantCode: k, code: k }, v);
+              items.push(Object.assign({ _participantCode: k, code: k }, v));
+            } else {
+              items.push(v);
             }
+          } else if (v !== null && v !== undefined) {
+            items.push(v);
           }
-          return v;
-        }).filter(item => item !== null && item !== undefined);
+        }
       }
     }
     if (!items.length) return [];
@@ -480,20 +486,32 @@ window.ResultsDashboard = (function () {
     if (Array.isArray(items[0])) {
       const headers = items[0].map(h => String(h !== null && h !== undefined ? h : "").trim());
       const dataRows = items.slice(1);
-      return dataRows.map(rowArr => {
-        if (!Array.isArray(rowArr)) return null;
+      const maxRows = Math.min(dataRows.length, 500);
+      const result = [];
+      for (let rIdx = 0; rIdx < maxRows; rIdx++) {
+        const rowArr = dataRows[rIdx];
+        if (!Array.isArray(rowArr)) continue;
         const rowObj = {};
-        headers.forEach((h, idx) => {
-          rowObj[h] = rowArr[idx] !== undefined && rowArr[idx] !== null ? String(rowArr[idx]).trim() : "";
-        });
-        return rowObj;
-      }).filter(Boolean);
+        for (let hIdx = 0; hIdx < headers.length; hIdx++) {
+          const h = headers[hIdx];
+          if (h) {
+            rowObj[h] = rowArr[hIdx] !== undefined && rowArr[hIdx] !== null ? String(rowArr[hIdx]).trim() : "";
+          }
+        }
+        result.push(rowObj);
+      }
+      return result;
     }
 
-    return items.map(item => {
-      if (typeof item !== "object") return null;
-      return item;
-    }).filter(Boolean);
+    const maxItems = Math.min(items.length, 500);
+    const result = [];
+    for (let i = 0; i < maxItems; i++) {
+      const item = items[i];
+      if (item && typeof item === "object") {
+        result.push(item);
+      }
+    }
+    return result;
   }
 
   /**
@@ -509,13 +527,17 @@ window.ResultsDashboard = (function () {
       const c = normalizeParticipantCode(row.code || row.userCode || row.participantCode);
       if (c) return c;
     }
-    for (const k of Object.keys(row)) {
+    const keys = Object.keys(row);
+    const maxK = Math.min(keys.length, 120);
+    for (let i = 0; i < maxK; i++) {
+      const k = keys[i];
       if (isCodeHeader(k)) {
         const c = normalizeParticipantCode(row[k]);
         if (c) return c;
       }
     }
-    for (const k of Object.keys(row)) {
+    for (let i = 0; i < maxK; i++) {
+      const k = keys[i];
       const c = normalizeParticipantCode(row[k]);
       if (isValidParticipantCode(c)) return c;
     }
@@ -537,18 +559,23 @@ window.ResultsDashboard = (function () {
 
     const latestByCode = new Map();
     const allHeadersSet = new Set();
+    const maxRows = Math.min(rowObjects.length, 500);
 
-    rowObjects.forEach(row => {
-      if (!row || typeof row !== "object") return;
-      Object.keys(row).forEach(k => {
-        if (k && k !== "_participantCode") allHeadersSet.add(k);
-      });
+    for (let i = 0; i < maxRows; i++) {
+      const row = rowObjects[i];
+      if (!row || typeof row !== "object") continue;
+      const rowKeys = Object.keys(row);
+      const maxK = Math.min(rowKeys.length, 120);
+      for (let kIdx = 0; kIdx < maxK; kIdx++) {
+        const k = rowKeys[kIdx];
+        if (k && k !== "_participantCode" && k !== "_qCache") allHeadersSet.add(k);
+      }
       const code = extractParticipantCodeFromRow(row);
-      if (!isValidParticipantCode(code)) return;
+      if (!isValidParticipantCode(code)) continue;
       row._participantCode = code;
       latestByCode.delete(code);
       latestByCode.set(code, row);
-    });
+    }
 
     const validRows = Array.from(latestByCode.values());
     const validCodes = new Set(latestByCode.keys());
@@ -566,11 +593,21 @@ window.ResultsDashboard = (function () {
    * Extrai o valor de uma questão a partir de um objeto de linha (row).
    * Procura dinamicamente entre as chaves de row aquela que corresponde ao número da questão
    * ou ao regex de palavras-chave. Se não encontrar, retorna string vazia "".
+   * Utiliza memoização interna em row._qCache para evitar re-execuções.
    */
   function getRowQuestionValue(row, qNumber, keywordRegex = null) {
     if (!row || typeof row !== "object") return "";
+
+    if (!row._qCache) {
+      row._qCache = Object.create(null);
+    }
+    const cacheKey = (qNumber !== null && qNumber !== undefined) ? `q_${qNumber}` : (keywordRegex ? `re_${keywordRegex.source}` : "");
+    if (cacheKey && row._qCache[cacheKey] !== undefined) {
+      return row._qCache[cacheKey];
+    }
+
     const keys = Object.keys(row);
-    if (!keys.length) return "";
+    const maxK = Math.min(keys.length, 120);
 
     if (qNumber !== null && qNumber !== undefined) {
       const num = parseInt(qNumber, 10);
@@ -581,29 +618,38 @@ window.ResultsDashboard = (function () {
         new RegExp(`(?:quest[aã]o|pergunta|question)\\s*0?${numStr}\\b`, "i"),
         new RegExp(`^\\s*0?${numStr}\\s*$`, "i")
       ];
-      for (const k of keys) {
-        if (k === "_participantCode") continue;
+      for (let i = 0; i < maxK; i++) {
+        const k = keys[i];
+        if (k === "_participantCode" || k === "_qCache") continue;
         const cleanK = String(k || "").trim();
-        for (const pat of patterns) {
-          if (pat.test(cleanK)) {
+        for (let pIdx = 0; pIdx < patterns.length; pIdx++) {
+          if (patterns[pIdx].test(cleanK)) {
             const val = row[k];
-            if (val !== undefined && val !== null) return val;
+            if (val !== undefined && val !== null) {
+              if (cacheKey) row._qCache[cacheKey] = val;
+              return val;
+            }
           }
         }
       }
     }
 
     if (keywordRegex instanceof RegExp) {
-      for (const k of keys) {
-        if (k === "_participantCode") continue;
+      for (let i = 0; i < maxK; i++) {
+        const k = keys[i];
+        if (k === "_participantCode" || k === "_qCache") continue;
         const cleanK = String(k || "").trim();
         if (keywordRegex.test(cleanK)) {
           const val = row[k];
-          if (val !== undefined && val !== null) return val;
+          if (val !== undefined && val !== null) {
+            if (cacheKey) row._qCache[cacheKey] = val;
+            return val;
+          }
         }
       }
     }
 
+    if (cacheKey) row._qCache[cacheKey] = "";
     return "";
   }
 
@@ -621,8 +667,10 @@ window.ResultsDashboard = (function () {
     const susKeywords = /gostaria de utilizar|desnecessariamente complexo|fácil de utilizar|facil de utilizar|apoio de um técnico|apoio de um tecnico|bem integradas|demasiada inconsistência|demasiada inconsistencia|aprenderiam rapidamente|muito complicado|muito confiante|precisaria de aprender|use frequently|unnecessarily complex|easy to use|support of a technical|well integrated|inconsistency|quickly|cumbersome|confident|needed to learn/i;
 
     const matched = [];
-    keys.forEach(k => {
-      if (k === "_participantCode") return;
+    const maxK = Math.min(keys.length, 120);
+    for (let i = 0; i < maxK; i++) {
+      const k = keys[i];
+      if (k === "_participantCode" || k === "_qCache") continue;
       const s = String(k || "").trim();
       if (reQ.test(s) || reNum.test(s) || reWord.test(s)) {
         if (!matched.includes(k)) matched.push(k);
@@ -631,7 +679,8 @@ window.ResultsDashboard = (function () {
       } else if (/SUS\b/i.test(s) && (!toolKeywordRegex || toolKeywordRegex.test(s))) {
         if (!matched.includes(k)) matched.push(k);
       }
-    });
+      if (matched.length >= 10) break;
+    }
 
     return matched;
   }
@@ -1445,9 +1494,6 @@ window.ResultsDashboard = (function () {
           if (validLogins.length > 0) {
             state.totalLogins = validLogins.length;
             state.uniqueLoginCodes = new Set(validLogins);
-            if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
-              window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
-            }
           }
           renderKpiCards();
           updateConnectionBadge(true);
@@ -1511,7 +1557,6 @@ window.ResultsDashboard = (function () {
       } catch (e) {
         console.warn("Aviso ao reconectar Firebase via visibilitychange:", e);
       }
-      fetchData(false);
     }
   });
 
@@ -1547,18 +1592,23 @@ window.ResultsDashboard = (function () {
    * Atualiza o número de participantes da amostra total e sincroniza os cartões KPI
    */
   function setLiveParticipantCount(count) {
-    if (typeof count === "number" && count >= 0) {
+    if (typeof count === "number" && count >= 0 && state.totalLogins !== count) {
       state.totalLogins = count;
       renderKpiCards();
     }
   }
 
+  let isFetchingData = false;
+
   /**
-   * Sincronização sob demanda (acionada pelo botão 'Atualizar Dados', visibilitychange ou atalhos)
+   * Sincronização sob demanda (acionada pelo botão 'Atualizar Dados' ou atalhos)
    * Executa leituras explícitas db.ref().once('value') nos 4 nós, força re-processamento,
    * executa chart.update() e atualiza obrigatoriamente o elemento de hora (Última atualização: HH:MM:SS)
    */
   async function fetchData(isManualRefresh = false) {
+    if (isFetchingData) return;
+    isFetchingData = true;
+
     const refreshBtn = document.getElementById("btn-refresh-results");
     const refreshIcon = document.getElementById("icon-refresh-results");
     if (refreshIcon) refreshIcon.classList.add("animate-spin");
@@ -1600,10 +1650,10 @@ window.ResultsDashboard = (function () {
       // Sincronizar e re-processar dados (chama chart.update() em todos os gráficos)
       syncAllFirebaseData();
 
-      // Sincronizar SubmissionsTracker
-      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
+      // Sincronizar contadores da UI no SubmissionsTracker (sem re-invocar Firebase)
+      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.updateAllCounters === "function") {
         try {
-          await window.SubmissionsTracker.refreshFromFirebase();
+          window.SubmissionsTracker.updateAllCounters();
         } catch (stErr) {
           console.warn("Aviso ao atualizar SubmissionsTracker:", stErr);
         }
@@ -1633,6 +1683,7 @@ window.ResultsDashboard = (function () {
         syncAllFirebaseData();
       } catch (e) {}
     } finally {
+      isFetchingData = false;
       if (refreshIcon) refreshIcon.classList.remove("animate-spin");
       if (refreshBtn) refreshBtn.disabled = false;
     }

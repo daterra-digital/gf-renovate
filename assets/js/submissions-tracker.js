@@ -336,15 +336,18 @@ window.SubmissionsTracker = (function () {
       } catch (e) {
         console.warn("Aviso ao ativar goOnline() no SubmissionsTracker:", e);
       }
-      refreshFromFirebase();
     }
   });
+
+  let isRefreshingFromFirebase = false;
 
   /**
    * Releitura manual explícita via once() nos 4 nós do Firebase
    */
   async function refreshFromFirebase() {
+    if (isRefreshingFromFirebase) return;
     if (typeof firebase === "undefined" || !firebase.database) return;
+    isRefreshingFromFirebase = true;
     try {
       const db = firebase.database();
       db.goOnline();
@@ -384,6 +387,8 @@ window.SubmissionsTracker = (function () {
       updateAllCounters();
     } catch (e) {
       console.warn("Aviso ao atualizar SubmissionsTracker via once():", e);
+    } finally {
+      isRefreshingFromFirebase = false;
     }
   }
 
@@ -448,6 +453,8 @@ window.SubmissionsTracker = (function () {
     `;
   }
 
+  let isUpdatingCounters = false;
+
   /**
    * Atualiza todos os contadores da interface em tempo real:
    * 1. Menu "Programa & Slides" (dropdowns dos acordeões de avaliação: slots 4, 7 e 9)
@@ -456,51 +463,57 @@ window.SubmissionsTracker = (function () {
    * 4. Menu "Painel de Moderação" (monitores de submissão 1, 2 e 3)
    */
   function updateAllCounters() {
-    const TT = state.totalParticipants;
-    const n1 = state.counts.game;
-    const n2 = state.counts.sim;
-    const n3 = state.counts.global;
+    if (isUpdatingCounters) return;
+    isUpdatingCounters = true;
+    try {
+      const TT = state.totalParticipants;
+      const n1 = state.counts.game;
+      const n2 = state.counts.sim;
+      const n3 = state.counts.global;
 
-    // 1. Menu "Programa & Slides": Dropdowns das 3 avaliações
-    const slot4Container = document.getElementById("submission-counter-slot-4");
-    if (slot4Container) {
-      slot4Container.innerHTML = generateBadgeHTML(n1, TT);
-    }
-    const slot7Container = document.getElementById("submission-counter-slot-7");
-    if (slot7Container) {
-      slot7Container.innerHTML = generateBadgeHTML(n2, TT);
-    }
-    const slot9Container = document.getElementById("submission-counter-slot-9");
-    if (slot9Container) {
-      slot9Container.innerHTML = generateBadgeHTML(n3, TT);
-    }
-
-    // 2. Menu "Sessão ao Vivo": Cartões 3, 4 e 5
-    const step3Container = document.getElementById("submission-counter-step-3");
-    if (step3Container) {
-      step3Container.innerHTML = generateBadgeHTML(n1, TT);
-    }
-    const step4Container = document.getElementById("submission-counter-step-4");
-    if (step4Container) {
-      step4Container.innerHTML = generateBadgeHTML(n2, TT);
-    }
-    const step5Container = document.getElementById("submission-counter-step-5");
-    if (step5Container) {
-      step5Container.innerHTML = generateBadgeHTML(n3, TT);
-    }
-
-    // 3. Menu "Resultados & Media": Cartão "Amostra Total"
-    if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
-      window.ResultsDashboard.renderKpiCards();
-    }
-
-    // 4. Menu "Painel de Moderação": Sincronização em tempo real das contagens
-    if (window.ModeratorPanel && typeof window.ModeratorPanel.fetchSubmissionsCount === "function") {
-      try {
-        window.ModeratorPanel.fetchSubmissionsCount();
-      } catch (modErr) {
-        console.warn("Aviso ao sincronizar contagens com ModeratorPanel:", modErr);
+      // 1. Menu "Programa & Slides": Dropdowns das 3 avaliações
+      const slot4Container = document.getElementById("submission-counter-slot-4");
+      if (slot4Container) {
+        slot4Container.innerHTML = generateBadgeHTML(n1, TT);
       }
+      const slot7Container = document.getElementById("submission-counter-slot-7");
+      if (slot7Container) {
+        slot7Container.innerHTML = generateBadgeHTML(n2, TT);
+      }
+      const slot9Container = document.getElementById("submission-counter-slot-9");
+      if (slot9Container) {
+        slot9Container.innerHTML = generateBadgeHTML(n3, TT);
+      }
+
+      // 2. Menu "Sessão ao Vivo": Cartões 3, 4 e 5
+      const step3Container = document.getElementById("submission-counter-step-3");
+      if (step3Container) {
+        step3Container.innerHTML = generateBadgeHTML(n1, TT);
+      }
+      const step4Container = document.getElementById("submission-counter-step-4");
+      if (step4Container) {
+        step4Container.innerHTML = generateBadgeHTML(n2, TT);
+      }
+      const step5Container = document.getElementById("submission-counter-step-5");
+      if (step5Container) {
+        step5Container.innerHTML = generateBadgeHTML(n3, TT);
+      }
+
+      // 3. Menu "Resultados & Media": Cartão "Amostra Total"
+      if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
+        window.ResultsDashboard.renderKpiCards();
+      }
+
+      // 4. Menu "Painel de Moderação": Sincronização em tempo real das contagens
+      if (window.ModeratorPanel && typeof window.ModeratorPanel.fetchSubmissionsCount === "function") {
+        try {
+          window.ModeratorPanel.fetchSubmissionsCount();
+        } catch (modErr) {
+          console.warn("Aviso ao sincronizar contagens com ModeratorPanel:", modErr);
+        }
+      }
+    } finally {
+      isUpdatingCounters = false;
     }
   }
 
@@ -522,9 +535,22 @@ window.SubmissionsTracker = (function () {
     getCounts: () => ({ ...state.counts }),
     getTotalParticipants: () => state.totalParticipants,
     setTotalParticipants: (tt, codes) => {
-      if (typeof tt === "number") state.totalParticipants = tt;
-      if (Array.isArray(codes)) codes.forEach(c => state.registeredCodes.add(c));
-      updateAllCounters();
+      let changed = false;
+      if (typeof tt === "number" && state.totalParticipants !== tt) {
+        state.totalParticipants = tt;
+        changed = true;
+      }
+      if (Array.isArray(codes)) {
+        codes.forEach(c => {
+          if (c && !state.registeredCodes.has(c)) {
+            state.registeredCodes.add(c);
+            changed = true;
+          }
+        });
+      }
+      if (changed) {
+        updateAllCounters();
+      }
     },
     getRegisteredCodes: () => Array.from(state.registeredCodes),
     refreshFromFirebase
