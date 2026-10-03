@@ -447,8 +447,8 @@ window.ResultsDashboard = (function () {
     return /c[oó]digo|participant code|usercode|participant/i.test(String(h || ""));
   }
 
-  function isTimestampHeader(h, idx) {
-    return idx === 0 || /carimbo|timestamp|data\/hora/i.test(String(h || ""));
+  function isTimestampHeader(h) {
+    return /carimbo|timestamp|data\/hora|datahora/i.test(String(h || ""));
   }
 
   /**
@@ -645,7 +645,7 @@ window.ResultsDashboard = (function () {
     const keys = Object.keys(row);
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i];
-      if (k === "_participantCode" || k === "_qCache" || isTimestampHeader(k, i) || isCodeHeader(k)) continue;
+      if (k === "_participantCode" || k === "_qCache" || isTimestampHeader(k) || isCodeHeader(k)) continue;
       const v = row[k];
       if (v !== undefined && v !== null && String(v).trim() !== "") {
         count++;
@@ -858,7 +858,7 @@ window.ResultsDashboard = (function () {
       if (!row || typeof row !== "object") return;
       const answeredQuestions = new Set();
       Object.keys(row).forEach(k => {
-        if (k === "_participantCode" || isCodeHeader(k) || isTimestampHeader(k, 0)) return;
+        if (k === "_participantCode" || k === "_qCache" || isCodeHeader(k) || isTimestampHeader(k)) return;
         const val = row[k];
         if (val === undefined || val === null || String(val).trim() === "") return;
 
