@@ -458,11 +458,7 @@ const LiveSession = (function () {
       }
 
       if (lockBadge) {
-        if (isUnlocked) {
-          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="unlock" class="w-3.5 h-3.5"></i> ${unlockedText}</span>`;
-        } else {
-          lockBadge.innerHTML = `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 border border-slate-300"><i data-lucide="lock" class="w-3.5 h-3.5"></i> ${waitingText}</span>`;
-        }
+        lockBadge.innerHTML = "";
       }
 
       if (actionContainer) {
