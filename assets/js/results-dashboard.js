@@ -1077,7 +1077,12 @@ window.ResultsDashboard = (function () {
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
         try {
-          fetchData(true);
+          fetchData(true).catch(err => {
+            console.error("Erro na promise do botão de atualização:", err);
+            const icon = document.getElementById("icon-refresh-results");
+            if (icon) icon.classList.remove("animate-spin");
+            refreshBtn.disabled = false;
+          });
         } catch (err) {
           console.error("Erro ao clicar no botão de atualização:", err);
           const icon = document.getElementById("icon-refresh-results");

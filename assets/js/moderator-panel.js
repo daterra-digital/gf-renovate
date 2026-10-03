@@ -460,41 +460,45 @@ window.ModeratorPanel = (function () {
     }
 
     try {
-      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
-        await window.SubmissionsTracker.refreshFromFirebase();
+      try {
+        if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
+          await window.SubmissionsTracker.refreshFromFirebase();
+        }
+      } catch (e) {
+        console.warn("Aviso ao atualizar SubmissionsTracker no ModeratorPanel:", e);
       }
-    } catch (e) {
-      console.warn("Aviso ao atualizar SubmissionsTracker no ModeratorPanel:", e);
+
+      const counts = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getCounts === "function")
+        ? window.SubmissionsTracker.getCounts()
+        : { game: 0, sim: 0, global: 0 };
+
+      const totalTarget = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function")
+        ? window.SubmissionsTracker.getTotalParticipants()
+        : state.totalTarget;
+
+      if (totalTarget > 0) {
+        state.totalTarget = totalTarget;
+      }
+
+      const now = new Date();
+      FORMS_CONFIG.forEach((form) => {
+        state.submissions[form.id] = {
+          count: counts[form.id] || 0,
+          loading: false,
+          error: null,
+          lastUpdated: now
+        };
+      });
+
+      state.pollingCountdown = state.pollingSeconds;
+      renderSubmissionsUI();
+    } catch (err) {
+      console.warn("Aviso em fetchSubmissionsCount:", err);
+    } finally {
+      if (refreshBtn) {
+        setTimeout(() => refreshBtn.classList.remove("animate-spin"), 200);
+      }
     }
-
-    const counts = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getCounts === "function")
-      ? window.SubmissionsTracker.getCounts()
-      : { game: 0, sim: 0, global: 0 };
-
-    const totalTarget = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function")
-      ? window.SubmissionsTracker.getTotalParticipants()
-      : state.totalTarget;
-
-    if (totalTarget > 0) {
-      state.totalTarget = totalTarget;
-    }
-
-    const now = new Date();
-    FORMS_CONFIG.forEach((form) => {
-      state.submissions[form.id] = {
-        count: counts[form.id] || 0,
-        loading: false,
-        error: null,
-        lastUpdated: now
-      };
-    });
-
-    if (refreshBtn) {
-      setTimeout(() => refreshBtn.classList.remove("animate-spin"), 200);
-    }
-
-    state.pollingCountdown = state.pollingSeconds;
-    renderSubmissionsUI();
   }
 
   /**
