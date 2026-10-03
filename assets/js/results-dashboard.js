@@ -452,121 +452,253 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Aplica a Regra Global de Filtragem a um separador (cabeçalho + linhas):
-   * - Suporta { headers, data } ou [headers, row1, row2, ...]
-   * - Mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 / NS-PT (exclui -MD e ADMIN);
-   * - Se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente.
-   * @returns {{headers: string[], data: string[][], codes: Set<string>}}
+   * Converte qualquer entrada do Firebase (Array de Objetos, Objeto de Push-IDs, ou Matriz 2D)
+   * para um Array padronizado de Linhas de Objeto: Array<Record<string, any>>
    */
-  function filterValidParticipantRows(rows) {
-    let headers = [];
-    let dataRows = [];
+  function extractRowObjects(rawVal) {
+    if (!rawVal) return [];
+    let items = [];
+    if (Array.isArray(rawVal)) {
+      items = rawVal.filter(item => item !== null && item !== undefined);
+    } else if (typeof rawVal === "object") {
+      if (Array.isArray(rawVal.data)) {
+        items = rawVal.data.filter(item => item !== null && item !== undefined);
+      } else {
+        items = Object.entries(rawVal).map(([k, v]) => {
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            if (/^(FG2-PT|NS-PT)\d+/i.test(k) && !v.code && !v["Código de Participante"]) {
+              return Object.assign({ _participantCode: k, code: k }, v);
+            }
+          }
+          return v;
+        }).filter(item => item !== null && item !== undefined);
+      }
+    }
+    if (!items.length) return [];
 
-    if (rows && !Array.isArray(rows) && Array.isArray(rows.headers) && Array.isArray(rows.data)) {
-      headers = rows.headers;
-      dataRows = rows.data;
-    } else if (Array.isArray(rows)) {
-      headers = rows[0] || [];
-      dataRows = rows.slice(1);
-    } else {
-      return { headers: [], data: [], codes: new Set() };
+    // Se for uma matriz 2D: [ [headers...], [row1...], ... ]
+    if (Array.isArray(items[0])) {
+      const headers = items[0].map(h => String(h !== null && h !== undefined ? h : "").trim());
+      const dataRows = items.slice(1);
+      return dataRows.map(rowArr => {
+        if (!Array.isArray(rowArr)) return null;
+        const rowObj = {};
+        headers.forEach((h, idx) => {
+          rowObj[h] = rowArr[idx] !== undefined && rowArr[idx] !== null ? String(rowArr[idx]).trim() : "";
+        });
+        return rowObj;
+      }).filter(Boolean);
     }
 
-    const codeCols = [];
-    headers.forEach((h, i) => { if (isCodeHeader(h)) codeCols.push(i); });
-    if (!codeCols.length && headers.length > 1) codeCols.push(1);
+    return items.map(item => {
+      if (typeof item !== "object") return null;
+      return item;
+    }).filter(Boolean);
+  }
+
+  /**
+   * Extrai o código do participante de uma linha objeto de forma resiliente
+   */
+  function extractParticipantCodeFromRow(row) {
+    if (!row || typeof row !== "object") return "";
+    if (row._participantCode) {
+      const c = normalizeParticipantCode(row._participantCode);
+      if (c) return c;
+    }
+    if (row.code || row.userCode || row.participantCode) {
+      const c = normalizeParticipantCode(row.code || row.userCode || row.participantCode);
+      if (c) return c;
+    }
+    for (const k of Object.keys(row)) {
+      if (isCodeHeader(k)) {
+        const c = normalizeParticipantCode(row[k]);
+        if (c) return c;
+      }
+    }
+    for (const k of Object.keys(row)) {
+      const c = normalizeParticipantCode(row[k]);
+      if (isValidParticipantCode(c)) return c;
+    }
+    return "";
+  }
+
+  /**
+   * Aplica a Regra Global de Filtragem:
+   * - Converte entrada para Array de Objetos;
+   * - Mantém apenas linhas cujo código é FG2-PT01..FG2-PT50 / NS-PT (exclui -MD e ADMIN);
+   * - Se o mesmo código submeter mais do que uma vez, conta apenas a submissão mais recente;
+   * - Retorna { rows: Object[], data: Object[], codes: Set<string>, headers: string[] }
+   */
+  function filterValidParticipantRows(rawInput) {
+    const rowObjects = extractRowObjects(rawInput);
+    if (!rowObjects.length) {
+      return { rows: [], data: [], codes: new Set(), headers: [] };
+    }
 
     const latestByCode = new Map();
-    dataRows.forEach(row => {
-      if (!row) return;
-      let code = "";
-      if (Array.isArray(row)) {
-        for (const ci of codeCols) {
-          const c = normalizeParticipantCode(row[ci]);
-          if (c) { code = c; break; }
-        }
-        if (!code) {
-          for (let i = 0; i < row.length; i++) {
-            const c = normalizeParticipantCode(row[i]);
-            if (isValidParticipantCode(c)) { code = c; break; }
-          }
-        }
-      } else if (typeof row === "object") {
-        if (row._participantCode) {
-          code = normalizeParticipantCode(row._participantCode);
-        } else if (row.code || row.userCode) {
-          code = normalizeParticipantCode(row.code || row.userCode);
-        } else {
-          for (const k of Object.keys(row)) {
-            if (isCodeHeader(k)) {
-              code = normalizeParticipantCode(row[k]);
-              if (code) break;
-            }
-          }
-          if (!code) {
-            for (const k of Object.keys(row)) {
-              const c = normalizeParticipantCode(row[k]);
-              if (isValidParticipantCode(c)) { code = c; break; }
-            }
-          }
-        }
-      }
+    const allHeadersSet = new Set();
 
+    rowObjects.forEach(row => {
+      if (!row || typeof row !== "object") return;
+      Object.keys(row).forEach(k => {
+        if (k && k !== "_participantCode") allHeadersSet.add(k);
+      });
+      const code = extractParticipantCodeFromRow(row);
       if (!isValidParticipantCode(code)) return;
       row._participantCode = code;
-      latestByCode.delete(code); // reinserir para manter a ordem cronológica e a submissão mais recente
+      latestByCode.delete(code);
       latestByCode.set(code, row);
     });
 
+    const validRows = Array.from(latestByCode.values());
+    const validCodes = new Set(latestByCode.keys());
+    const headers = Array.from(allHeadersSet);
+
     return {
-      headers,
-      data: Array.from(latestByCode.values()),
-      codes: new Set(latestByCode.keys())
+      rows: validRows,
+      data: validRows,
+      codes: validCodes,
+      headers: headers
     };
   }
 
   /**
-   * Agrupa as colunas de um separador em "unidades de resposta":
-   * - cada questão numerada (Qn, n., etc.) conta como 1 unidade, mesmo quando tem várias sub-colunas (ex.: Q13/Q24 SUS);
-   * - cada questão "3 palavras" (Word Cloud) conta como 1 unidade;
-   * - carimbo de data/hora e código de participante são ignorados.
+   * Extrai o valor de uma questão a partir de um objeto de linha (row).
+   * Procura dinamicamente entre as chaves de row aquela que corresponde ao número da questão
+   * ou ao regex de palavras-chave. Se não encontrar, retorna string vazia "".
    */
-  function getAnswerUnits(headers) {
-    const units = new Map();
-    (headers || []).forEach((h, i) => {
-      if (isTimestampHeader(h, i) || isCodeHeader(h)) return;
-      const label = String(h || "").trim();
-      let key = null;
+  function getRowQuestionValue(row, qNumber, keywordRegex = null) {
+    if (!row || typeof row !== "object") return "";
+    const keys = Object.keys(row);
+    if (!keys.length) return "";
 
-      const matchQ = label.match(/(?:^|[^a-zA-Z0-9])Q\s*(\d+)\b/i) || label.match(/^\s*(\d{1,2})\s*[.):\-\s]/i);
-      if (matchQ) {
-        key = `Q${parseInt(matchQ[1], 10)}`;
-      } else if (/3 palavras|three words|3 words|palavras/i.test(label)) {
-        key = `WC${i}`;
-      } else if (/^[a-z]+(\d+)$/i.test(label)) {
-        key = `Q${parseInt(label.match(/^[a-z]+(\d+)$/i)[1], 10)}`;
-      } else {
-        key = `COL_${i}`;
+    if (qNumber !== null && qNumber !== undefined) {
+      const num = parseInt(qNumber, 10);
+      const numStr = String(num);
+      const patterns = [
+        new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i"),
+        new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s\\[]`, "i"),
+        new RegExp(`(?:quest[aã]o|pergunta|question)\\s*0?${numStr}\\b`, "i"),
+        new RegExp(`^\\s*0?${numStr}\\s*$`, "i")
+      ];
+      for (const k of keys) {
+        if (k === "_participantCode") continue;
+        const cleanK = String(k || "").trim();
+        for (const pat of patterns) {
+          if (pat.test(cleanK)) {
+            const val = row[k];
+            if (val !== undefined && val !== null) return val;
+          }
+        }
       }
+    }
 
-      if (key) {
-        if (!units.has(key)) units.set(key, []);
-        units.get(key).push(i);
+    if (keywordRegex instanceof RegExp) {
+      for (const k of keys) {
+        if (k === "_participantCode") continue;
+        const cleanK = String(k || "").trim();
+        if (keywordRegex.test(cleanK)) {
+          const val = row[k];
+          if (val !== undefined && val !== null) return val;
+        }
+      }
+    }
+
+    return "";
+  }
+
+  /**
+   * Encontra todas as chaves correspondentes aos itens da escala SUS
+   */
+  function findSusKeys(keys, questionNumber, toolKeywordRegex = null) {
+    if (!keys || !keys.length) return [];
+    const num = parseInt(questionNumber, 10);
+    const numStr = String(num);
+
+    const reQ = new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i");
+    const reNum = new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s\\[]`, "i");
+    const reWord = new RegExp(`(?:quest[aã]o|pergunta)\\s*0?${numStr}\\b`, "i");
+    const susKeywords = /gostaria de utilizar|desnecessariamente complexo|fácil de utilizar|facil de utilizar|apoio de um técnico|apoio de um tecnico|bem integradas|demasiada inconsistência|demasiada inconsistencia|aprenderiam rapidamente|muito complicado|muito confiante|precisaria de aprender|use frequently|unnecessarily complex|easy to use|support of a technical|well integrated|inconsistency|quickly|cumbersome|confident|needed to learn/i;
+
+    const matched = [];
+    keys.forEach(k => {
+      if (k === "_participantCode") return;
+      const s = String(k || "").trim();
+      if (reQ.test(s) || reNum.test(s) || reWord.test(s)) {
+        if (!matched.includes(k)) matched.push(k);
+      } else if (susKeywords.test(s)) {
+        if (!matched.includes(k)) matched.push(k);
+      } else if (/SUS\b/i.test(s) && (!toolKeywordRegex || toolKeywordRegex.test(s))) {
+        if (!matched.includes(k)) matched.push(k);
       }
     });
-    return Array.from(units.values());
+
+    return matched;
+  }
+
+  /**
+   * Helper para compatibilidade com buscas de índice de coluna
+   */
+  function findQuestionColIndex(headers, qNumber, keywordRegex = null) {
+    if (!headers || !headers.length) return -1;
+    const num = parseInt(qNumber, 10);
+    const numStr = String(num);
+
+    const patterns = [
+      new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i"),
+      new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s]`, "i"),
+      new RegExp(`(?:quest[aã]o|pergunta|question)\\s*0?${numStr}\\b`, "i"),
+      new RegExp(`^\\s*0?${numStr}\\s*$`, "i")
+    ];
+
+    for (let i = 0; i < headers.length; i++) {
+      const h = String(headers[i] || "").trim();
+      for (const pat of patterns) {
+        if (pat.test(h)) return i;
+      }
+    }
+
+    if (keywordRegex instanceof RegExp) {
+      for (let i = 0; i < headers.length; i++) {
+        const h = String(headers[i] || "").trim();
+        if (keywordRegex.test(h)) return i;
+      }
+    }
+
+    return -1;
+  }
+
+  function findSusColIndices(headers, questionNumber, toolKeywordRegex = null) {
+    return findSusKeys(headers, questionNumber, toolKeywordRegex).map(k => headers.indexOf(k));
   }
 
   /**
    * Conta as respostas válidas (unidades de resposta preenchidas) de um separador já filtrado
    */
   function countAnsweredUnits(tab) {
-    const units = getAnswerUnits(tab.headers);
+    const rows = (tab && tab.rows) ? tab.rows : (Array.isArray(tab) ? tab : (tab && tab.data ? tab.data : []));
+    if (!rows || !rows.length) return 0;
+
     let total = 0;
-    tab.data.forEach(row => {
-      units.forEach(cols => {
-        if (cols.some(ci => row[ci] !== undefined && String(row[ci]).trim() !== "")) total++;
+    rows.forEach(row => {
+      if (!row || typeof row !== "object") return;
+      const answeredQuestions = new Set();
+      Object.keys(row).forEach(k => {
+        if (k === "_participantCode" || isCodeHeader(k) || isTimestampHeader(k, 0)) return;
+        const val = row[k];
+        if (val === undefined || val === null || String(val).trim() === "") return;
+
+        const label = String(k || "").trim();
+        const matchQ = label.match(/(?:^|[^a-zA-Z0-9])Q\s*(\d+)\b/i) || label.match(/^\s*(\d{1,2})\s*[.):\-\s]/i);
+        if (matchQ) {
+          answeredQuestions.add(`Q${parseInt(matchQ[1], 10)}`);
+        } else if (/3 palavras|three words|3 words|palavras/i.test(label)) {
+          answeredQuestions.add("WC");
+        } else {
+          answeredQuestions.add(label);
+        }
       });
+      total += answeredQuestions.size;
     });
     return total;
   }
@@ -606,114 +738,52 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Procura o índice de uma coluna de questão de forma resiliente.
-   * Suporta:
-   * - "Q7", "Q07", "q7", "q07"
-   * - "7. ", "7) ", "7 - ", "7: ", "7 "
-   * - "Questão 7", "Pergunta 7", "Question 7"
-   * - [7] ou [Q7]
-   * - Expressões regulares adicionais / palavras-chave de contexto (ex: "clareza", "explicações")
-   * - correspondência exata de chave JSON (ex: "q7")
-   */
-  function findQuestionColIndex(headers, qNumber, keywordRegex = null) {
-    if (!headers || !headers.length) return -1;
-    const num = parseInt(qNumber, 10);
-    const numStr = String(num);
-
-    // 1. Padrões por número da questão (ex: Q7, 7., Questão 7, q7)
-    const patterns = [
-      new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i"),
-      new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s]`, "i"),
-      new RegExp(`(?:quest[aã]o|pergunta|question)\\s*0?${numStr}\\b`, "i"),
-      new RegExp(`^\\s*0?${numStr}\\s*$`, "i")
-    ];
-
-    for (let i = 0; i < headers.length; i++) {
-      const h = String(headers[i] || "").trim();
-      for (const pat of patterns) {
-        if (pat.test(h)) return i;
-      }
-    }
-
-    // 2. Se não encontrou por número, tentar por palavras-chave semânticas
-    if (keywordRegex instanceof RegExp) {
-      for (let i = 0; i < headers.length; i++) {
-        const h = String(headers[i] || "").trim();
-        if (keywordRegex.test(h)) return i;
-      }
-    }
-
-    return -1;
-  }
-
-  /**
-   * Encontra todas as colunas correspondentes à escala SUS (10 sub-declarações)
-   */
-  function findSusColIndices(headers, questionNumber, toolKeywordRegex = null) {
-    if (!headers || !headers.length) return [];
-    const num = parseInt(questionNumber, 10);
-    const numStr = String(num);
-
-    const reQ = new RegExp(`(?:^|[^a-zA-Z0-9])Q\\s*0?${numStr}(?:[^a-zA-Z0-9]|$)`, "i");
-    const reNum = new RegExp(`^\\s*0?${numStr}\\s*[.):\\-\\s\\[]`, "i");
-    const reWord = new RegExp(`(?:quest[aã]o|pergunta)\\s*0?${numStr}\\b`, "i");
-    const susKeywords = /gostaria de utilizar|desnecessariamente complexo|fácil de utilizar|facil de utilizar|apoio de um técnico|apoio de um tecnico|bem integradas|demasiada inconsistência|demasiada inconsistencia|aprenderiam rapidamente|muito complicado|muito confiante|precisaria de aprender|use frequently|unnecessarily complex|easy to use|support of a technical|well integrated|inconsistency|quickly|cumbersome|confident|needed to learn/i;
-
-    const indices = [];
-    headers.forEach((h, i) => {
-      const s = String(h || "").trim();
-      if (reQ.test(s) || reNum.test(s) || reWord.test(s)) {
-        indices.push(i);
-      } else if (susKeywords.test(s)) {
-        if (!indices.includes(i)) indices.push(i);
-      } else if (/SUS\b/i.test(s) && (!toolKeywordRegex || toolKeywordRegex.test(s))) {
-        if (!indices.includes(i)) indices.push(i);
-      }
-    });
-
-    return indices;
-  }
-
-  /**
    * System Usability Scale (Brooke, 1996) sobre as 10 sub-declarações de uma questão (Q13 ou Q24):
    * ímpares (1,3,5,7,9): resposta − 1 | pares (2,4,6,8,10): 5 − resposta
    * Score do participante = soma × 2.5 | Resultado = média aritmética dos participantes válidos.
-   * Participantes com alguma das 10 sub-declarações por responder não entram na média.
    */
-  function computeSusKpi(tab, questionNumber) {
-    const cols = findSusColIndices(tab.headers, questionNumber);
-    if (cols.length < 10) return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
+  function computeSusKpi(tab, questionNumber, toolKeywordRegex = null) {
+    const rows = (tab && tab.rows) ? tab.rows : (Array.isArray(tab) ? tab : (tab && tab.data ? tab.data : []));
+    if (!rows || !rows.length) return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
 
-    const itemCols = cols.slice(0, 10); // ordem das colunas = ordem oficial dos itens SUS
+    const keySet = new Set();
+    rows.forEach(r => {
+      if (r && typeof r === "object") {
+        findSusKeys(Object.keys(r), questionNumber, toolKeywordRegex).forEach(k => keySet.add(k));
+      }
+    });
+    const itemKeys = Array.from(keySet).slice(0, 10);
+    if (itemKeys.length < 10) {
+      return { average: null, n: 0, itemsAvg: new Array(10).fill(0) };
+    }
+
     let sum = 0;
     let n = 0;
     const itemSums = new Array(10).fill(0);
     const itemCounts = new Array(10).fill(0);
 
-    tab.data.forEach(row => {
-      // Acumular coluna a coluna para as 10 dimensões individuais do gráfico
-      itemCols.forEach((ci, idx) => {
-        const val = Array.isArray(row) ? row[ci] : row[ci];
-        const v = parseLikertStrict(val);
+    rows.forEach(row => {
+      if (!row || typeof row !== "object") return;
+
+      itemKeys.forEach((key, idx) => {
+        const v = parseLikertStrict(row[key]);
         if (v !== null) {
           itemSums[idx] += v;
           itemCounts[idx]++;
         }
       });
 
-      const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : row[ci]));
+      const vals = itemKeys.map(k => parseLikertStrict(row[k]));
       if (vals.some(v => v === null)) return;
+
       let raw = 0;
       vals.forEach((v, idx) => {
-        raw += (idx % 2 === 0) ? (v - 1) : (5 - v); // idx 0 = sub-questão 1 (ímpar)
+        raw += (idx % 2 === 0) ? (v - 1) : (5 - v);
       });
       sum += raw * 2.5;
       n++;
     });
 
-    // Transformação para escala positiva 1 a 5:
-    // Ímpares (1, 3, 5, 7, 9): Média Bruta
-    // Pares (2, 4, 6, 8, 10): 6 - Média Bruta
     const itemsAvg = itemCounts.map((count, idx) => {
       if (count === 0) return 0;
       const rawMean = itemSums[idx] / count;
@@ -728,12 +798,14 @@ window.ResultsDashboard = (function () {
    * Média aritmética simples das respostas válidas da Q29 (1–5)
    */
   function computeQ29Kpi(tab) {
-    const idx = findQuestionColIndex(tab.headers, 29, /recomenda|recomendaria|provável|provavel|nps/i);
-    if (idx === -1) return { average: null, n: 0 };
+    const rows = (tab && tab.rows) ? tab.rows : (Array.isArray(tab) ? tab : (tab && tab.data ? tab.data : []));
+    if (!rows || !rows.length) return { average: null, n: 0 };
+
     let sum = 0;
     let n = 0;
-    tab.data.forEach(row => {
-      const val = Array.isArray(row) ? row[idx] : row[idx];
+    rows.forEach(row => {
+      if (!row || typeof row !== "object") return;
+      const val = getRowQuestionValue(row, 29, /recomenda|recomendaria|provável|provavel|nps/i);
       const v = parseQ29Strict(val);
       if (v === null) return;
       sum += v;
@@ -746,12 +818,16 @@ window.ResultsDashboard = (function () {
    * Calcula os dados dos 4 cartões a partir dos 3 separadores já filtrados
    */
   function computeKpis(game, sim, global) {
-    const submissionCodes = new Set([...game.codes, ...sim.codes, ...global.codes]);
+    const gCodes = (game && game.codes) ? game.codes : new Set();
+    const sCodes = (sim && sim.codes) ? sim.codes : new Set();
+    const glCodes = (global && global.codes) ? global.codes : new Set();
+    const submissionCodes = new Set([...gCodes, ...sCodes, ...glCodes]);
+
     return {
       submissionCodes,
       answeredUnits: countAnsweredUnits(game) + countAnsweredUnits(sim) + countAnsweredUnits(global),
-      susGame: computeSusKpi(game, 13),
-      susSim: computeSusKpi(sim, 24),
+      susGame: computeSusKpi(game, 13, /game|jogo/i),
+      susSim: computeSusKpi(sim, 24, /simulador|sim/i),
       q29: computeQ29Kpi(global)
     };
   }
@@ -795,61 +871,65 @@ window.ResultsDashboard = (function () {
    * Liga os dados aos 4 cartões de resumo existentes no menu "Resultados & Media"
    */
   function renderKpiCards() {
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    try {
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
+      const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
-    let k = state.kpis;
-    let participantCount;
+      let k = state.kpis;
+      let participantCount;
 
-    // Amostra Total (N) extraída do comprimento do nó /Logins (filtrando duplicados e excluindo -MD)
-    if (state.totalLogins > 0) {
-      participantCount = state.totalLogins;
-    } else if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function" && window.SubmissionsTracker.getTotalParticipants() > 0) {
-      participantCount = window.SubmissionsTracker.getTotalParticipants();
-    } else if (k) {
-      const codes = getActiveSessionCodes();
-      if (k.submissionCodes) k.submissionCodes.forEach(c => codes.add(c));
-      participantCount = codes.size;
-    } else {
-      const codes = getActiveSessionCodes();
-      participantCount = codes.size;
+      // Amostra Total (N) extraída do comprimento do nó /Logins (filtrando duplicados e excluindo -MD)
+      if (state.totalLogins > 0) {
+        participantCount = state.totalLogins;
+      } else if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function" && window.SubmissionsTracker.getTotalParticipants() > 0) {
+        participantCount = window.SubmissionsTracker.getTotalParticipants();
+      } else if (k) {
+        const codes = getActiveSessionCodes();
+        if (k.submissionCodes) k.submissionCodes.forEach(c => codes.add(c));
+        participantCount = codes.size;
+      } else {
+        const codes = getActiveSessionCodes();
+        participantCount = codes.size;
+      }
+
+      if (!k) {
+        k = {
+          answeredUnits: 0,
+          susGame: { average: null },
+          susSim: { average: null },
+          q29: { average: null }
+        };
+      }
+
+      // 1. AMOSTRA TOTAL
+      setText("kpi-responses-count", participantCount);
+      const target = participantCount * ANSWER_UNITS_PER_PARTICIPANT;
+      const badge = document.getElementById("kpi-total-submissions-badge");
+      if (badge && window.SubmissionsTracker && typeof window.SubmissionsTracker.generateBadgeHTML === "function") {
+        badge.innerHTML = window.SubmissionsTracker.generateBadgeHTML(k.answeredUnits, target, true);
+      }
+
+      // 2. SUS SERIOUS GAME (Q13)
+      const sg = k.susGame.average;
+      setText("kpi-sus-game", sg === null ? "—" : round1(sg).toFixed(1));
+      setText("kpi-sus-game-bench", getSusLabel(sg, isEn));
+
+      // 3. SUS SIMULADOR 3D (Q24)
+      const ss = k.susSim.average;
+      setText("kpi-sus-sim", ss === null ? "—" : round1(ss).toFixed(1));
+      setText("kpi-sus-sim-bench", getSusLabel(ss, isEn));
+
+      // 4. RECOMENDAÇÃO RENOVATE (Q29)
+      const q = k.q29.average;
+      setText("kpi-nps", q === null ? "—" : round1(q).toFixed(1));
+      setText("kpi-nps-unit", q === null ? "/ 5.0" : `/ 5.0 (${Math.round((q / 5) * 100)}%)`);
+      setText("kpi-nps-label", getQ29Label(q, isEn));
+
+      // Sincronizar secção comparativa SUS com os mesmos dados calculados
+      renderSusBenchmarkGauge();
+    } catch (err) {
+      console.warn("Aviso em renderKpiCards:", err);
     }
-
-    if (!k) {
-      k = {
-        answeredUnits: 0,
-        susGame: { average: null },
-        susSim: { average: null },
-        q29: { average: null }
-      };
-    }
-
-    // 1. AMOSTRA TOTAL
-    setText("kpi-responses-count", participantCount);
-    const target = participantCount * ANSWER_UNITS_PER_PARTICIPANT;
-    const badge = document.getElementById("kpi-total-submissions-badge");
-    if (badge && window.SubmissionsTracker && typeof window.SubmissionsTracker.generateBadgeHTML === "function") {
-      badge.innerHTML = window.SubmissionsTracker.generateBadgeHTML(k.answeredUnits, target, true);
-    }
-
-    // 2. SUS SERIOUS GAME (Q13)
-    const sg = k.susGame.average;
-    setText("kpi-sus-game", sg === null ? "—" : round1(sg).toFixed(1));
-    setText("kpi-sus-game-bench", getSusLabel(sg, isEn));
-
-    // 3. SUS SIMULADOR 3D (Q24)
-    const ss = k.susSim.average;
-    setText("kpi-sus-sim", ss === null ? "—" : round1(ss).toFixed(1));
-    setText("kpi-sus-sim-bench", getSusLabel(ss, isEn));
-
-    // 4. RECOMENDAÇÃO RENOVATE (Q29)
-    const q = k.q29.average;
-    setText("kpi-nps", q === null ? "—" : round1(q).toFixed(1));
-    setText("kpi-nps-unit", q === null ? "/ 5.0" : `/ 5.0 (${Math.round((q / 5) * 100)}%)`);
-    setText("kpi-nps-label", getQ29Label(q, isEn));
-
-    // Sincronizar secção comparativa SUS com os mesmos dados calculados
-    renderSusBenchmarkGauge();
   }
 
   /**
@@ -996,7 +1076,14 @@ window.ResultsDashboard = (function () {
     const refreshBtn = document.getElementById("btn-refresh-results");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
-        fetchData(true);
+        try {
+          fetchData(true);
+        } catch (err) {
+          console.error("Erro ao clicar no botão de atualização:", err);
+          const icon = document.getElementById("icon-refresh-results");
+          if (icon) icon.classList.remove("animate-spin");
+          refreshBtn.disabled = false;
+        }
       });
     }
 
@@ -1348,40 +1435,56 @@ window.ResultsDashboard = (function () {
 
       // 1. /Logins (Amostra Total TT)
       db.ref("/Logins").on("value", snapshot => {
-        const validLogins = extractValidLoginCodes(snapshot.val());
-        state.totalLogins = validLogins.length;
-        state.uniqueLoginCodes = new Set(validLogins);
-
-        if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
-          window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+        try {
+          const validLogins = extractValidLoginCodes(snapshot.val());
+          if (validLogins.length > 0) {
+            state.totalLogins = validLogins.length;
+            state.uniqueLoginCodes = new Set(validLogins);
+            if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+              window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+            }
+          }
+          renderKpiCards();
+          updateConnectionBadge(true);
+        } catch (err) {
+          console.warn("Aviso ao processar /Logins no ResultsDashboard:", err);
         }
-
-        renderKpiCards();
-        updateConnectionBadge(true);
       }, err => {
         console.warn("Aviso Firebase /Logins no ResultsDashboard:", err);
       });
 
       // 2. /RespostasdoFormulário1 (Game + Demografia)
       db.ref("/RespostasdoFormulário1").on("value", snapshot => {
-        state.rawFirebaseData.game = snapshot.val();
-        syncAllFirebaseData();
+        try {
+          state.rawFirebaseData.game = snapshot.val();
+          syncAllFirebaseData();
+        } catch (err) {
+          console.warn("Aviso /RespostasdoFormulário1:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário1:", err);
       });
 
       // 3. /RespostasdoFormulário2 (Simulador)
       db.ref("/RespostasdoFormulário2").on("value", snapshot => {
-        state.rawFirebaseData.sim = snapshot.val();
-        syncAllFirebaseData();
+        try {
+          state.rawFirebaseData.sim = snapshot.val();
+          syncAllFirebaseData();
+        } catch (err) {
+          console.warn("Aviso /RespostasdoFormulário2:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário2:", err);
       });
 
       // 4. /RespostasdoFormulário3 (Global NPS + Síntese)
       db.ref("/RespostasdoFormulário3").on("value", snapshot => {
-        state.rawFirebaseData.global = snapshot.val();
-        syncAllFirebaseData();
+        try {
+          state.rawFirebaseData.global = snapshot.val();
+          syncAllFirebaseData();
+        } catch (err) {
+          console.warn("Aviso /RespostasdoFormulário3:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário3:", err);
       });
@@ -1412,19 +1515,15 @@ window.ResultsDashboard = (function () {
    */
   function syncAllFirebaseData() {
     try {
-      const game = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.game));
-      const sim = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.sim));
-      const global = filterValidParticipantRows(normalizeFirebaseTable(state.rawFirebaseData.global));
+      const game = filterValidParticipantRows(state.rawFirebaseData.game);
+      const sim = filterValidParticipantRows(state.rawFirebaseData.sim);
+      const global = filterValidParticipantRows(state.rawFirebaseData.global);
 
       state.kpis = computeKpis(game, sim, global);
 
-      const hasValidAnswers = game.data.length + sim.data.length + global.data.length > 0;
+      const hasValidAnswers = game.rows.length + sim.rows.length + global.rows.length > 0;
       if (hasValidAnswers) {
-        processRealData(
-          [game.headers, ...game.data],
-          [sim.headers, ...sim.data],
-          [global.headers, ...global.data]
-        );
+        processRealData(game.rows, sim.rows, global.rows);
         state.isWaitingAnswers = false;
       } else {
         state.isWaitingAnswers = true;
@@ -1455,13 +1554,15 @@ window.ResultsDashboard = (function () {
    * executa chart.update() e atualiza obrigatoriamente o elemento de hora (Última atualização: HH:MM:SS)
    */
   async function fetchData(isManualRefresh = false) {
+    const refreshBtn = document.getElementById("btn-refresh-results");
     const refreshIcon = document.getElementById("icon-refresh-results");
     if (refreshIcon) refreshIcon.classList.add("animate-spin");
+    if (refreshBtn) refreshBtn.disabled = true;
 
     try {
       if (typeof firebase !== "undefined" && firebase.database) {
         const db = firebase.database();
-        db.goOnline();
+        try { db.goOnline(); } catch (e) {}
 
         const [snapLogins, snapGame, snapSim, snapGlobal] = await Promise.all([
           db.ref("/Logins").once("value").catch(err => { console.warn("Aviso /Logins once:", err); return null; }),
@@ -1472,10 +1573,12 @@ window.ResultsDashboard = (function () {
 
         if (snapLogins && snapLogins.val() !== null) {
           const validLogins = extractValidLoginCodes(snapLogins.val());
-          state.totalLogins = validLogins.length;
-          state.uniqueLoginCodes = new Set(validLogins);
-          if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
-            window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+          if (validLogins.length > 0) {
+            state.totalLogins = validLogins.length;
+            state.uniqueLoginCodes = new Set(validLogins);
+            if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+              window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+            }
           }
         }
         if (snapGame && snapGame.val() !== null) {
@@ -1494,7 +1597,11 @@ window.ResultsDashboard = (function () {
 
       // Sincronizar SubmissionsTracker
       if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
-        window.SubmissionsTracker.refreshFromFirebase();
+        try {
+          await window.SubmissionsTracker.refreshFromFirebase();
+        } catch (stErr) {
+          console.warn("Aviso ao atualizar SubmissionsTracker:", stErr);
+        }
       }
 
       const isEn = window.I18nManager && window.I18nManager.isEnglish();
@@ -1517,11 +1624,12 @@ window.ResultsDashboard = (function () {
       }
     } catch (err) {
       console.warn("Aviso ao atualizar dados sob demanda:", err);
-      syncAllFirebaseData();
+      try {
+        syncAllFirebaseData();
+      } catch (e) {}
     } finally {
-      if (refreshIcon) {
-        setTimeout(() => refreshIcon.classList.remove("animate-spin"), 400);
-      }
+      if (refreshIcon) refreshIcon.classList.remove("animate-spin");
+      if (refreshBtn) refreshBtn.disabled = false;
     }
   }
 
@@ -1647,13 +1755,23 @@ window.ResultsDashboard = (function () {
    * Processa os dados reais lidos via CSV das 3 abas
    */
   /**
-   * Extrai a média Likert (1 a 5) de uma coluna ignorando valores vazios ou inválidos (0 se sem dados)
+   * Extrai a média Likert (1 a 5) de uma questão a partir de um array de linhas (Objetos ou 2D)
+   * Suporta identificação por número de questão (qNum) ou regex de palavras-chave.
    */
-  function extractLikertAverage(rows, colIdx) {
-    if (colIdx === -1 || !rows || !rows.length) return 0;
-    const vals = rows
-      .map(r => parseLikertStrict(Array.isArray(r) ? r[colIdx] : (r ? r[colIdx] : null)))
-      .filter(v => v !== null);
+  function extractLikertAverage(rows, qNum, keywordRegex = null) {
+    if (!rows || !rows.length) return 0;
+    const vals = rows.map(r => {
+      let rawVal;
+      if (typeof r === "object" && !Array.isArray(r)) {
+        rawVal = getRowQuestionValue(r, qNum, keywordRegex);
+      } else if (Array.isArray(r) && typeof qNum === "number") {
+        rawVal = r[qNum];
+      } else {
+        rawVal = r;
+      }
+      return parseLikertStrict(rawVal);
+    }).filter(v => v !== null);
+
     if (!vals.length) return 0;
     const sum = vals.reduce((a, b) => a + b, 0);
     return parseFloat((sum / vals.length).toFixed(1));
@@ -1665,11 +1783,20 @@ window.ResultsDashboard = (function () {
    * Fórmula por resposta individual: Valor_Convertido = 5 - ( ABS(Resposta_Original - 3) * 2 )
    * Resposta 3 -> 5 | Resposta 2 ou 4 -> 3 | Resposta 1 ou 5 -> 1
    */
-  function extractConvertedQ8Average(rows, colIdx) {
-    if (colIdx === -1 || !rows || !rows.length) return 0;
-    const vals = rows
-      .map(r => parseLikertStrict(Array.isArray(r) ? r[colIdx] : (r ? r[colIdx] : null)))
-      .filter(v => v !== null);
+  function extractConvertedQ8Average(rows, colIdxOrRegex = null) {
+    if (!rows || !rows.length) return 0;
+    const vals = rows.map(r => {
+      let rawVal;
+      if (typeof r === "object" && !Array.isArray(r)) {
+        rawVal = getRowQuestionValue(r, 8, /dificuldade|adequaç|adequac|equilibrad|difficulty|suitability/i);
+      } else if (Array.isArray(r) && typeof colIdxOrRegex === "number") {
+        rawVal = r[colIdxOrRegex];
+      } else {
+        rawVal = r;
+      }
+      return parseLikertStrict(rawVal);
+    }).filter(v => v !== null);
+
     if (!vals.length) return 0;
     const converted = vals.map(v => 5 - (Math.abs(v - 3) * 2));
     const sum = converted.reduce((a, b) => a + b, 0);
@@ -1677,118 +1804,43 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Processa os dados reais lidos via CSV das 3 abas
+   * Processa os dados reais lidos via Firebase ou CSV das 3 abas
+   * Suporta diretamente arrays de linhas de objetos (ou matrizes 2D)
    */
-  function processRealData(gameRows, simRows, globalRows) {
-    const gameHeaders = gameRows[0] || [];
-    const gameData = gameRows.slice(1);
+  function processRealData(gameInput, simInput, globalInput) {
+    const gameRows = extractRowObjects(gameInput);
+    const simRows = extractRowObjects(simInput);
+    const globalRows = extractRowObjects(globalInput);
 
-    const simHeaders = simRows[0] || [];
-    const simData = simRows.slice(1);
+    // 1. SUS Serious Game (Q13)
+    const susGame = computeSusKpi(gameRows, 13, /game|jogo/i);
 
-    const globalHeaders = globalRows[0] || [];
-    const globalData = globalRows.slice(1);
+    // 2. SUS Simulador (Q24)
+    const susSim = computeSusKpi(simRows, 24, /simulador|sim/i);
 
-    // Mapear índices de colunas do Separador 1 (Game + Demografia)
-    const idxProfile = findQuestionColIndex(gameHeaders, 1, /perfil|profissão|profissao|função|funcao|profile/i);
-    const idxAge = findQuestionColIndex(gameHeaders, 2, /idade|faixa etária|faixa etaria|age/i);
-    const idxGender = findQuestionColIndex(gameHeaders, 3, /género|genero|sexo|gender/i);
-    const idxCrops = findQuestionColIndex(gameHeaders, 5, /cultura|culturas|crops/i);
-    const idxComfort = findQuestionColIndex(gameHeaders, 6, /confortável|confortavel|digital|tecnolog|literacia/i);
-    const idxQ7 = findQuestionColIndex(gameHeaders, 7, /explicaç|explicac|clareza|claras|compreens|clarity|explanation/i);
-    const idxQ8 = findQuestionColIndex(gameHeaders, 8, /dificuldade|adequaç|adequac|equilibrad|difficulty|suitability/i);
-    const idxQ9 = findQuestionColIndex(gameHeaders, 9, /realismo|cenário|cenario|prática real|pratica real|realism|scenario/i);
-    const idxQ10 = findQuestionColIndex(gameHeaders, 10, /calibraç|calibrac|utilidade|aprender|calibration|usefulness/i);
-    const idxQ11 = findQuestionColIndex(gameHeaders, 11, /lúdico|ludico|envolvimento|motiva|gamifi|engagement/i);
-    const idxQ12 = findQuestionColIndex(gameHeaders, 12, /expectativa|global|globais|expectations/i);
-    let idxWordsGame = findColIndex(gameHeaders, /experiência.*serious game.*3 palavras|serious game.*3 palavras|3 palavras|palavras/i);
-    if (idxWordsGame === -1) idxWordsGame = findColIndex(gameHeaders, /3 palavras|palavras/i);
-
-    // Encontrar os 10 itens SUS do Game (Q13)
-    const susGameColIndices = findSusColIndices(gameHeaders, 13, /game|jogo/i);
-
-    // Mapear índices de colunas do Separador 2 (Simulador)
-    const idxQ15 = findQuestionColIndex(simHeaders, 15, /navegaç|navegac|controlo|controles|controlos|interface|navigation|controls/i);
-    const idxQ16 = findQuestionColIndex(simHeaders, 16, /tutorial|tutoriais|menu|menus|instruç|instruc/i);
-    const idxQ17 = findQuestionColIndex(simHeaders, 17, /eficácia|eficacia|pedagóg|pedagog|aprendiz|efficacy/i);
-    const idxQ18 = findQuestionColIndex(simHeaders, 18, /sequência|sequencia|decisão|decisao|etapas|sequence|decision/i);
-    const idxQ19 = findQuestionColIndex(simHeaders, 19, /cálculo|calculo|fórmula|formula|contas|calculations|formulas/i);
-    const idxQ20 = findQuestionColIndex(simHeaders, 20, /bico|bicos|volume|calda|gotas|spray|nozzles/i);
-    const idxQ21 = findQuestionColIndex(simHeaders, 21, /seleção|selecao|rótulo|rotulo|etiqueta|label/i);
-    const idxQ22 = findQuestionColIndex(simHeaders, 22, /variável|variavel|campo|terreno|vento|variables/i);
-    const idxQ23 = findQuestionColIndex(simHeaders, 23, /expectativa.*simulador|expectativas globais.*simulador|satisfação global.*simulador|simulador.*expectativa|expectations.*sim/i);
-    const idxQ25_sim = findQuestionColIndex(simHeaders, 25, /confuso|falta|dúvida|duvida|sugest/i);
-    const idxQ26_sim = findQuestionColIndex(simHeaders, 26, /compreens|clareza|aplicabilidade/i);
-    const idxQ27_sim = findQuestionColIndex(simHeaders, 27, /confiança|confianca|autonomia/i);
-    const idxQ28_sim = findQuestionColIndex(simHeaders, 28, /valor|relevância|relevancia|adicionado/i);
-    const idxQ30_sim = findQuestionColIndex(simHeaders, 30, /erros|falhas|melhorias|comentário|comentario/i);
-    let idxWordsSim = findColIndex(simHeaders, /experiência.*simulador.*3 palavras|simulador.*3 palavras|3 palavras|palavras/i);
-    if (idxWordsSim === -1) idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
-
-    // Encontrar os 10 itens SUS do Simulador (Q24)
-    const susSimColIndices = findSusColIndices(simHeaders, 24, /simulador|sim/i);
-
-    // Mapear índices de colunas do Separador 3 (Global)
-    const idxQ25_global = findQuestionColIndex(globalHeaders, 25, /confuso|falta/i);
-    const idxQ26_global = findQuestionColIndex(globalHeaders, 26, /compreens|clareza|geral/i);
-    const idxQ27_global = findQuestionColIndex(globalHeaders, 27, /confiança|confianca|autonomia/i);
-    const idxQ28_global = findQuestionColIndex(globalHeaders, 28, /valor|relevância|relevancia/i);
-    let idxQ29_global = findQuestionColIndex(globalHeaders, 29, /recomenda|recomendaria|provável|provavel|nps/i);
-    const idxQ30_global = findQuestionColIndex(globalHeaders, 30, /erros|falhas|melhorias|comentários|comentarios/i);
-    const idxGlobalCode = findQuestionColIndex(globalHeaders, 0, /código|codigo|participante|usercode/i);
-
-    const idxQ25 = idxQ25_sim !== -1 ? idxQ25_sim : idxQ25_global;
-    const idxQ26 = idxQ26_global !== -1 ? idxQ26_global : idxQ26_sim;
-    const idxQ27 = idxQ27_global !== -1 ? idxQ27_global : idxQ27_sim;
-    const idxQ28 = idxQ28_global !== -1 ? idxQ28_global : idxQ28_sim;
-    const idxQ29 = idxQ29_global;
-    const idxQ30 = idxQ30_global !== -1 ? idxQ30_global : idxQ30_sim;
-
-    // Processamento SUS do Serious Game (apenas participantes válidos com os 10 itens completos)
-    const gameSusArrays = [];
-    if (susGameColIndices.length >= 10) {
-      const itemCols = susGameColIndices.slice(0, 10);
-      gameData.forEach(row => {
-        const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : (row ? row[ci] : null)));
-        if (vals.every(v => v !== null)) {
-          gameSusArrays.push(vals);
-        }
-      });
-    }
-    const susGame = calculateSusFromResponses(gameSusArrays);
-
-    // Processamento SUS do Simulador (apenas participantes válidos com os 10 itens completos)
-    const simSusArrays = [];
-    if (susSimColIndices.length >= 10) {
-      const itemCols = susSimColIndices.slice(0, 10);
-      simData.forEach(row => {
-        const vals = itemCols.map(ci => parseLikertStrict(Array.isArray(row) ? row[ci] : (row ? row[ci] : null)));
-        if (vals.every(v => v !== null)) {
-          simSusArrays.push(vals);
-        }
-      });
-    }
-    const susSim = calculateSusFromResponses(simSusArrays);
-
-    // Processamento Q29 Recomendação do Questionário Global
+    // 3. Q29 Recomendação
     const q29Responses = [];
-    if (idxQ29 !== -1) {
-      globalData.forEach(row => {
-        const val = Array.isArray(row) ? row[idxQ29] : (row ? row[idxQ29] : null);
-        if (val && String(val).trim()) {
-          q29Responses.push(val);
-        }
-      });
-    }
+    globalRows.forEach(row => {
+      const val = getRowQuestionValue(row, 29, /recomenda|recomendaria|provável|provavel|nps/i);
+      if (val && String(val).trim()) {
+        q29Responses.push(val);
+      }
+    });
     const nps = calculateQ29Recommendation(q29Responses);
 
-    // Nuvens de Palavras
-    const rawWordsGame = gameData.map(r => idxWordsGame !== -1 ? (Array.isArray(r) ? r[idxWordsGame] : (r ? r[idxWordsGame] : "")) : "").filter(Boolean);
-    const rawWordsSim = simData.map(r => idxWordsSim !== -1 ? (Array.isArray(r) ? r[idxWordsSim] : (r ? r[idxWordsSim] : "")) : "").filter(Boolean);
+    // 4. Nuvens de Palavras
+    const rawWordsGame = gameRows.map(r => {
+      return getRowQuestionValue(r, null, /3 palavras|three words|3 words|palavras/i);
+    }).filter(Boolean);
+
+    const rawWordsSim = simRows.map(r => {
+      return getRowQuestionValue(r, null, /3 palavras|three words|3 words|palavras/i);
+    }).filter(Boolean);
+
     const wordsGame = extractWordFrequencies(rawWordsGame);
     const wordsSim = extractWordFrequencies(rawWordsSim);
 
-    // Demografia: inicializar todos os 8 perfis e 6 culturas a zero
+    // 5. Demografia
     const profiles = {};
     OFFICIAL_PROFILES.forEach(p => { profiles[p] = 0; });
     const crops = {};
@@ -1797,111 +1849,85 @@ window.ResultsDashboard = (function () {
     let digitalTotal = 0;
     let digitalCount = 0;
 
-    gameData.forEach(row => {
-      // Q1 Perfil Profissional
-      if (idxProfile !== -1) {
-        const val = Array.isArray(row) ? row[idxProfile] : (row ? row[idxProfile] : null);
-        if (val && String(val).trim()) {
-          const p = normalizeProfile(val);
-          profiles[p] = (profiles[p] || 0) + 1;
+    gameRows.forEach(row => {
+      const valProfile = getRowQuestionValue(row, 1, /perfil|profissão|profissao|função|funcao|profile/i);
+      if (valProfile && String(valProfile).trim()) {
+        const p = normalizeProfile(valProfile);
+        profiles[p] = (profiles[p] || 0) + 1;
+      }
+
+      const valAge = getRowQuestionValue(row, 2, /idade|faixa etária|faixa etaria|age/i);
+      if (valAge && String(valAge).trim()) {
+        const a = String(valAge).trim();
+        ages[a] = (ages[a] || 0) + 1;
+      }
+
+      const valComfort = getRowQuestionValue(row, 6, /confortável|confortavel|digital|tecnolog|literacia/i);
+      if (valComfort && String(valComfort).trim()) {
+        const c = parseDigitalComfort(valComfort);
+        if (c !== null) {
+          digitalTotal += c;
+          digitalCount++;
         }
       }
 
-      // Idade (Q2)
-      if (idxAge !== -1) {
-        const val = Array.isArray(row) ? row[idxAge] : (row ? row[idxAge] : null);
-        if (val && String(val).trim()) {
-          const a = String(val).trim();
-          ages[a] = (ages[a] || 0) + 1;
-        }
-      }
-
-      // Q6 Literacia Digital
-      if (idxComfort !== -1) {
-        const val = Array.isArray(row) ? row[idxComfort] : (row ? row[idxComfort] : null);
-        if (val && String(val).trim()) {
-          const c = parseDigitalComfort(val);
-          if (c !== null) {
-            digitalTotal += c;
-            digitalCount++;
+      const valCrops = getRowQuestionValue(row, 5, /cultura|culturas|crops/i);
+      if (valCrops && String(valCrops).trim()) {
+        const cropItems = String(valCrops).split(/[,;]/);
+        const seenInRow = new Set();
+        cropItems.forEach(c => {
+          const normCrop = normalizeCrop(c);
+          if (normCrop && !seenInRow.has(normCrop)) {
+            seenInRow.add(normCrop);
+            crops[normCrop] = (crops[normCrop] || 0) + 1;
           }
-        }
-      }
-
-      // Q5 Culturas Acompanhadas (múltipla escolha separada por vírgula)
-      if (idxCrops !== -1) {
-        const val = Array.isArray(row) ? row[idxCrops] : (row ? row[idxCrops] : null);
-        if (val && String(val).trim()) {
-          const cropItems = String(val).split(/[,;]/);
-          const seenInRow = new Set();
-          cropItems.forEach(c => {
-            const normCrop = normalizeCrop(c);
-            if (normCrop && !seenInRow.has(normCrop)) {
-              seenInRow.add(normCrop);
-              crops[normCrop] = (crops[normCrop] || 0) + 1;
-            }
-          });
-        }
+        });
       }
     });
 
-    // Médias Pedagógicas Game (0 se sem respostas)
+    // 6. Médias Pedagógicas Game (Q7 a Q12)
     const gamePedagogy = {
-      q7: extractLikertAverage(gameData, idxQ7),
-      q8: extractConvertedQ8Average(gameData, idxQ8),
-      q9: extractLikertAverage(gameData, idxQ9),
-      q10: extractLikertAverage(gameData, idxQ10),
-      q11: extractLikertAverage(gameData, idxQ11),
-      q12: extractLikertAverage(gameData, idxQ12)
+      q7: extractLikertAverage(gameRows, 7, /explicaç|explicac|clareza|claras|compreens|clarity|explanation/i),
+      q8: extractConvertedQ8Average(gameRows),
+      q9: extractLikertAverage(gameRows, 9, /realismo|cenário|cenario|prática real|pratica real|realism|scenario/i),
+      q10: extractLikertAverage(gameRows, 10, /calibraç|calibrac|utilidade|aprender|calibration|usefulness/i),
+      q11: extractLikertAverage(gameRows, 11, /lúdico|ludico|envolvimento|motiva|gamifi|engagement/i),
+      q12: extractLikertAverage(gameRows, 12, /expectativa|global|globais|expectations/i)
     };
 
-    // Médias Técnicas Simulador (0 se sem respostas)
+    // 7. Médias Técnicas Simulador (Q15 a Q23)
     const simModules = {
-      q15: extractLikertAverage(simData, idxQ15),
-      q16: extractLikertAverage(simData, idxQ16),
-      q17: extractLikertAverage(simData, idxQ17),
-      q18: extractLikertAverage(simData, idxQ18),
-      q19: extractLikertAverage(simData, idxQ19),
-      q20: extractLikertAverage(simData, idxQ20),
-      q21: extractLikertAverage(simData, idxQ21),
-      q22: extractLikertAverage(simData, idxQ22),
-      q23: extractLikertAverage(simData, idxQ23)
+      q15: extractLikertAverage(simRows, 15, /navegaç|navegac|controlo|controles|controlos|interface|navigation|controls/i),
+      q16: extractLikertAverage(simRows, 16, /tutorial|tutoriais|menu|menus|instruç|instruc/i),
+      q17: extractLikertAverage(simRows, 17, /eficácia|eficacia|pedagóg|pedagog|aprendiz|efficacy/i),
+      q18: extractLikertAverage(simRows, 18, /sequência|sequencia|decisão|decisao|etapas|sequence|decision/i),
+      q19: extractLikertAverage(simRows, 19, /cálculo|calculo|fórmula|formula|contas|calculations|formulas/i),
+      q20: extractLikertAverage(simRows, 20, /bico|bicos|volume|calda|gotas|spray|nozzles/i),
+      q21: extractLikertAverage(simRows, 21, /seleção|selecao|rótulo|rotulo|etiqueta|label/i),
+      q22: extractLikertAverage(simRows, 22, /variável|variavel|campo|terreno|vento|variables/i),
+      q23: extractLikertAverage(simRows, 23, /expectativa.*simulador|expectativas globais.*simulador|satisfação global.*simulador|simulador.*expectativa|expectations.*sim/i)
     };
 
-    // Feedback Qualitativo: Voz dos Participantes (Q25, Q26-Q28, Q30)
+    // 8. Feedback Qualitativo
     const feedItems = [];
 
-    function collectFeedbackFromRows(rows, headers, qList) {
+    function collectFeedbackFromRows(rows, qConfigs) {
       rows.forEach((row, rowIdx) => {
-        let code = row._participantCode || "";
-        if (!code) {
-          const cIdx = findColIndex(headers, /código|codigo|participante|code/i);
-          if (cIdx !== -1 && row[cIdx]) code = normalizeParticipantCode(row[cIdx]);
-        }
-        if (!code) {
-          for (let i = 0; i < row.length; i++) {
-            const c = normalizeParticipantCode(row[i]);
-            if (c && isValidParticipantCode(c)) { code = c; break; }
-          }
-        }
-        if (!code) code = "Participante";
+        const code = row._participantCode || extractParticipantCodeFromRow(row) || "Participante";
+        const ts = parseSubmissionTimestamp(row["Carimbo de data/hora"] || row.timestamp || row.carimbo);
 
-        const firstCell = Array.isArray(row) ? row[0] : (row ? row[0] || row["Carimbo de data/hora"] || row.timestamp : null);
-        const ts = parseSubmissionTimestamp(firstCell);
-
-        qList.forEach(qItem => {
-          if (qItem.colIdx === -1) return;
-          const cellVal = Array.isArray(row) ? row[qItem.colIdx] : (row ? row[qItem.colIdx] : null);
-          if (!cellVal) return;
-          const text = String(cellVal).trim();
+        qConfigs.forEach(cfg => {
+          const textVal = getRowQuestionValue(row, cfg.qNum, cfg.regex);
+          if (!textVal) return;
+          const text = String(textVal).trim();
           if (!isValidFeedbackText(text)) return;
 
           feedItems.push({
             code,
             text,
-            tagPT: qItem.tagPT,
-            tagEN: qItem.tagEN,
-            tagType: qItem.tagType,
+            tagPT: cfg.tagPT,
+            tagEN: cfg.tagEN,
+            tagType: cfg.tagType,
             timestamp: ts,
             orderKey: ts > 0 ? ts : (rowIdx + 1)
           });
@@ -1909,32 +1935,29 @@ window.ResultsDashboard = (function () {
       });
     }
 
-    // Formulário 2: Simulador (Q25 -> Simulador, Q26-Q28 -> Experiência Global, Q30 -> Erro / Sugestão)
-    collectFeedbackFromRows(simData, simHeaders, [
-      { colIdx: idxQ25_sim, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
-      { colIdx: idxQ26_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ27_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ28_sim, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ30_sim, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
+    collectFeedbackFromRows(simRows, [
+      { qNum: 25, regex: /confuso|falta|dúvida|duvida|sugest/i, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
+      { qNum: 26, regex: /compreens|clareza|aplicabilidade/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 27, regex: /confiança|confianca|autonomia/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 28, regex: /valor|relevância|relevancia|adicionado/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 30, regex: /erros|falhas|melhorias|comentário|comentario/i, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
     ]);
 
-    // Formulário 3: Global (Q25 se existir, Q26-Q28 -> Experiência Global, Q30 -> Erro / Sugestão)
-    collectFeedbackFromRows(globalData, globalHeaders, [
-      { colIdx: idxQ25_global, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
-      { colIdx: idxQ26_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ27_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ28_global, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
-      { colIdx: idxQ30_global, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
+    collectFeedbackFromRows(globalRows, [
+      { qNum: 25, regex: /confuso|falta/i, tagPT: "Simulador", tagEN: "Simulator", tagType: "sim" },
+      { qNum: 26, regex: /compreens|clareza|geral/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 27, regex: /confiança|confianca|autonomia/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 28, regex: /valor|relevância|relevancia/i, tagPT: "Experiência Global", tagEN: "Global Experience", tagType: "global" },
+      { qNum: 30, regex: /erros|falhas|melhorias|comentários|comentarios/i, tagPT: "Erro / Sugestão", tagEN: "Bug / Suggestion", tagType: "issue" }
     ]);
 
-    // Ordenar das mais recentes para as mais antigas (maior orderKey primeiro)
     feedItems.sort((a, b) => b.orderKey - a.orderKey);
 
     const simSuggestions = feedItems.filter(f => f.tagType === "sim");
     const finalSuggestions = feedItems.filter(f => f.tagType === "issue");
 
     state.metrics = {
-      participantCount: Math.max(gameData.length, simData.length, globalData.length),
+      participantCount: Math.max(gameRows.length, simRows.length, globalRows.length),
       susGame,
       susSim,
       nps,
@@ -2364,7 +2387,7 @@ window.ResultsDashboard = (function () {
     const pinGameText = document.getElementById("sus-pin-game-text");
     const pinSimText = document.getElementById("sus-pin-sim-text");
 
-    if (pinGame) {
+    if (pinGame && pinGame.style) {
       if (hasGame) {
         pinGame.style.display = "flex";
         pinGame.style.opacity = "1";
@@ -2379,7 +2402,7 @@ window.ResultsDashboard = (function () {
       pinGameText.textContent = hasGame ? `Game: ${round1(gameScore).toFixed(1)}` : "—";
     }
 
-    if (pinSim) {
+    if (pinSim && pinSim.style) {
       if (hasSim) {
         pinSim.style.display = "flex";
         pinSim.style.opacity = "1";

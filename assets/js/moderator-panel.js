@@ -459,6 +459,14 @@ window.ModeratorPanel = (function () {
       refreshBtn.classList.add("animate-spin");
     }
 
+    try {
+      if (window.SubmissionsTracker && typeof window.SubmissionsTracker.refreshFromFirebase === "function") {
+        await window.SubmissionsTracker.refreshFromFirebase();
+      }
+    } catch (e) {
+      console.warn("Aviso ao atualizar SubmissionsTracker no ModeratorPanel:", e);
+    }
+
     const counts = (window.SubmissionsTracker && typeof window.SubmissionsTracker.getCounts === "function")
       ? window.SubmissionsTracker.getCounts()
       : { game: 0, sim: 0, global: 0 };

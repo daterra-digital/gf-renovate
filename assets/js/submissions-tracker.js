@@ -122,6 +122,8 @@ window.SubmissionsTracker = (function () {
           code = entry.code;
         } else if (entry.userCode) {
           code = entry.userCode;
+        } else if (entry["Código de Participante"] || entry["Código do Participante"] || entry["Código"]) {
+          code = entry["Código de Participante"] || entry["Código do Participante"] || entry["Código"];
         } else if (Array.isArray(entry)) {
           for (const cell of entry) {
             const s = String(cell || "").trim().toUpperCase();
@@ -192,7 +194,10 @@ window.SubmissionsTracker = (function () {
           }
         } else {
           for (const k of Object.keys(r)) {
-            if (/c[oó]digo|participant|code/i.test(k)) { code = String(r[k] || ""); break; }
+            if (/c[oó]digo|participant|code/i.test(k)) {
+              const s = String(r[k] || "").trim().toUpperCase();
+              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+            }
           }
           if (!code) {
             for (const k of Object.keys(r)) {
@@ -245,18 +250,26 @@ window.SubmissionsTracker = (function () {
 
       // 1. /Logins (Amostra Total TT)
       db.ref("/Logins").on("value", snapshot => {
-        const validLogins = extractValidLoginCodes(snapshot.val());
-        state.totalParticipants = validLogins.length;
-        validLogins.forEach(c => state.registeredCodes.add(c));
-        saveRegisteredCodes();
-        state.isLive = true;
-        updateAllCounters();
+        try {
+          const validLogins = extractValidLoginCodes(snapshot.val());
+          if (validLogins.length > 0) {
+            state.totalParticipants = validLogins.length;
+            validLogins.forEach(c => state.registeredCodes.add(c));
+            saveRegisteredCodes();
+          } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
+            state.totalParticipants = state.registeredCodes.size;
+          }
+          state.isLive = true;
+          updateAllCounters();
 
-        if (window.AuthModule && typeof window.AuthModule.renderCodesDropdown === "function") {
-          window.AuthModule.renderCodesDropdown();
-        }
-        if (window.ResultsDashboard && typeof window.ResultsDashboard.setLiveParticipantCount === "function") {
-          window.ResultsDashboard.setLiveParticipantCount(state.totalParticipants);
+          if (window.AuthModule && typeof window.AuthModule.renderCodesDropdown === "function") {
+            window.AuthModule.renderCodesDropdown();
+          }
+          if (window.ResultsDashboard && typeof window.ResultsDashboard.setLiveParticipantCount === "function") {
+            window.ResultsDashboard.setLiveParticipantCount(state.totalParticipants);
+          }
+        } catch (err) {
+          console.warn("Aviso ao processar /Logins no SubmissionsTracker:", err);
         }
       }, err => {
         console.warn("Aviso Firebase /Logins no SubmissionsTracker:", err);
@@ -264,33 +277,45 @@ window.SubmissionsTracker = (function () {
 
       // 2. /RespostasdoFormulário1 (Game)
       db.ref("/RespostasdoFormulário1").on("value", snapshot => {
-        const parsed = countValidFormSubmissions(snapshot.val());
-        state.counts.game = parsed.count;
-        state.isLive = true;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-        updateAllCounters();
+        try {
+          const parsed = countValidFormSubmissions(snapshot.val());
+          state.counts.game = parsed.count;
+          state.isLive = true;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+          updateAllCounters();
+        } catch (err) {
+          console.warn("Aviso ao processar /RespostasdoFormulário1 no SubmissionsTracker:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário1 no SubmissionsTracker:", err);
       });
 
       // 3. /RespostasdoFormulário2 (Simulador)
       db.ref("/RespostasdoFormulário2").on("value", snapshot => {
-        const parsed = countValidFormSubmissions(snapshot.val());
-        state.counts.sim = parsed.count;
-        state.isLive = true;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-        updateAllCounters();
+        try {
+          const parsed = countValidFormSubmissions(snapshot.val());
+          state.counts.sim = parsed.count;
+          state.isLive = true;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+          updateAllCounters();
+        } catch (err) {
+          console.warn("Aviso ao processar /RespostasdoFormulário2 no SubmissionsTracker:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário2 no SubmissionsTracker:", err);
       });
 
       // 4. /RespostasdoFormulário3 (Global)
       db.ref("/RespostasdoFormulário3").on("value", snapshot => {
-        const parsed = countValidFormSubmissions(snapshot.val());
-        state.counts.global = parsed.count;
-        state.isLive = true;
-        parsed.codes.forEach(c => state.registeredCodes.add(c));
-        updateAllCounters();
+        try {
+          const parsed = countValidFormSubmissions(snapshot.val());
+          state.counts.global = parsed.count;
+          state.isLive = true;
+          parsed.codes.forEach(c => state.registeredCodes.add(c));
+          updateAllCounters();
+        } catch (err) {
+          console.warn("Aviso ao processar /RespostasdoFormulário3 no SubmissionsTracker:", err);
+        }
       }, err => {
         console.warn("Aviso Firebase /RespostasdoFormulário3 no SubmissionsTracker:", err);
       });
@@ -332,9 +357,13 @@ window.SubmissionsTracker = (function () {
 
       if (snapLogins && snapLogins.val() !== null) {
         const validLogins = extractValidLoginCodes(snapLogins.val());
-        state.totalParticipants = validLogins.length;
-        validLogins.forEach(c => state.registeredCodes.add(c));
-        saveRegisteredCodes();
+        if (validLogins.length > 0) {
+          state.totalParticipants = validLogins.length;
+          validLogins.forEach(c => state.registeredCodes.add(c));
+          saveRegisteredCodes();
+        } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
+          state.totalParticipants = state.registeredCodes.size;
+        }
       }
       if (snapGame && snapGame.val() !== null) {
         const parsed = countValidFormSubmissions(snapGame.val());
@@ -424,6 +453,7 @@ window.SubmissionsTracker = (function () {
    * 1. Menu "Programa & Slides" (dropdowns dos acordeões de avaliação: slots 4, 7 e 9)
    * 2. Menu "Sessão ao Vivo" (cartões 3, 4 e 5)
    * 3. Menu "Resultados & Media" (cartão "Amostra Total")
+   * 4. Menu "Painel de Moderação" (monitores de submissão 1, 2 e 3)
    */
   function updateAllCounters() {
     const TT = state.totalParticipants;
@@ -462,6 +492,15 @@ window.SubmissionsTracker = (function () {
     // 3. Menu "Resultados & Media": Cartão "Amostra Total"
     if (window.ResultsDashboard && typeof window.ResultsDashboard.renderKpiCards === "function") {
       window.ResultsDashboard.renderKpiCards();
+    }
+
+    // 4. Menu "Painel de Moderação": Sincronização em tempo real das contagens
+    if (window.ModeratorPanel && typeof window.ModeratorPanel.fetchSubmissionsCount === "function") {
+      try {
+        window.ModeratorPanel.fetchSubmissionsCount();
+      } catch (modErr) {
+        console.warn("Aviso ao sincronizar contagens com ModeratorPanel:", modErr);
+      }
     }
   }
 
