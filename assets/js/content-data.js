@@ -425,22 +425,22 @@ const RENOVATE_CONFIG = {
       description: "Relatório executivo contendo a análise sistematizada dos inquéritos aos especialistas e as diretrizes pedagógicas prioritárias."
     },
     metrics: [
-      { label: "Participantes Especialistas", labelEn: "Specialist Participants", value: "24" },
-      { label: "Organizações Representadas", labelEn: "Represented Organisations", value: "15" },
-      { label: "Necessidades Mapeadas", labelEn: "Mapped Training Needs", value: "38" },
-      { label: "Índice de Interesse em Ferramentas Digitais", labelEn: "Digital Tool Interest Index", value: "92%" }
+      { label: "Participantes Especialistas", labelEn: "Specialist Participants", value: "27" },
+      { label: "Entidades Representadas", labelEn: "Represented Entities", value: "24" },
+      { label: "Necessidades Mapeadas", labelEn: "Mapped Training Needs", value: "16" },
+      { label: "Áreas Temáticas Prioritárias", labelEn: "Priority Thematic Areas", value: "8" }
     ],
     highlights: [
-      "Priorização da simplicidade de interface em ferramentas para operadores no terreno.",
-      "Identificação do elevado potencial dos Serious Games para formação contínua certificada.",
-      "Necessidade de ligação direta entre simulações e cálculos de custos/poupança real.",
-      "Consenso sobre a relevância de criar recursos acessíveis em dispositivos móveis."
+      "Priorização de formações práticas no campo com recurso a demonstrações e jogos interativos.",
+      "Adaptação dos conteúdos às realidades regionais e utilização de linguagem simples e acessível.",
+      "Integração de simuladores para calcular o rácio custo-benefício e apoiar a decisão estratégica.",
+      "Implementação de inteligência artificial para personalizar de forma dinâmica os conteúdos formativos."
     ],
     highlightsEn: [
-      "Prioritisation of interface simplicity in tools for field operators.",
-      "Identification of high potential for Serious Games in accredited vocational training.",
-      "Need for direct linkages between simulations and real-world cost and savings calculations.",
-      "Consensus on the importance of creating mobile-accessible resources."
+      "Prioritisation of practical field training using demonstrations and interactive games.",
+      "Adaptation of content to regional realities using simple and accessible language.",
+      "Integration of simulators to calculate the cost-benefit ratio and support strategic decision-making.",
+      "Implementation of artificial intelligence to dynamically personalise training content."
     ],
     galleryAlbums: [
       {
