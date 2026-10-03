@@ -1056,22 +1056,22 @@ window.AuthModule = (function () {
            title="${isEn ? 'Click card or button to Log Out' : 'Clique no cartão ou no botão para Terminar Sessão'}">
         
         <!-- Linha Superior: Dados do Perfil -->
-        <div class="flex items-center gap-1.5 px-2 py-1">
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 pointer-events-none">
           <!-- Círculo/Avatar amarelo com a sigla do grupo (ex: FG2) -->
-          <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full ${avatarBg} font-bold text-[9px] sm:text-[10px] tracking-tight flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-800">
+          <div class="w-6 h-6 rounded-full ${avatarBg} font-bold text-[10px] tracking-tight flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-800">
             ${groupTag}
           </div>
           <!-- Código do participante em destaque e Sub-etiqueta -->
           <div class="flex flex-col text-left leading-tight pr-0.5">
-            <span class="font-mono font-extrabold text-[11px] sm:text-xs text-amber-300 tracking-wide leading-none">${code}</span>
-            <span class="text-[8px] sm:text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
+            <span class="font-mono font-extrabold text-xs text-amber-300 tracking-wide leading-none">${code}</span>
+            <span class="text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
           </div>
         </div>
 
-        <!-- Aba Inferior Integrada (Botão Sair: proporção estrita 25-30%, h-7, flex-none) -->
+        <!-- Aba Inferior Integrada (Botão Sair: proporção estrita 25-30%, h-5, flex-none) -->
         <button type="button" id="btn-header-logout" data-action="logout"
-                class="w-full flex-none shrink-0 h-7 bg-red-600 hover:bg-red-700 group-hover:bg-red-700 text-white font-bold text-[11px] leading-none py-1 px-2 flex items-center justify-center gap-1 transition cursor-pointer border-t border-red-700/50">
-          <i data-lucide="log-out" class="w-3 h-3 text-white pointer-events-none"></i>
+                class="w-full flex-none shrink-0 h-5 bg-red-600 hover:bg-red-700 group-hover:bg-red-700 text-white font-bold text-[10px] leading-none px-2 flex items-center justify-center gap-1 transition cursor-pointer border-t border-red-700/50">
+          <i data-lucide="log-out" class="w-2.5 h-2.5 text-white pointer-events-none"></i>
           <span class="pointer-events-none">${isEn ? 'Log Out' : 'Sair'}</span>
         </button>
       </div>

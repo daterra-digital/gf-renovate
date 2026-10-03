@@ -118,11 +118,11 @@ header {
   }
 }
 
-/* Fixação Estrita de Altura e Proporção da Aba Sair do Header (Mobile) */
+/* Fixação Estrita de Altura e Proporção da Aba Sair do Header (Mobile & Desktop: 25% a 30% do cartão) */
 #btn-header-logout {
   min-height: unset !important;
-  height: 28px !important;
-  max-height: 28px !important;
+  height: 20px !important;
+  max-height: 20px !important;
   touch-action: manipulation;
 }
 
