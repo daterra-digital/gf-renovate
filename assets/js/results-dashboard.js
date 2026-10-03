@@ -1258,6 +1258,23 @@ window.ResultsDashboard = (function () {
   }
 
   /**
+   * Extrai a média convertida da Q8 (Índice de Adequação da Dificuldade)
+   * A escala original da Q8 não é linear (3 é excelente, 1 e 5 são maus).
+   * Fórmula por resposta individual: Valor_Convertido = 5 - ( ABS(Resposta_Original - 3) * 2 )
+   * Resposta 3 -> 5 | Resposta 2 ou 4 -> 3 | Resposta 1 ou 5 -> 1
+   */
+  function extractConvertedQ8Average(rows, colIdx) {
+    if (colIdx === -1 || !rows || !rows.length) return 0;
+    const vals = rows
+      .map(r => parseLikertStrict(r[colIdx]))
+      .filter(v => v !== null);
+    if (!vals.length) return 0;
+    const converted = vals.map(v => 5 - (Math.abs(v - 3) * 2));
+    const sum = converted.reduce((a, b) => a + b, 0);
+    return parseFloat((sum / converted.length).toFixed(1));
+  }
+
+  /**
    * Processa os dados reais lidos via CSV das 3 abas
    */
   function processRealData(gameRows, simRows, globalRows) {
@@ -1414,7 +1431,7 @@ window.ResultsDashboard = (function () {
     // Médias Pedagógicas Game (0 se sem respostas)
     const gamePedagogy = {
       q7: extractLikertAverage(gameData, idxQ7),
-      q8: extractLikertAverage(gameData, idxQ8),
+      q8: extractConvertedQ8Average(gameData, idxQ8),
       q9: extractLikertAverage(gameData, idxQ9),
       q10: extractLikertAverage(gameData, idxQ10),
       q11: extractLikertAverage(gameData, idxQ11),
@@ -1998,7 +2015,7 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Gráfico 2: Avaliação Pedagógica do Serious Game (Q7 a Q12)
+   * Gráfico 2: SERIOUS GAME (Q7 A Q12) - Gráfico de Barras Horizontais (Eixo X de 0 a 5)
    */
   function renderGamePedagogyChart() {
     const ctx = document.getElementById("chart-game-pedagogy")?.getContext("2d");
@@ -2012,46 +2029,90 @@ window.ResultsDashboard = (function () {
     const p = state.metrics.gamePedagogy || { q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0 };
 
     state.charts.gamePedagogy = new Chart(ctx, {
-      type: "radar",
+      type: "bar",
       data: {
         labels: isEn ? [
           "Q7. Explanation Clarity",
-          "Q8. Suitable Difficulty",
+          "Q8. Difficulty Suitability",
           "Q9. Scenario Realism",
-          "Q10. Calibration Steps",
+          "Q10. Calibration Usefulness",
           "Q11. Gamified Engagement",
           "Q12. Global Expectations"
         ] : [
-          "Q7. Clareza Explicações",
-          "Q8. Dificuldade Adequada",
-          "Q9. Realismo de Cenários",
-          "Q10. Passos Calibração",
+          "Q7. Clareza das Explicações",
+          "Q8. Adequação da Dificuldade",
+          "Q9. Realismo dos Cenários",
+          "Q10. Utilidade na Calibração",
           "Q11. Envolvimento Lúdico",
           "Q12. Expectativas Globais"
         ],
         datasets: [{
-          label: isEn ? "Average Pedagogical Rating (1 to 5)" : "Avaliação Pedagógica Média (1 a 5)",
+          label: isEn ? "Mean Rating (1 to 5)" : "Média (1 a 5)",
           data: [p.q7, p.q8, p.q9, p.q10, p.q11, p.q12],
-          backgroundColor: "rgba(245, 184, 66, 0.25)",
-          borderColor: "#F5B842",
-          borderWidth: 2.5,
-          pointBackgroundColor: "#0F172A",
-          pointBorderColor: "#FFFFFF",
-          pointRadius: 4
+          backgroundColor: "#F5B842",
+          borderColor: "#D97706",
+          borderWidth: 1.5,
+          borderRadius: 6,
+          maxBarThickness: 24
         }]
       },
       options: {
+        indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0F172A",
+            titleFont: { size: 12, weight: "bold" },
+            bodyFont: { size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                const val = context.parsed.x;
+                if (val === 0) return isEn ? "Awaiting data" : "A aguardar dados";
+                return `${context.dataset.label || "Média"}: ${val.toFixed(1)} / 5.0`;
+              },
+              afterLabel: function(context) {
+                if (context.dataIndex === 1) {
+                  return isEn
+                    ? "(Adequacy Index: 3=Ideal (5.0), 2/4=Moderate (3.0), 1/5=Extreme (1.0))"
+                    : "(Índice de Adequação: 3=Ideal (5.0), 2/4=Moderado (3.0), 1/5=Extremo (1.0))";
+                }
+                return "";
+              }
+            }
+          }
         },
         scales: {
-          r: {
+          x: {
+            beginAtZero: true,
             min: 0,
             max: 5,
-            ticks: { stepSize: 1, font: { size: 9 } },
-            pointLabels: { font: { size: 11, weight: "bold" }, color: "#0F172A" }
+            ticks: {
+              stepSize: 1,
+              font: { size: 10, weight: "bold" },
+              color: "#475569"
+            },
+            title: {
+              display: true,
+              text: isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)",
+              font: { size: 11, weight: "bold" },
+              color: "#334155"
+            },
+            grid: {
+              color: "#F1F5F9"
+            }
+          },
+          y: {
+            ticks: {
+              font: { size: 10, weight: "600" },
+              color: "#0F172A"
+            },
+            grid: {
+              display: false
+            }
           }
         }
       }
@@ -2059,7 +2120,7 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Gráfico 3: Avaliação Técnica e Módulos do Simulador (Q15 a Q23)
+   * Gráfico 3: SIMULADOR (Q15 A Q23) - Gráfico de Barras Horizontais (Eixo X de 0 a 5)
    */
   function renderSimModulesChart() {
     const ctx = document.getElementById("chart-sim-modules")?.getContext("2d");
@@ -2084,7 +2145,7 @@ window.ResultsDashboard = (function () {
           "Q18. Decision Sequence",
           "Q19. Calculations & Formulas",
           "Q20. Nozzles & Spray Volume",
-          "Q21. Product Selection & Label",
+          "Q21. Selection & Label",
           "Q22. Field Variables",
           "Q23. Global Expectations"
         ] : [
@@ -2093,7 +2154,7 @@ window.ResultsDashboard = (function () {
           "Q17. Eficácia Pedagógica",
           "Q18. Sequência de Decisão",
           "Q19. Cálculos e Fórmulas",
-          "Q20. Bicos e Volume de Calda",
+          "Q20. Bicos e Vol. de Calda",
           "Q21. Seleção e Rótulo",
           "Q22. Variáveis de Campo",
           "Q23. Expectativas Globais"
@@ -2104,7 +2165,8 @@ window.ResultsDashboard = (function () {
           backgroundColor: "#059669",
           borderColor: "#047857",
           borderWidth: 1.5,
-          borderRadius: 6
+          borderRadius: 6,
+          maxBarThickness: 20
         }]
       },
       options: {
@@ -2112,17 +2174,50 @@ window.ResultsDashboard = (function () {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0F172A",
+            titleFont: { size: 12, weight: "bold" },
+            bodyFont: { size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                const val = context.parsed.x;
+                if (val === 0) return isEn ? "Awaiting data" : "A aguardar dados";
+                return `${context.dataset.label || "Média"}: ${val.toFixed(1)} / 5.0`;
+              }
+            }
+          }
         },
         scales: {
           x: {
             beginAtZero: true,
             min: 0,
             max: 5,
-            ticks: { stepSize: 1, font: { size: 10 } }
+            ticks: {
+              stepSize: 1,
+              font: { size: 10, weight: "bold" },
+              color: "#475569"
+            },
+            title: {
+              display: true,
+              text: isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)",
+              font: { size: 11, weight: "bold" },
+              color: "#334155"
+            },
+            grid: {
+              color: "#F1F5F9"
+            }
           },
           y: {
-            ticks: { font: { size: 10, weight: "bold" }, color: "#0F172A" }
+            ticks: {
+              font: { size: 10, weight: "600" },
+              color: "#0F172A"
+            },
+            grid: {
+              display: false
+            }
           }
         }
       }

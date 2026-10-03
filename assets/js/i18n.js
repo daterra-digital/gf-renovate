@@ -188,8 +188,8 @@ window.I18nManager = (function () {
       "results.ped.title": "Eficácia Pedagógica & Módulos Técnicos de Calibração",
       "results.ped.desc": "Avaliação detalhada da clareza, realismo dos cenários, cálculo de débito e correspondência às práticas de campo.",
       "results.ped.gameTitle": "Serious Game (Q7 a Q12)",
-      "results.ped.gameBadge": "Radar Pedagógico",
-      "results.ped.simTitle": "Módulos do Simulador (Q15 a Q23)",
+      "results.ped.gameBadge": "Média (1 a 5)",
+      "results.ped.simTitle": "Simulador (Q15 a Q23)",
       "results.ped.simBadge": "Média (1 a 5)",
 
       // Demographics
@@ -541,8 +541,8 @@ window.I18nManager = (function () {
       "results.ped.title": "Pedagogical Effectiveness & Calibration Technical Modules",
       "results.ped.desc": "Detailed assessment of clarity, scenario realism, flow rate calculations and alignment with field practices.",
       "results.ped.gameTitle": "Serious Game (Q7 to Q12)",
-      "results.ped.gameBadge": "Pedagogical Radar",
-      "results.ped.simTitle": "Simulator Modules (Q15 to Q23)",
+      "results.ped.gameBadge": "Average (1 to 5)",
+      "results.ped.simTitle": "Simulator (Q15 to Q23)",
       "results.ped.simBadge": "Average (1 to 5)",
 
       // Demographics
