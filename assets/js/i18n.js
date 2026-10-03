@@ -168,6 +168,8 @@ window.I18nManager = (function () {
       "results.wc.sim": "Simulador RENOVATE",
       "results.wc.topCited": "Mais Citadas",
       "results.wc.note": "Stopwords filtradas automaticamente.",
+      "results.wc.awaiting": "A aguardar recolha de palavras...",
+      "results.wc.none": "Sem palavras registadas de momento.",
 
       // SUS
       "results.sus.title": "System Usability Scale (SUS) - Análise Comparativa",
@@ -523,6 +525,8 @@ window.I18nManager = (function () {
       "results.wc.sim": "RENOVATE Simulator",
       "results.wc.topCited": "Most Cited",
       "results.wc.note": "Stopwords filtered automatically.",
+      "results.wc.awaiting": "Awaiting word submissions...",
+      "results.wc.none": "No words recorded yet.",
 
       // SUS
       "results.sus.title": "System Usability Scale (SUS) - Comparative Analysis",

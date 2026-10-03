@@ -905,22 +905,34 @@ window.ResultsDashboard = (function () {
     // Botões de Alternância da Nuvem de Palavras (Serious Game vs Simulador)
     const btnWcGame = document.getElementById("btn-wc-game");
     const btnWcSim = document.getElementById("btn-wc-sim");
+    function updateWordCloudToggleButtons() {
+      const isGame = state.activeWordCloudTool === "game";
+      if (btnWcGame) {
+        if (isGame) {
+          btnWcGame.className = "px-3 py-1 rounded-lg text-xs font-bold transition bg-[#F5B842] text-[#0F172A] shadow-2xs";
+        } else {
+          btnWcGame.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+        }
+      }
+      if (btnWcSim) {
+        if (!isGame) {
+          btnWcSim.className = "px-3 py-1 rounded-lg text-xs font-bold transition bg-[#F5B842] text-[#0F172A] shadow-2xs";
+        } else {
+          btnWcSim.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+        }
+      }
+    }
+
     if (btnWcGame && btnWcSim) {
       btnWcGame.addEventListener("click", () => {
         state.activeWordCloudTool = "game";
-        btnWcGame.classList.add("bg-[#F5B842]", "text-[#0F172A]", "font-bold");
-        btnWcGame.classList.remove("bg-slate-100", "text-slate-600");
-        btnWcSim.classList.remove("bg-[#F5B842]", "text-[#0F172A]", "font-bold");
-        btnWcSim.classList.add("bg-slate-100", "text-slate-600");
+        updateWordCloudToggleButtons();
         renderWordCloud();
       });
 
       btnWcSim.addEventListener("click", () => {
         state.activeWordCloudTool = "sim";
-        btnWcSim.classList.add("bg-[#F5B842]", "text-[#0F172A]", "font-bold");
-        btnWcSim.classList.remove("bg-slate-100", "text-slate-600");
-        btnWcGame.classList.remove("bg-[#F5B842]", "text-[#0F172A]", "font-bold");
-        btnWcGame.classList.add("bg-slate-100", "text-slate-600");
+        updateWordCloudToggleButtons();
         renderWordCloud();
       });
     }
@@ -1365,7 +1377,8 @@ window.ResultsDashboard = (function () {
     const idxQ10 = findColIndex(gameHeaders, /^\s*Q10\b/i);
     const idxQ11 = findColIndex(gameHeaders, /^\s*Q11\b/i);
     const idxQ12 = findColIndex(gameHeaders, /^\s*Q12\b/i);
-    const idxWordsGame = findColIndex(gameHeaders, /3 palavras|palavras/i);
+    let idxWordsGame = findColIndex(gameHeaders, /experiência.*serious game.*3 palavras|serious game.*3 palavras|3 palavras|palavras/i);
+    if (idxWordsGame === -1) idxWordsGame = findColIndex(gameHeaders, /3 palavras|palavras/i);
 
     // Encontrar os 10 itens SUS do Game (Q13)
     const reQ13 = /^\s*Q13\s*[.):\-]/i;
@@ -1391,7 +1404,8 @@ window.ResultsDashboard = (function () {
     const idxQ27_sim = findColIndex(simHeaders, /^\s*Q27\b/i);
     const idxQ28_sim = findColIndex(simHeaders, /^\s*Q28\b/i);
     const idxQ30_sim = findColIndex(simHeaders, /^\s*Q30\b|erros|falhas|melhorias/i);
-    const idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
+    let idxWordsSim = findColIndex(simHeaders, /experiência.*simulador.*3 palavras|simulador.*3 palavras|3 palavras|palavras/i);
+    if (idxWordsSim === -1) idxWordsSim = findColIndex(simHeaders, /3 palavras|palavras/i);
 
     const reQ24 = /^\s*Q24\s*[.):\-]/i;
     const susSimColIndices = [];
@@ -1713,7 +1727,13 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Tokenização e contagem de frequência de palavras (com remoção de stopwords PT)
+   * Pipeline de Processamento de Texto (Text Mining):
+   * 1. Normalização: converter todo o texto para minúsculas (lowercase).
+   * 2. Limpeza de Pontuação: substituir vírgulas, pontos, pontos e vírgulas, hífens e símbolos por espaços.
+   * 3. Tokenização: separar as strings em palavras individuais (split por espaços).
+   * 4. Filtro de Stopwords (PT/EN): remover pronomes, artigos e palavras de ligação comuns.
+   * 5. Agregação & Capitalização: contar frequência e capitalizar primeira letra (ex: "inovador" -> "Inovador").
+   * 6. Ordenação: por frequência decrescente e desempate alfabético.
    */
   function extractWordFrequencies(textsArray) {
     const counts = {};
@@ -1721,24 +1741,39 @@ window.ResultsDashboard = (function () {
 
     textsArray.forEach(text => {
       if (!text || typeof text !== "string") return;
-      // Normalizar texto, remover pontuações e símbolos
-      const words = text
+      // 1. Normalização & 2. Limpeza de Pontuação (vírgulas, pontos, ponto e vírgula, hífen e símbolos)
+      const cleaned = text
         .toLowerCase()
-        .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'«»]/g, " ")
-        .split(/\s+/);
+        .replace(/[,.;\-_/#!$%^&*:{}=\\+`~()?"'«»[\]|<>@]/g, " ");
+
+      // 3. Tokenização por espaços em branco
+      const words = cleaned.split(/\s+/);
 
       words.forEach(w => {
         const clean = w.trim();
-        if (clean.length >= 3 && !PT_STOPWORDS.has(clean) && !EN_STOPWORDS.has(clean)) {
-          // Capitalizar primeira letra para estética elegante
+        // 4. Filtro de Stopwords, tamanho mínimo e números isolados
+        if (
+          clean.length >= 2 &&
+          !/^\d+$/.test(clean) &&
+          !PT_STOPWORDS.has(clean) &&
+          !EN_STOPWORDS.has(clean)
+        ) {
+          // 5. Capitalizar primeira letra antes de agregar (ex: "inovador" -> "Inovador")
           const capitalized = clean.charAt(0).toUpperCase() + clean.slice(1);
           counts[capitalized] = (counts[capitalized] || 0) + 1;
         }
       });
     });
 
-    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    return entries.slice(0, 35); // Top 35 palavras mais citadas
+    // 6. Ordenação por frequência decrescente e desempate alfabético
+    const entries = Object.entries(counts).sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1];
+      }
+      return a[0].localeCompare(b[0], "pt", { sensitivity: "base" });
+    });
+
+    return entries.slice(0, 45); // Top 45 palavras mais frequentes
   }
 
   /**
@@ -1792,20 +1827,24 @@ window.ResultsDashboard = (function () {
     const isGame = state.activeWordCloudTool === "game";
     const wordsList = isGame ? state.metrics.wordsGame : state.metrics.wordsSim;
 
-    // Renderizar Lista Top 6 no Painel Lateral
+    // Renderizar Lista Top 3 no Painel Lateral com Badges Elegantes e Contagem (ex: 5x)
     if (listContainer) {
-      if (!wordsList.length) {
-        listContainer.innerHTML = `<li class="text-xs text-slate-500 italic">${isEn ? "No words recorded yet." : "Sem palavras registadas de momento."}</li>`;
+      if (!wordsList || !wordsList.length) {
+        listContainer.innerHTML = `<li data-i18n="results.wc.none" class="text-xs text-slate-400 italic py-4 text-center">${isEn ? "No words recorded yet." : "Sem palavras registadas de momento."}</li>`;
       } else {
-        const topList = wordsList.slice(0, 6);
-        const maxVal = topList[0][1] || 1;
+        const topList = wordsList.slice(0, 3);
+        const rankBadges = [
+          '<span class="w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black flex items-center justify-center font-mono shadow-xs">1</span>',
+          '<span class="w-5 h-5 rounded-full bg-slate-300 text-slate-800 text-[10px] font-black flex items-center justify-center font-mono shadow-xs">2</span>',
+          '<span class="w-5 h-5 rounded-full bg-amber-700/30 text-amber-900 text-[10px] font-black flex items-center justify-center font-mono shadow-xs">3</span>'
+        ];
         listContainer.innerHTML = topList.map(([word, count], idx) => `
-          <li class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
-            <span class="font-bold text-slate-800 flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 text-[10px] flex items-center justify-center font-mono">${idx + 1}</span>
-              ${word}
+          <li class="flex items-center justify-between text-xs py-1.5 border-b border-slate-100 last:border-0">
+            <span class="font-bold text-slate-800 flex items-center gap-2">
+              ${rankBadges[idx] || `<span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] flex items-center justify-center font-mono">${idx + 1}</span>`}
+              <span>${word}</span>
             </span>
-            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold text-[11px] font-mono">
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 font-extrabold text-[11px] font-mono border border-slate-200/60">
               ${count}x
             </span>
           </li>
@@ -1825,37 +1864,61 @@ window.ResultsDashboard = (function () {
       canvas.width = width;
       canvas.height = height;
 
-      if (!wordsList.length) {
+      // Estado Inicial (Zero-State): sem mock data, exibir placeholder elegante centralizado
+      if (!wordsList || !wordsList.length) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, width, height);
-        ctx.font = "14px sans-serif";
+        ctx.font = "600 14px Inter, system-ui, -apple-system, sans-serif";
         ctx.fillStyle = "#64748B";
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(isEn ? "Awaiting word submissions..." : "A aguardar recolha de palavras...", width / 2, height / 2);
         return;
       }
 
-      // Multiplicador de escala de acordo com as dimensões do ecrã
-      const maxCount = wordsList[0][1] || 1;
-      const factor = Math.max((width / 380) * (32 / maxCount), 12);
+      // Paleta estrita de cores do projeto RENOVATE (proibido o uso de tons cinzentos ou castanhos):
+      // - Verde Esmeralda RENOVATE: #059669
+      // - Amarelo/Laranja RENOVATE: #D97706
+      // - Azul Escuro/Navy RENOVATE: #0F172A
+      const colorPalette = [
+        "#059669", // Verde Esmeralda RENOVATE
+        "#D97706", // Amarelo/Laranja RENOVATE
+        "#0F172A"  // Azul Escuro/Navy RENOVATE
+      ];
 
-      const colorPalette = isGame 
-        ? ["#0F172A", "#D97706", "#B45309", "#059669", "#2563EB", "#7C3AED"]
-        : ["#0F172A", "#059669", "#047857", "#2563EB", "#D97706", "#1D4ED8"];
+      // Escalonamento da Fonte diretamente proporcional à frequência (palavras mais citadas com grande destaque)
+      const maxCount = wordsList[0][1] || 1;
+      const minCount = wordsList[wordsList.length - 1][1] || 1;
 
       try {
         WordCloud(canvas, {
           list: wordsList,
-          gridSize: Math.round(14 * width / 1024) + 2,
+          gridSize: Math.max(Math.round(10 * width / 1024), 6),
           weightFactor: function (size) {
-            return Math.min(Math.max(size * factor, 14), 48);
+            if (maxCount === minCount) {
+              return Math.min(Math.max(Math.round(22 * (width / 400)), 16), 34);
+            }
+            const ratio = (size - minCount) / (maxCount - minCount);
+            // Escala dinâmica de 14px (mínima) até 52px (máxima frequência)
+            const minPx = Math.max(14 * (width / 450), 13);
+            const maxPx = Math.min(52 * (width / 450), 56);
+            return Math.round(minPx + ratio * (maxPx - minPx));
           },
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          color: function () {
-            return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+          fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+          fontWeight: "bold",
+          color: function (word) {
+            let hash = 0;
+            const str = String(word || "");
+            for (let i = 0; i < str.length; i++) {
+              hash = (hash << 5) - hash + str.charCodeAt(i);
+            }
+            return colorPalette[Math.abs(hash) % colorPalette.length];
           },
-          rotateRatio: 0.15,
+          // Disposição visual mista: combinação equilibrada de orientação horizontal (0) e vertical (90°)
+          minRotation: 0,
+          maxRotation: Math.PI / 2,
           rotationSteps: 2,
+          rotateRatio: 0.35,
           backgroundColor: "#FFFFFF",
           shrinkToFit: true,
           drawOutOfBound: false
@@ -1873,18 +1936,28 @@ window.ResultsDashboard = (function () {
    * Fallback visual HTML puro em nuvem de etiquetas
    */
   function renderWordPillsFallback(container, wordsList) {
-    if (!container || !wordsList.length) return;
+    if (!container) return;
+    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    if (!wordsList || !wordsList.length) {
+      container.innerHTML = `
+        <div class="flex items-center justify-center p-6 min-h-[220px] text-xs text-slate-500 italic">
+          ${isEn ? "Awaiting word submissions..." : "A aguardar recolha de palavras..."}
+        </div>
+      `;
+      return;
+    }
     const max = wordsList[0][1] || 1;
+    const colorPalette = ["#059669", "#D97706", "#0F172A"];
     container.innerHTML = `
       <div class="flex flex-wrap gap-2.5 items-center justify-center p-6 min-h-[220px]">
-        ${wordsList.map(([word, count]) => {
+        ${wordsList.map(([word, count], i) => {
           const ratio = count / max;
-          const fontSize = 12 + Math.round(ratio * 16);
-          const isTop = ratio > 0.6;
+          const fontSize = 12 + Math.round(ratio * 18);
+          const color = colorPalette[i % colorPalette.length];
           return `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold transition-transform hover:scale-105 ${isTop ? 'bg-amber-100 text-slate-900 border-amber-300' : 'bg-slate-50 text-slate-700 border-slate-200'}" style="font-size: ${fontSize}px">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-white shadow-2xs font-bold transition-transform hover:scale-105" style="font-size: ${fontSize}px; color: ${color}; border-color: ${color}40">
               ${word}
-              <span class="text-[10px] opacity-75 font-mono">(${count})</span>
+              <span class="text-[10px] opacity-75 font-mono">(${count}x)</span>
             </span>
           `;
         }).join("")}
@@ -2687,6 +2760,7 @@ window.ResultsDashboard = (function () {
         try { c.resize(); } catch (e) {}
       }
     });
+    renderWordCloud();
   }
 
   /**
