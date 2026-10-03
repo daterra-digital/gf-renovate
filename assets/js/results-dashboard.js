@@ -2800,14 +2800,17 @@ window.ResultsDashboard = (function () {
 
     const ctx = canvas.getContext("2d");
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabels = isEn ? [
-      "1. Frequency of Use", "2. Low Complexity", "3. Ease of Use", "4. Tech Independence",
-      "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
-      "9. Confidence in Use", "10. Easy Onboarding"
-    ] : [
-      "1. Frequência de Uso", "2. Baixa Complexidade", "3. Facilidade de Uso", "4. Independência Técnica",
-      "5. Boa Integração", "6. Consistência Geral", "7. Aprendizagem Rápida", "8. Conforto de Uso",
-      "9. Confiança Operacional", "10. Fácil Iniciação"
+    const susLabels = [
+      "Q13.1 | Q24.1",
+      "Q13.2 | Q24.2",
+      "Q13.3 | Q24.3",
+      "Q13.4 | Q24.4",
+      "Q13.5 | Q24.5",
+      "Q13.6 | Q24.6",
+      "Q13.7 | Q24.7",
+      "Q13.8 | Q24.8",
+      "Q13.9 | Q24.9",
+      "Q13.10 | Q24.10"
     ];
 
     window.chartInstances.susComparison = new Chart(ctx, {
@@ -2855,6 +2858,24 @@ window.ResultsDashboard = (function () {
             padding: 10,
             cornerRadius: 8,
             callbacks: {
+              title: function(items) {
+                if (!items || !items.length) return "";
+                const idx = items[0].dataIndex;
+                const isEn = window.I18nManager && window.I18nManager.isEnglish();
+                const titlesPt = [
+                  "1. Frequência de Uso", "2. Baixa Complexidade", "3. Facilidade de Uso", "4. Independência Técnica",
+                  "5. Boa Integração", "6. Consistência Geral", "7. Aprendizagem Rápida", "8. Conforto de Uso",
+                  "9. Confiança Operacional", "10. Fácil Iniciação"
+                ];
+                const titlesEn = [
+                  "1. Frequency of Use", "2. Low Complexity", "3. Ease of Use", "4. Tech Independence",
+                  "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
+                  "9. Confidence in Use", "10. Easy Onboarding"
+                ];
+                const code = susLabels[idx] || "";
+                const desc = isEn ? titlesEn[idx] : titlesPt[idx];
+                return `${code} (${desc})`;
+              },
               label: function(context) {
                 const val = context.parsed.y;
                 const label = context.dataset.label || "";
@@ -2896,10 +2917,11 @@ window.ResultsDashboard = (function () {
           },
           x: {
             ticks: {
-              font: { size: 10, weight: "600" },
+              font: { size: 10, weight: "700" },
               color: "#1E293B",
-              maxRotation: 35,
-              minRotation: 20
+              maxRotation: 45,
+              minRotation: 0,
+              autoSkip: false
             },
             grid: {
               display: false
@@ -2922,14 +2944,17 @@ window.ResultsDashboard = (function () {
     if (!chart) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabels = isEn ? [
-      "1. Frequency of Use", "2. Low Complexity", "3. Ease of Use", "4. Tech Independence",
-      "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
-      "9. Confidence in Use", "10. Easy Onboarding"
-    ] : [
-      "1. Frequência de Uso", "2. Baixa Complexidade", "3. Facilidade de Uso", "4. Independência Técnica",
-      "5. Boa Integração", "6. Consistência Geral", "7. Aprendizagem Rápida", "8. Conforto de Uso",
-      "9. Confiança Operacional", "10. Fácil Iniciação"
+    const susLabels = [
+      "Q13.1 | Q24.1",
+      "Q13.2 | Q24.2",
+      "Q13.3 | Q24.3",
+      "Q13.4 | Q24.4",
+      "Q13.5 | Q24.5",
+      "Q13.6 | Q24.6",
+      "Q13.7 | Q24.7",
+      "Q13.8 | Q24.8",
+      "Q13.9 | Q24.9",
+      "Q13.10 | Q24.10"
     ];
 
     const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||

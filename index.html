@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261003-2225">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261003-2330">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261003-2225"></script>
+  <script src="system-status.js?v=20261003-2330"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -830,12 +830,12 @@
 
             <!-- Régua Graduada com Marcadores de Posição Real dos Resultados -->
             <div class="pt-5 pb-5 px-1 sm:px-2">
-              <!-- Rótulos Superiores da Escala com Posições Exatas -->
+              <!-- Rótulos Superiores da Escala com Posições Exatas (Mobile: estritamente extremidades 0 e 100) -->
               <div class="relative h-6 text-[10px] sm:text-[11px] font-bold text-slate-600 mb-2">
                 <span data-i18n="results.sus.unacceptable" class="absolute left-0">0 (Inaceitável)</span>
-                <span data-i18n="results.sus.marginal" class="absolute left-1/2 -translate-x-1/2">50 (Marginal)</span>
-                <span data-i18n="results.sus.globalAvg" class="absolute left-[68%] -translate-x-1/2 text-amber-800 font-extrabold whitespace-nowrap">68 (Média Mundial)</span>
-                <span data-i18n="results.sus.excellent" class="absolute left-[80%] -translate-x-1/2 text-emerald-800 font-extrabold whitespace-nowrap">80 (Excelente)</span>
+                <span data-i18n="results.sus.marginal" class="absolute left-1/2 -translate-x-1/2 hidden sm:inline">50 (Marginal)</span>
+                <span data-i18n="results.sus.globalAvg" class="absolute left-[68%] -translate-x-1/2 text-amber-800 font-extrabold whitespace-nowrap hidden sm:inline">68 (Média Mundial)</span>
+                <span data-i18n="results.sus.excellent" class="absolute left-[80%] -translate-x-1/2 text-emerald-800 font-extrabold whitespace-nowrap hidden sm:inline">80 (Excelente)</span>
                 <span data-i18n="results.sus.gradeA" class="absolute right-0 text-right">100 (Classe A)</span>
               </div>
 
@@ -878,8 +878,8 @@
                 </div>
               </div>
 
-              <!-- Rótulos Inferiores das Zonas -->
-              <div class="relative h-5 text-[10px] font-medium text-slate-500 mt-6 pt-1">
+              <!-- Rótulos Inferiores das Zonas (Ocultos em Mobile < 640px para evitar sobreposição) -->
+              <div class="hidden sm:block relative h-5 text-[10px] font-medium text-slate-500 mt-6 pt-1">
                 <span data-i18n="results.sus.risk" class="absolute left-0">Zona de Risco (&lt;50)</span>
                 <span data-i18n="results.sus.acceptable" class="absolute left-[68%] -translate-x-1/2 whitespace-nowrap">Zona de Aceitação Média (68-80)</span>
                 <span data-i18n="results.sus.excellence" class="absolute right-0 text-right whitespace-nowrap">Zona de Excelência (&gt;80)</span>
@@ -903,6 +903,10 @@
             </div>
             <div class="h-[340px]">
               <canvas id="chart-sus-comparison"></canvas>
+            </div>
+            <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1 text-[10px] text-slate-500">
+              <span class="font-medium"><strong>Q13</strong> (Serious Game) vs <strong>Q24</strong> (Simulador 3D)</span>
+              <span class="font-mono text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Questões emparelhadas Q13.1|Q24.1 a Q13.10|Q24.10</span>
             </div>
           </div>
         </div>
@@ -1934,15 +1938,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261003-2240"></script>
-  <script src="assets/js/i18n.js?v=20261003-2240"></script>
-  <script src="assets/js/content-data.js?v=20261003-2240"></script>
-  <script src="assets/js/auth.js?v=20261003-2240"></script>
-  <script src="assets/js/live-session.js?v=20261003-2240"></script>
-  <script src="assets/js/results-dashboard.js?v=20261003-2240"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261003-2240"></script>
-  <script src="assets/js/moderator-panel.js?v=20261003-2240"></script>
-  <script src="assets/js/app.js?v=20261003-2240"></script>
+  <script src="system-status.js?v=20261003-2330"></script>
+  <script src="assets/js/i18n.js?v=20261003-2330"></script>
+  <script src="assets/js/content-data.js?v=20261003-2330"></script>
+  <script src="assets/js/auth.js?v=20261003-2330"></script>
+  <script src="assets/js/live-session.js?v=20261003-2330"></script>
+  <script src="assets/js/results-dashboard.js?v=20261003-2330"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261003-2330"></script>
+  <script src="assets/js/moderator-panel.js?v=20261003-2330"></script>
+  <script src="assets/js/app.js?v=20261003-2330"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

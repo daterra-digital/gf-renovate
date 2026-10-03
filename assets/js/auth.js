@@ -1035,33 +1035,51 @@ window.AuthModule = (function () {
     const isMOD = type === "MOD" || getUserRole() === "moderator";
     const isFG2 = type === "FG2";
     let typeLabel = isFG2 ? (isEn ? "In-Person" : "Presencial") : (isEn ? "Remote" : "Remoto");
-    let avatarBg = isFG2 ? "bg-[#FFCC66] text-[#0F172A]" : "bg-emerald-400 text-slate-950";
+    let avatarBg = "bg-amber-400 text-slate-900";
     if (isMOD) {
       typeLabel = isEn ? "Moderator" : "Moderador";
-      avatarBg = "bg-amber-500 text-slate-950 ring-2 ring-amber-400";
     }
 
-    container.className = "flex items-center gap-1 sm:gap-2 pl-1 sm:pl-3 border-l border-slate-200 animate-fadeIn shrink-0";
+    const groupTag = isMOD ? "MOD" : (isFG2 ? "FG2" : type);
+
+    container.className = "flex items-center pl-1 sm:pl-2 shrink-0 animate-fadeIn";
     container.innerHTML = `
-      <div class="flex items-center gap-1 sm:gap-2 bg-slate-900 text-white pl-1 pr-1.5 sm:pl-1.5 sm:pr-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl shadow-xs border border-slate-800 shrink-0" title="${isMOD ? (isEn ? 'Authenticated Moderator' : 'Moderador Autenticado') : (isEn ? 'Authenticated Participant' : 'Participante Autenticado')}">
-        <!-- Avatar Circular com Tag de Tipo (FG2, NS ou MOD) -->
-        <div class="w-5 h-5 sm:w-7 sm:h-7 rounded-full ${avatarBg} font-black text-[9px] sm:text-[10px] tracking-tight flex items-center justify-center shadow-xs ring-1 sm:ring-2 ring-slate-800 shrink-0">
-          ${isMOD ? 'MOD' : type}
+      <!-- Novo Componente Integrado: Cartão do Utilizador + Botão 'Sair' -->
+      <div id="header-user-card" data-action="logout"
+           class="flex flex-col bg-slate-900 rounded-xl overflow-hidden shadow-xs border border-slate-800 shrink-0 cursor-pointer select-none transition hover:border-slate-700 hover:shadow-md group"
+           title="${isEn ? 'Click card or button to Log Out' : 'Clique no cartão ou no botão para Terminar Sessão'}">
+        
+        <!-- Linha Superior: Dados do Perfil -->
+        <div class="flex items-center gap-1.5 px-2 py-1">
+          <!-- Círculo/Avatar amarelo com a sigla do grupo (ex: FG2) -->
+          <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full ${avatarBg} font-bold text-[9px] sm:text-[10px] tracking-tight flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-800">
+            ${groupTag}
+          </div>
+          <!-- Código do participante em destaque e Sub-etiqueta -->
+          <div class="flex flex-col text-left leading-tight pr-0.5">
+            <span class="font-mono font-extrabold text-[11px] sm:text-xs text-amber-300 tracking-wide leading-none">${code}</span>
+            <span class="text-[8px] sm:text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
+          </div>
         </div>
-        <!-- Identificador do Participante -->
-        <div class="flex flex-col text-left leading-tight">
-          <span class="font-mono font-extrabold text-[11px] sm:text-xs text-[#FFCC66] tracking-wide leading-none">${code}</span>
-          <span class="text-[8px] sm:text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
-        </div>
+
+        <!-- Aba Inferior Integrada (Botão Sair) -->
+        <button type="button" id="btn-header-logout" data-action="logout"
+                class="w-full bg-red-600 hover:bg-red-700 group-hover:bg-red-700 text-white font-bold text-[9px] sm:text-[10px] py-0.5 px-2 flex items-center justify-center gap-1 transition cursor-pointer border-t border-red-700/50">
+          <i data-lucide="log-out" class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"></i>
+          <span>${isEn ? 'Log Out' : 'Sair'}</span>
+        </button>
       </div>
-      <!-- Botão Sair (Logout) Exclusivo no Cabeçalho -->
-      <button type="button" id="btn-header-logout" onclick="window.AuthModule && window.AuthModule.logout()" 
-              class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-[11px] sm:text-xs font-bold transition shadow-2xs cursor-pointer shrink-0" 
-              title="${isEn ? 'Log out of Restricted Area' : 'Terminar Sessão na Área Reservada'}">
-        <i data-lucide="log-out" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-600"></i>
-        <span class="inline text-[10px] sm:text-[11px] font-bold text-rose-700">${isEn ? 'Log Out' : 'Sair'}</span>
-      </button>
     `;
+
+    // Comportamento de Clique: Todo o cartão ou o clique direto na aba vermelha ativa a função logout()
+    const card = document.getElementById("header-user-card");
+    if (card) {
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        logout();
+      });
+    }
 
     const logoutBtn = document.getElementById("btn-header-logout");
     if (logoutBtn) {
@@ -1259,7 +1277,7 @@ window.AuthModule = (function () {
     hasBoundLogoutListener = true;
 
     document.addEventListener("click", (e) => {
-      const btn = e.target.closest("#btn-header-logout, #btn-step1-logout, [data-action='logout']");
+      const btn = e.target.closest("#header-user-card, #btn-header-logout, #btn-step1-logout, [data-action='logout']");
       if (btn) {
         e.preventDefault();
         e.stopPropagation();
