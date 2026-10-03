@@ -731,6 +731,7 @@ window.ResultsDashboard = (function () {
     const keys = Object.keys(row);
     const maxK = Math.min(keys.length, 120);
 
+    // 1. Procura por número de questão Q<n> (ex: Q7, Q 7, Q.7, Questão 7, etc.)
     if (qNumber !== null && qNumber !== undefined) {
       const num = parseInt(qNumber, 10);
       const numStr = String(num);
@@ -747,7 +748,7 @@ window.ResultsDashboard = (function () {
         for (let pIdx = 0; pIdx < patterns.length; pIdx++) {
           if (patterns[pIdx].test(cleanK)) {
             const val = row[k];
-            if (val !== undefined && val !== null) {
+            if (val !== undefined && val !== null && String(val).trim() !== "") {
               if (cacheKey) row._qCache[cacheKey] = val;
               return val;
             }
@@ -756,14 +757,16 @@ window.ResultsDashboard = (function () {
       }
     }
 
+    // 2. Procura flexível por RegEx / palavras-chave (suporta sanitização do Apps Script sem pontuação)
     if (keywordRegex instanceof RegExp) {
       for (let i = 0; i < maxK; i++) {
         const k = keys[i];
         if (k === "_participantCode" || k === "_qCache") continue;
         const cleanK = String(k || "").trim();
-        if (keywordRegex.test(cleanK)) {
+        const normK = cleanK.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
+        if (keywordRegex.test(cleanK) || keywordRegex.test(normK)) {
           const val = row[k];
-          if (val !== undefined && val !== null) {
+          if (val !== undefined && val !== null && String(val).trim() !== "") {
             if (cacheKey) row._qCache[cacheKey] = val;
             return val;
           }
@@ -875,37 +878,61 @@ window.ResultsDashboard = (function () {
   }
 
   /**
-   * Leitura estrita de uma resposta Likert 1–5 (devolve null se vazia/inválida)
+   * Leitura estrita de uma resposta Likert 1–5 (devolve número 1 a 5 ou null)
+   * Suporta dígitos diretos (ex: "4", "(4) Concordo") e todas as escalas qualitativas do questionário
    */
   function parseLikertStrict(val) {
     if (val === null || val === undefined) return null;
-    const s = String(val).trim().toLowerCase();
+    const s = String(val).trim();
     if (!s) return null;
+
+    // 1. Dígito direto no texto: "(4) Concordo", "4 - Concordo", "[4]", "4", etc.
     const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s]|$)/);
     if (m) return parseInt(m[1], 10);
-    if (s.includes("nem concordo") || s.includes("neutro") || s.includes("indiferente") || s.includes("neither")) return 3;
-    if (s.includes("discordo totalmente") || s.includes("discordo fortemente") || s.includes("strongly disagree")) return 1;
-    if (s.includes("concordo totalmente") || s.includes("concordo fortemente") || s.includes("strongly agree")) return 5;
-    if (s.includes("discordo") || s.includes("disagree")) return 2;
-    if (s.includes("concordo") || s.includes("agree")) return 4;
+
+    const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    // 2. Nível 5 (Máximo / Excelente / Muito Positivo)
+    if (norm.includes("excede largamente") || norm.includes("extremamente") || norm.includes("far exceeds")) return 5;
+    if (norm.includes("concordo totalmente") || norm.includes("concordo fortemente") || norm.includes("strongly agree")) return 5;
+    if (norm.includes("muito claro") || norm.includes("muito clara") || norm.includes("muito eficaz") || norm.includes("muito util") || norm.includes("muito envolvente") || norm.includes("muito facil") || norm.includes("muito preciso") || norm.includes("muito realista") || norm.includes("muito confortavel") || norm.includes("muito provavel") || norm.includes("muito satisfeito")) return 5;
+    if (norm === "muito facil" || norm === "muito claro" || norm === "muito clara" || norm === "muito eficaz" || norm === "muito util" || norm === "muito envolvente" || norm === "muito preciso" || norm === "muito realista" || norm === "muito confortavel" || norm === "muito provavel") return 5;
+
+    // 3. Nível 4 (Alto / Positivo)
+    if (norm.includes("excede as expectativas") || norm.includes("excede expectativas") || norm.includes("exceeds")) return 4;
+    if (norm.includes("concordo") || norm.includes("agree")) return 4;
+    if (norm.includes("clara") || norm.includes("claro") || norm.includes("eficaz") || norm.includes("util") || norm.includes("envolvente") || norm.includes("facil") || norm.includes("preciso") || norm.includes("realista") || norm.includes("confortavel") || norm.includes("provavel") || norm.includes("satisfeito")) {
+      if (!norm.includes("pouco") && !norm.includes("moderad") && !norm.includes("nada") && !norm.includes("nem") && !norm.includes("nao") && !norm.includes("abaixo")) {
+        return 4;
+      }
+    }
+
+    // 4. Nível 3 (Neutro / Médio / Adequado)
+    if (norm.includes("correspondeu") || norm.includes("atendeu") || norm.includes("met expectations")) return 3;
+    if (norm.includes("nem concordo") || norm.includes("neutro") || norm.includes("indiferente") || norm.includes("neither") || norm.includes("nem confuso") || norm.includes("nem facil")) return 3;
+    if (norm.includes("moderada") || norm.includes("moderad") || norm.includes("equilibrad") || norm.includes("adequado") || norm.includes("razoavel")) return 3;
+
+    // 5. Nível 2 (Baixo / Negativo / Pouco)
+    if (norm.includes("abaixo das expectativas") || norm.includes("below expectations")) return 2;
+    if (norm.includes("discordo") || norm.includes("disagree")) return 2;
+    if (norm.includes("pouco") || norm.includes("um pouco") || norm.includes("confuso") || norm.includes("ineficaz") || norm.includes("inutil") || norm.includes("desconfortavel") || norm.includes("improvavel") || norm.includes("insatisfeito")) {
+      if (!norm.includes("nada") && !norm.includes("muito")) return 2;
+    }
+    if (norm.includes("dificil") && !norm.includes("muito") && !norm.includes("nem")) return 2;
+
+    // 6. Nível 1 (Mínimo / Muito Negativo)
+    if (norm.includes("muito abaixo") || norm.includes("far below")) return 1;
+    if (norm.includes("discordo totalmente") || norm.includes("discordo fortemente") || norm.includes("strongly disagree")) return 1;
+    if (norm.includes("nada") || norm.includes("not ") || norm.includes("muito dificil") || norm.includes("muito confuso") || norm.includes("pessimo")) return 1;
+
     return null;
   }
 
   /**
-   * Leitura estrita da Q29 (escala 1–5). Aceita o valor numérico ou o rótulo da escala.
+   * Leitura estrita da Q29 (escala 1–5 de probabilidade de recomendação).
    */
   function parseQ29Strict(val) {
-    if (val === null || val === undefined) return null;
-    const s = String(val).trim().toLowerCase();
-    if (!s) return null;
-    const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s]|$)/);
-    if (m) return parseInt(m[1], 10);
-    if (s.includes("extremamente") || s.includes("extremely")) return 5;
-    if (s.includes("nada") || s.includes("not likely")) return 1;
-    if (s.includes("pouco") || s.includes("unlikely")) return 2;
-    if (s.includes("moderad") || s.includes("moderavel") || s.includes("moderately")) return 3;
-    if (s.includes("muito") || s.includes("very")) return 4;
-    return null;
+    return parseLikertStrict(val);
   }
 
   // Padrões de correspondência para os 10 itens padronizados da escala SUS (Brooke, 1996)
@@ -1080,22 +1107,20 @@ window.ResultsDashboard = (function () {
       let k = state.kpis;
       let participantCount;
 
-      // Amostra Total (N) extraída do comprimento do nó /Logins (filtrando duplicados e excluindo -MD)
+      // Amostra Total (N) extraída estritamente do nó /Logins (filtrando duplicados e excluindo sufixo -MD)
       if (state.totalLogins > 0) {
         participantCount = state.totalLogins;
       } else if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function" && window.SubmissionsTracker.getTotalParticipants() > 0) {
         participantCount = window.SubmissionsTracker.getTotalParticipants();
-      } else if (k) {
-        const codes = getActiveSessionCodes();
-        if (k.submissionCodes) k.submissionCodes.forEach(c => codes.add(c));
-        participantCount = codes.size;
+      } else if (state.uniqueLoginCodes && state.uniqueLoginCodes.size > 0) {
+        participantCount = state.uniqueLoginCodes.size;
       } else {
         const codes = getActiveSessionCodes();
-        participantCount = codes.size;
-      }
-
-      if (k && k.submissionCodes && k.submissionCodes.size > participantCount) {
-        participantCount = k.submissionCodes.size;
+        const nonMod = new Set();
+        codes.forEach(c => {
+          if (!isModeratorCode(c) && !String(c).trim().toUpperCase().endsWith("-MD")) nonMod.add(c);
+        });
+        participantCount = nonMod.size > 0 ? nonMod.size : 1;
       }
 
       if (!k) {
@@ -1107,8 +1132,9 @@ window.ResultsDashboard = (function () {
         };
       }
 
-      // 1. AMOSTRA TOTAL
+      // 1. AMOSTRA TOTAL (Apenas participantes sem sufixo -MD)
       setText("kpi-responses-count", participantCount);
+      // Denominador Total Obrigatório = 32 * (Número de Participantes Únicos SEM sufixo -MD)
       const target = participantCount * ANSWER_UNITS_PER_PARTICIPANT;
       const badge = document.getElementById("kpi-total-submissions-badge");
       if (badge && window.SubmissionsTracker && typeof window.SubmissionsTracker.generateBadgeHTML === "function") {
@@ -1602,14 +1628,14 @@ window.ResultsDashboard = (function () {
 
       if (code) {
         const clean = normalizeParticipantCode(code);
-        if (isValidParticipantCode(clean)) {
+        if (isValidParticipantCode(clean) && !isModeratorCode(clean) && !clean.endsWith("-MD")) {
           uniqueCodes.add(clean);
         }
       }
     });
 
     const result = Array.from(uniqueCodes);
-    console.log("[Firebase Parser] /Logins payload:", rawLogins, "-> parsed codes:", result);
+    console.log("[Firebase Parser] /Logins payload (excluindo -MD):", rawLogins, "-> parsed codes:", result);
     return result;
   }
 
@@ -2214,24 +2240,24 @@ window.ResultsDashboard = (function () {
     // 6. Médias Pedagógicas Game (Q7 a Q12)
     const gamePedagogy = {
       q7: extractLikertAverage(gameRows, 7, /explicaç|explicac|clareza|claras|compreens|clarity|explanation/i),
-      q8: extractConvertedQ8Average(gameRows),
+      q8: extractConvertedQ8Average(gameRows, /dificuldade|adequaç|adequac|equilibrad|difficulty|suitability/i),
       q9: extractLikertAverage(gameRows, 9, /realismo|cenário|cenario|prática real|pratica real|realism|scenario/i),
-      q10: extractLikertAverage(gameRows, 10, /calibraç|calibrac|utilidade|aprender|calibration|usefulness/i),
-      q11: extractLikertAverage(gameRows, 11, /lúdico|ludico|envolvimento|motiva|gamifi|engagement/i),
-      q12: extractLikertAverage(gameRows, 12, /expectativa|global|globais|expectations/i)
+      q10: extractLikertAverage(gameRows, 10, /calibraç|calibrac|utilidade|aprender|passos-chave|passos chave|módulo|modulo|calibration|usefulness/i),
+      q11: extractLikertAverage(gameRows, 11, /lúdico|ludico|envolvimento|envolvente|motiva|gamifi|questionáriojogo|questionariojogo|engagement/i),
+      q12: extractLikertAverage(gameRows, 12, /expectativa|expectativas|aprendizagem rápida|aprendizagem rapida|global|globais|expectations/i)
     };
 
     // 7. Médias Técnicas Simulador (Q15 a Q23)
     const simModules = {
-      q15: extractLikertAverage(simRows, 15, /navegaç|navegac|controlo|controles|controlos|interface|navigation|controls/i),
+      q15: extractLikertAverage(simRows, 15, /navegaç|navegac|controlo|controles|controlos|controlos básicos|controlos basicos|interface|navigation|controls/i),
       q16: extractLikertAverage(simRows, 16, /tutorial|tutoriais|menu|menus|instruç|instruc/i),
-      q17: extractLikertAverage(simRows, 17, /eficácia|eficacia|pedagóg|pedagog|aprendiz|efficacy/i),
+      q17: extractLikertAverage(simRows, 17, /eficácia|eficacia|pedagóg|pedagog|tarefas práticas|tarefas praticas|aprendiz|efficacy/i),
       q18: extractLikertAverage(simRows, 18, /sequência|sequencia|decisão|decisao|etapas|sequence|decision/i),
-      q19: extractLikertAverage(simRows, 19, /cálculo|calculo|fórmula|formula|contas|calculations|formulas/i),
+      q19: extractLikertAverage(simRows, 19, /cálculo|calculo|fórmula|formula|contas|débito|debito|largura de trabalho|calculations|formulas/i),
       q20: extractLikertAverage(simRows, 20, /bico|bicos|volume|calda|gotas|spray|nozzles/i),
-      q21: extractLikertAverage(simRows, 21, /seleção|selecao|rótulo|rotulo|etiqueta|label/i),
-      q22: extractLikertAverage(simRows, 22, /variável|variavel|campo|terreno|vento|variables/i),
-      q23: extractLikertAverage(simRows, 23, /expectativa.*simulador|expectativas globais.*simulador|satisfação global.*simulador|simulador.*expectativa|expectations.*sim/i)
+      q21: extractLikertAverage(simRows, 21, /seleção|selecao|rótulo|rotulo|etiqueta|produto|label/i),
+      q22: extractLikertAverage(simRows, 22, /variável|variavel|campo|terreno|vento|cenários de campo|cenarios de campo|variables/i),
+      q23: extractLikertAverage(simRows, 23, /expectativa|expectativas|proteção de culturas|protecao de culturas|expectations/i)
     };
 
     // 8. Feedback Qualitativo

@@ -760,9 +760,12 @@ window.SubmissionsTracker = (function () {
       }
       if (Array.isArray(codes)) {
         codes.forEach(c => {
-          if (c && !state.registeredCodes.has(c)) {
-            state.registeredCodes.add(c);
-            changed = true;
+          if (c && typeof c === "string") {
+            const clean = c.trim().toUpperCase();
+            if (!clean.endsWith("-MD") && clean !== "ADMIN" && !state.registeredCodes.has(clean)) {
+              state.registeredCodes.add(clean);
+              changed = true;
+            }
           }
         });
       }
