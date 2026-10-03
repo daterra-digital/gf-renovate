@@ -260,11 +260,11 @@ function updateNavVisibility() {
 
   if (mobileNavGrid) {
     if (isMod) {
-      mobileNavGrid.classList.remove("grid-cols-4", "grid-cols-5");
-      mobileNavGrid.classList.add("grid-cols-6");
-    } else {
-      mobileNavGrid.classList.remove("grid-cols-4", "grid-cols-6");
+      mobileNavGrid.classList.remove("grid-cols-4");
       mobileNavGrid.classList.add("grid-cols-5");
+    } else {
+      mobileNavGrid.classList.remove("grid-cols-5");
+      mobileNavGrid.classList.add("grid-cols-4");
     }
   }
 

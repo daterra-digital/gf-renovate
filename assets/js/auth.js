@@ -506,55 +506,65 @@ window.AuthModule = (function () {
     };
   }
 
+  let isLoggingOut = false;
+
   /**
    * Encerra a sessão do utilizador e bloqueia o website
    */
   function logout(skipConfirm = false) {
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    if (!skipConfirm) {
-      const confirmMsg = isEn
-        ? "Do you really want to log out and lock access to the RENOVATE Restricted Area?"
-        : "Deseja realmente terminar a sua sessão e bloquear o acesso à Área Reservada RENOVATE?";
-      if (!confirm(confirmMsg)) {
-        return;
-      }
-    }
-
-    // Libertar código de participante para voltar a ficar disponível
-    const currentCode = getParticipantCode();
-    if (currentCode) {
-      removeActiveCode(currentCode);
-    }
+    if (isLoggingOut) return;
+    isLoggingOut = true;
 
     try {
-      localStorage.removeItem(STORAGE_KEYS.SESSION_ACTIVE);
-      localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_CODE);
-      localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
-      localStorage.removeItem(STORAGE_KEYS.SESSION_PHASE);
-      localStorage.removeItem(STORAGE_KEYS.CONSENT_TIMESTAMP);
+      const isEn = window.I18nManager && window.I18nManager.isEnglish();
+      if (!skipConfirm) {
+        const confirmMsg = isEn
+          ? "Do you really want to log out and lock access to the RENOVATE Restricted Area?"
+          : "Deseja realmente terminar a sua sessão e bloquear o acesso à Área Reservada RENOVATE?";
+        if (!confirm(confirmMsg)) {
+          isLoggingOut = false;
+          return;
+        }
+      }
+
+      // Libertar código de participante para voltar a ficar disponível
+      const currentCode = getParticipantCode();
+      if (currentCode) {
+        removeActiveCode(currentCode);
+      }
+
       try {
-        sessionStorage.removeItem("renovate_mod_authenticated");
-      } catch (e) {}
-    } catch (e) {
-      console.error("Erro ao limpar sessão:", e);
-    }
+        localStorage.removeItem(STORAGE_KEYS.SESSION_ACTIVE);
+        localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_CODE);
+        localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
+        localStorage.removeItem(STORAGE_KEYS.SESSION_PHASE);
+        localStorage.removeItem(STORAGE_KEYS.CONSENT_TIMESTAMP);
+        try {
+          sessionStorage.removeItem("renovate_mod_authenticated");
+        } catch (e) {}
+      } catch (e) {
+        console.error("Erro ao limpar sessão:", e);
+      }
 
-    // Limpar prefill dos formulários e sincronizar LiveSession
-    injectParticipantCodeToForms("");
-    if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
-      window.LiveSession.setParticipantCode("");
-    }
+      // Limpar prefill dos formulários e sincronizar LiveSession
+      injectParticipantCodeToForms("");
+      if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
+        window.LiveSession.setParticipantCode("");
+      }
 
-    // Bloquear website e reabrir tela de login
-    lockWebsite();
-    renderCodesDropdown();
-    renderHeaderUserBadge();
-    if (window.updateNavVisibility) {
-      window.updateNavVisibility();
-    }
+      // Bloquear website e reabrir tela de login
+      lockWebsite();
+      renderCodesDropdown();
+      renderHeaderUserBadge();
+      if (window.updateNavVisibility) {
+        window.updateNavVisibility();
+      }
 
-    if (window.showToast) {
-      window.showToast(isEn ? "Session ended. Access locked." : "Sessão terminada. Acesso reservado bloqueado.");
+      if (window.showToast) {
+        window.showToast(isEn ? "Session ended. Access locked." : "Sessão terminada. Acesso reservado bloqueado.");
+      }
+    } finally {
+      isLoggingOut = false;
     }
   }
 
@@ -1031,33 +1041,30 @@ window.AuthModule = (function () {
       avatarBg = "bg-amber-500 text-slate-950 ring-2 ring-amber-400";
     }
 
-    container.className = "flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 animate-fadeIn";
+    container.className = "flex items-center gap-1 sm:gap-2 pl-1 sm:pl-3 border-l border-slate-200 animate-fadeIn shrink-0";
     container.innerHTML = `
-      <div class="flex items-center gap-2 bg-slate-900 text-white pl-1.5 pr-2.5 py-1 rounded-xl shadow-xs border border-slate-800" title="${isMOD ? (isEn ? 'Authenticated Moderator' : 'Moderador Autenticado') : (isEn ? 'Authenticated Participant' : 'Participante Autenticado')}">
+      <div class="flex items-center gap-1 sm:gap-2 bg-slate-900 text-white pl-1 pr-1.5 sm:pl-1.5 sm:pr-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl shadow-xs border border-slate-800 shrink-0" title="${isMOD ? (isEn ? 'Authenticated Moderator' : 'Moderador Autenticado') : (isEn ? 'Authenticated Participant' : 'Participante Autenticado')}">
         <!-- Avatar Circular com Tag de Tipo (FG2, NS ou MOD) -->
-        <div class="w-7 h-7 rounded-full ${avatarBg} font-black text-[10px] tracking-tight flex items-center justify-center shadow-xs ring-2 ring-slate-800 shrink-0">
+        <div class="w-5 h-5 sm:w-7 sm:h-7 rounded-full ${avatarBg} font-black text-[9px] sm:text-[10px] tracking-tight flex items-center justify-center shadow-xs ring-1 sm:ring-2 ring-slate-800 shrink-0">
           ${isMOD ? 'MOD' : type}
         </div>
         <!-- Identificador do Participante -->
         <div class="flex flex-col text-left leading-tight">
-          <span class="font-mono font-extrabold text-xs text-[#FFCC66] tracking-wide leading-none">${code}</span>
-          <span class="text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
+          <span class="font-mono font-extrabold text-[11px] sm:text-xs text-[#FFCC66] tracking-wide leading-none">${code}</span>
+          <span class="text-[8px] sm:text-[9px] text-slate-300 font-medium leading-none mt-0.5">${typeLabel}</span>
         </div>
       </div>
-      <!-- Botão Sair (Logout) -->
+      <!-- Botão Sair (Logout) Exclusivo no Cabeçalho -->
       <button type="button" id="btn-header-logout" 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-xs font-bold transition shadow-2xs cursor-pointer" 
+              class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 text-[11px] sm:text-xs font-bold transition shadow-2xs cursor-pointer shrink-0" 
               title="${isEn ? 'Log out of Restricted Area' : 'Terminar Sessão na Área Reservada'}">
-        <i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-600"></i>
-        <span class="inline text-[11px] font-bold text-rose-700">${isEn ? 'Log Out' : 'Sair'}</span>
+        <i data-lucide="log-out" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-600"></i>
+        <span class="inline text-[10px] sm:text-[11px] font-bold text-rose-700">${isEn ? 'Log Out' : 'Sair'}</span>
       </button>
     `;
 
-    // Vincular evento de Logout
-    const logoutBtn = document.getElementById("btn-header-logout");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => logout());
-    }
+    // NOTA: O clique em #btn-header-logout é gerido exclusivamente via delegação global de eventos única
+    // em initEvents() para evitar duplo popup de confirmação de saída.
 
     if (window.lucide) {
       window.lucide.createIcons();
@@ -1232,11 +1239,24 @@ window.AuthModule = (function () {
       });
     }
 
-    // Delegação global de cliques para botões de Logout (Cabeçalho, Mobile Bottom Nav, Passo 1)
+    // 5. Delegação global de cliques para botões de Logout (Cabeçalho e Passo 1) - registada uma única vez
+    bindGlobalLogoutListener();
+  }
+
+  let hasBoundLogoutListener = false;
+
+  /**
+   * Regista a delegação global de eventos de Logout uma única vez durante o ciclo de vida da aplicação
+   */
+  function bindGlobalLogoutListener() {
+    if (hasBoundLogoutListener) return;
+    hasBoundLogoutListener = true;
+
     document.addEventListener("click", (e) => {
-      const btn = e.target.closest("#btn-header-logout, #btn-mobile-nav-logout, #btn-step1-logout, [data-action='logout']");
+      const btn = e.target.closest("#btn-header-logout, #btn-step1-logout, [data-action='logout']");
       if (btn) {
         e.preventDefault();
+        e.stopPropagation();
         logout();
       }
     });
