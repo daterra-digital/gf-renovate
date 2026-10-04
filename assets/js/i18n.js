@@ -245,7 +245,6 @@ window.I18nManager = (function () {
       "results.gf2video.boxText": "A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.",
       "results.gf2video.boxBadge": "Disponível após 06 de Outubro de 2026",
       "results.gf2video.footer": "Reportagem Audiovisual DATERRA & RENOVATE",
-      "results.gf2video.caption": "A cobertura audiovisual integra o Entregável 1.4 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.",
 
       // Galeria Fotográfica do Grupo Focal 2 (Etapas do Programa)
       "results.gallery.title": "Galeria Fotográfica do Grupo Focal 2 (Santarém)",
@@ -626,7 +625,6 @@ window.I18nManager = (function () {
       "results.gf2video.boxText": "The official audiovisual report featuring Serious Game trials, 3D Simulator demonstrations, and participant interviews will be published here after the session concludes.",
       "results.gf2video.boxBadge": "Available after 06 October 2026",
       "results.gf2video.footer": "Audiovisual Coverage DATERRA & RENOVATE",
-      "results.gf2video.caption": "The audiovisual coverage is part of Deliverable 1.4 of the RENOVATE project and supports the European dissemination of digital tools.",
 
       // Photo Gallery Focus Group 2
       "results.gallery.title": "Photo Gallery: Focus Group 2 (Santarém)",
