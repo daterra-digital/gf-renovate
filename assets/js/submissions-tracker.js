@@ -458,6 +458,9 @@ window.SubmissionsTracker = (function () {
             state.submittedCodes.game = new Set(parsed.codes);
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
+            if (parsed.codes.length < parsed.count) {
+              enrichGameSubmissionsFromCsv();
+            }
             updateAllCounters();
           }
         } catch (err) {
@@ -519,6 +522,53 @@ window.SubmissionsTracker = (function () {
     }
   });
 
+  const GAME_CSV_FALLBACK_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQKvZtpO0WW7vqeOMvJpmFbDoh8K2F0h0SSI5t3S1LiI7Ag1nQpGJi3CkDkeGxrULkk4UxSLjrhTd1e/pub?output=csv&gid=1971530026";
+  let isEnrichingCsv = false;
+
+  /**
+   * Resiliência e Redundância para o Formulário 1 (Serious Game):
+   * Lê os códigos reais de participante da folha de cálculo Google Sheets (Coluna B)
+   * prevenindo inconsistências caso o Google Apps Script sobreponha colunas duplicadas.
+   */
+  async function enrichGameSubmissionsFromCsv() {
+    if (isEnrichingCsv) return;
+    isEnrichingCsv = true;
+    try {
+      const resp = await fetch(GAME_CSV_FALLBACK_URL, { cache: "no-store" });
+      if (!resp.ok) return;
+      const csvText = await resp.text();
+      const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length <= 1) return;
+
+      let added = false;
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i];
+        // O código do participante está na Coluna 1 (B)
+        const match = row.match(/^[^,]+,\s*"?([A-Za-z0-9\-_]+)"?/);
+        const code = match ? match[1].trim().toUpperCase() : "";
+        if (code && (/^FG2-PT\d+$/i.test(code) || /^NS-PT\d+$/i.test(code)) && !code.endsWith("-MD")) {
+          if (!state.submittedCodes.game.has(code)) {
+            state.submittedCodes.game.add(code);
+            added = true;
+          }
+          if (!state.registeredCodes.has(code)) {
+            state.registeredCodes.add(code);
+            added = true;
+          }
+        }
+      }
+
+      if (added) {
+        state.counts.game = Math.max(state.counts.game, state.submittedCodes.game.size);
+        updateAllCounters();
+      }
+    } catch (e) {
+      console.warn("Aviso ao ler fallback de códigos CSV para Form 1:", e);
+    } finally {
+      isEnrichingCsv = false;
+    }
+  }
+
   let isRefreshingFromFirebase = false;
 
   /**
@@ -563,14 +613,20 @@ window.SubmissionsTracker = (function () {
               } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
                 const parsed = countValidFormSubmissions(val);
                 state.counts.game = parsed.count;
+                state.submittedCodes.game = new Set(parsed.codes);
                 parsed.codes.forEach(c => state.registeredCodes.add(c));
+                if (parsed.codes.length < parsed.count) {
+                  enrichGameSubmissionsFromCsv();
+                }
               } else if (normKey.includes("2") || normKey.includes("sim") || normKey.includes("virmedex")) {
                 const parsed = countValidFormSubmissions(val);
                 state.counts.sim = parsed.count;
+                state.submittedCodes.sim = new Set(parsed.codes);
                 parsed.codes.forEach(c => state.registeredCodes.add(c));
               } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
                 const parsed = countValidFormSubmissions(val);
                 state.counts.global = parsed.count;
+                state.submittedCodes.global = new Set(parsed.codes);
                 parsed.codes.forEach(c => state.registeredCodes.add(c));
               }
             }
@@ -600,16 +656,22 @@ window.SubmissionsTracker = (function () {
         if (snapGame !== null) {
           const parsed = countValidFormSubmissions(snapGame);
           state.counts.game = parsed.count;
+          state.submittedCodes.game = new Set(parsed.codes);
           parsed.codes.forEach(c => state.registeredCodes.add(c));
+          if (parsed.codes.length < parsed.count) {
+            enrichGameSubmissionsFromCsv();
+          }
         }
         if (snapSim !== null) {
           const parsed = countValidFormSubmissions(snapSim);
           state.counts.sim = parsed.count;
+          state.submittedCodes.sim = new Set(parsed.codes);
           parsed.codes.forEach(c => state.registeredCodes.add(c));
         }
         if (snapGlobal !== null) {
           const parsed = countValidFormSubmissions(snapGlobal);
           state.counts.global = parsed.count;
+          state.submittedCodes.global = new Set(parsed.codes);
           parsed.codes.forEach(c => state.registeredCodes.add(c));
         }
       state.isLive = true;
@@ -858,6 +920,7 @@ window.SubmissionsTracker = (function () {
     loadRegisteredCodes();
     updateAllCounters();
     connectFirebase();
+    enrichGameSubmissionsFromCsv();
   }
 
   return {

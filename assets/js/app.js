@@ -381,7 +381,7 @@ function renderSchedule() {
             ${isEn ? "Submit your feedback on gameplay, clarity, and training utility. Your participant code is automatically attached." : "Registe as suas respostas sobre a jogabilidade, clareza e utilidade formativa. O seu código de participante será associado automaticamente."}
           </p>
           <div class="pt-1">
-            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(1) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGameTallentto)}" target="_blank" rel="noopener noreferrer" 
+            <a id="btn-schedule-form-1" data-form="1" href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(1) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGameTallentto)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-game inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Open Serious Game Evaluation (Form 1)" : "Abrir Avaliação Serious Game (Form 1)"}</span>
@@ -426,7 +426,7 @@ function renderSchedule() {
             ${isEn ? "Validation of agronomic fidelity, learning curve, and field decision-support applicability." : "Validação da fidelidade agronómica, curva de aprendizagem e aplicabilidade no apoio à decisão no campo."}
           </p>
           <div class="pt-1">
-            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(2) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex)}" target="_blank" rel="noopener noreferrer" 
+            <a id="btn-schedule-form-2" data-form="2" href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(2) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-sim inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Open Simulator Evaluation (Form 2)" : "Abrir Avaliação Simulador (Form 2)"}</span>
@@ -448,7 +448,7 @@ function renderSchedule() {
             ${isEn ? "Overall rating of training impact, agricultural operator certification feasibility, and priorities for the RENOVATE project." : "Classificação global do impacto pedagógico, viabilidade de certificação de operadores agrários e prioridades para o projeto RENOVATE."}
           </p>
           <div class="pt-1">
-            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(3) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGlobal)}" target="_blank" rel="noopener noreferrer" 
+            <a id="btn-schedule-form-3" data-form="3" href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(3) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGlobal)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-global inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Submit Overall Evaluation" : "Submeter Avaliação Global"}</span>

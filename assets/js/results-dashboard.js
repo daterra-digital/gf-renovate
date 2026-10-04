@@ -553,7 +553,10 @@ window.ResultsDashboard = (function () {
           for (let hIdx = 0; hIdx < headers.length; hIdx++) {
             const h = headers[hIdx];
             if (h) {
-              rowObj[h] = rowArr[hIdx] !== undefined && rowArr[hIdx] !== null ? String(rowArr[hIdx]).trim() : "";
+              const val = rowArr[hIdx] !== undefined && rowArr[hIdx] !== null ? String(rowArr[hIdx]).trim() : "";
+              if (!rowObj[h] || val) {
+                rowObj[h] = val;
+              }
             }
           }
           result.push(rowObj);

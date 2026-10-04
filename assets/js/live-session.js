@@ -266,17 +266,9 @@ const LiveSession = (function () {
     const url2 = getPrefilledFormUrl(2, activeCode);
     const url3 = getPrefilledFormUrl(3, activeCode);
 
-    const btnForm1 = document.getElementById("btn-form-2");
-    if (btnForm1) btnForm1.href = url1;
-    document.querySelectorAll(".form-link-game").forEach(el => { el.href = url1; });
-
-    const btnForm2 = document.getElementById("btn-form-3");
-    if (btnForm2) btnForm2.href = url2;
-    document.querySelectorAll(".form-link-sim").forEach(el => { el.href = url2; });
-
-    const btnForm3 = document.getElementById("btn-form-global");
-    if (btnForm3) btnForm3.href = url3;
-    document.querySelectorAll(".form-link-global").forEach(el => { el.href = url3; });
+    document.querySelectorAll("#btn-form-2, #btn-schedule-form-1, .form-link-game, [data-form='1']").forEach(el => { el.href = url1; });
+    document.querySelectorAll("#btn-form-3, #btn-schedule-form-2, .form-link-sim, [data-form='2']").forEach(el => { el.href = url2; });
+    document.querySelectorAll("#btn-form-global, #btn-schedule-form-3, .form-link-global, [data-form='3']").forEach(el => { el.href = url3; });
 
     // Garantir que todos os botões do Serious Game apontam para o link oficial da Tallentto
     const gameUrl = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) 
@@ -570,14 +562,21 @@ const LiveSession = (function () {
 
     // Intercetor dinâmico de clique e toque em botões de Google Forms (garante preenchimento no exato instante da ação)
     function interceptFormLinkInteraction(e) {
-      const link = e.target && e.target.closest && e.target.closest("#btn-form-2, .form-link-game, #btn-form-3, .form-link-sim, #btn-form-global, .form-link-global");
+      const link = e.target && e.target.closest && e.target.closest(
+        "#btn-form-2, #btn-schedule-form-1, .form-link-game, [data-form='1'], " +
+        "#btn-form-3, #btn-schedule-form-2, .form-link-sim, [data-form='2'], " +
+        "#btn-form-global, #btn-schedule-form-3, .form-link-global, [data-form='3']"
+      );
       if (!link) return;
 
+      const dataForm = link.getAttribute("data-form");
       let formType = 1;
-      if (link.id === "btn-form-3" || link.classList.contains("form-link-sim")) {
+      if (dataForm === "2" || link.id === "btn-form-3" || link.id === "btn-schedule-form-2" || link.classList.contains("form-link-sim")) {
         formType = 2;
-      } else if (link.id === "btn-form-global" || link.classList.contains("form-link-global")) {
+      } else if (dataForm === "3" || link.id === "btn-form-global" || link.id === "btn-schedule-form-3" || link.classList.contains("form-link-global")) {
         formType = 3;
+      } else if (dataForm === "1" || link.id === "btn-form-2" || link.id === "btn-schedule-form-1" || link.classList.contains("form-link-game")) {
+        formType = 1;
       }
 
       const currentCode = (state.participantCode || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || "")).trim().toUpperCase();
@@ -593,7 +592,9 @@ const LiveSession = (function () {
       }
     }
 
-    document.addEventListener("pointerdown", interceptFormLinkInteraction, { capture: true });
+    document.addEventListener("pointerdown", interceptFormLinkInteraction, { capture: true, passive: true });
+    document.addEventListener("touchstart", interceptFormLinkInteraction, { capture: true, passive: true });
+    document.addEventListener("focusin", interceptFormLinkInteraction, { capture: true });
     document.addEventListener("click", interceptFormLinkInteraction, { capture: true });
 
     // Escuta cliques para registar cliques e atualizar estados visuais SEM bloquear a navegação
@@ -758,7 +759,8 @@ const LiveSession = (function () {
           chkLabel.className = "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-emerald-300 bg-emerald-50/90 hover:bg-emerald-100/70 hover:border-emerald-400 cursor-pointer transition-all select-none shadow-2xs";
 
           customBox.className = "w-5 h-5 rounded-lg border-2 border-emerald-600 bg-emerald-600 flex items-center justify-center transition-all shrink-0";
-          customCheck.className = "w-3.5 h-3.5 text-white stroke-[3]";
+          customCheck.setAttribute("class", "w-3.5 h-3.5 text-white stroke-[3]");
+          customCheck.classList.remove("hidden");
           customCheck.setAttribute("data-lucide", "check");
 
           chkText.className = "text-xs font-bold text-emerald-950 transition-colors";
@@ -771,7 +773,8 @@ const LiveSession = (function () {
           chkLabel.className = "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border-2 border-red-600 bg-red-50/90 hover:bg-red-100/80 hover:border-red-700 cursor-pointer transition-all select-none shadow-2xs animate-pulse";
 
           customBox.className = "w-5 h-5 rounded-lg border-2 border-red-600 bg-red-500 flex items-center justify-center transition-all shrink-0";
-          customCheck.className = "w-3.5 h-3.5 text-white stroke-[3]";
+          customCheck.setAttribute("class", "w-3.5 h-3.5 text-white stroke-[3]");
+          customCheck.classList.remove("hidden");
           customCheck.setAttribute("data-lucide", "alert-circle");
 
           chkText.className = "text-xs font-bold text-red-600 transition-colors";
@@ -784,7 +787,8 @@ const LiveSession = (function () {
           chkLabel.className = "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-[#FFFDF5] hover:border-[#FFCC66] cursor-pointer transition-all select-none shadow-2xs";
 
           customBox.className = "w-5 h-5 rounded-lg border-2 border-slate-300 bg-white flex items-center justify-center transition-all group-hover:border-[#FFCC66] shrink-0";
-          customCheck.className = "w-3.5 h-3.5 text-white hidden stroke-[3]";
+          customCheck.setAttribute("class", "w-3.5 h-3.5 text-white hidden stroke-[3]");
+          customCheck.classList.add("hidden");
 
           chkText.className = "text-xs font-bold text-slate-700 group-hover:text-slate-900 transition-colors";
 

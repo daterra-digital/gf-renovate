@@ -604,9 +604,9 @@ window.AuthModule = (function () {
           ? `https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform?usp=pp_url&entry.208145689=${encodeURIComponent(activeCode)}`
           : "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform");
 
-    document.querySelectorAll("#btn-form-2, .form-link-game").forEach(el => { el.href = url1; });
-    document.querySelectorAll("#btn-form-3, .form-link-sim").forEach(el => { el.href = url2; });
-    document.querySelectorAll("#btn-form-global, .form-link-global").forEach(el => { el.href = url3; });
+    document.querySelectorAll("#btn-form-2, #btn-schedule-form-1, .form-link-game, [data-form='1']").forEach(el => { el.href = url1; });
+    document.querySelectorAll("#btn-form-3, #btn-schedule-form-2, .form-link-sim, [data-form='2']").forEach(el => { el.href = url2; });
+    document.querySelectorAll("#btn-form-global, #btn-schedule-form-3, .form-link-global, [data-form='3']").forEach(el => { el.href = url3; });
 
     console.info(`🔐 AuthModule: Injeção de código [${activeCode || 'VAZIO'}] atualizada nos Google Forms.`);
   }

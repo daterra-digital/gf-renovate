@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0230">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0245">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261004-0230"></script>
+  <script src="system-status.js?v=20261004-0245"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -314,8 +314,8 @@
                 <i data-lucide="gamepad-2" class="w-4 h-4"></i>
                 <span data-i18n="live.step3.btnGame">Jogar Tallentto</span>
               </a>
-              <a id="btn-form-2" href="#" target="_blank" rel="noopener noreferrer" 
-                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs">
+              <a id="btn-form-2" data-form="1" href="#" target="_blank" rel="noopener noreferrer" 
+                 class="form-link-game inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs">
                 <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
                 <span data-i18n="live.step3.btnForm">Avaliar Jogo (Form 1)</span>
               </a>
@@ -367,7 +367,7 @@
                 <i data-lucide="laptop" class="w-4 h-4"></i>
                 <span data-i18n="live.step4.btnSim">Abrir Simulador</span>
               </a>
-              <a id="btn-form-3" href="#" target="_blank" rel="noopener noreferrer" 
+              <a id="btn-form-3" data-form="2" href="#" target="_blank" rel="noopener noreferrer" 
                  class="form-link-sim inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs">
                 <i data-lucide="file-text" class="w-4 h-4 text-[#FFCC66]"></i>
                 <span data-i18n="live.step4.btnForm">Avaliar Simulador (Form 2)</span>
@@ -414,8 +414,8 @@
           </div>
 
           <div id="step-actions-5" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
-            <a id="btn-form-global" href="#" target="_blank" rel="noopener noreferrer" 
-               class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+            <a id="btn-form-global" data-form="3" href="#" target="_blank" rel="noopener noreferrer" 
+               class="form-link-global w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
               <span data-i18n="live.step5.btnForm">Submeter Avaliação Global & Concluir</span>
             </a>
@@ -1959,15 +1959,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261004-0230"></script>
-  <script src="assets/js/i18n.js?v=20261004-0230"></script>
-  <script src="assets/js/content-data.js?v=20261004-0230"></script>
-  <script src="assets/js/auth.js?v=20261004-0230"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261004-0230"></script>
-  <script src="assets/js/live-session.js?v=20261004-0230"></script>
-  <script src="assets/js/results-dashboard.js?v=20261004-0230"></script>
-  <script src="assets/js/moderator-panel.js?v=20261004-0230"></script>
-  <script src="assets/js/app.js?v=20261004-0230"></script>
+  <script src="system-status.js?v=20261004-0245"></script>
+  <script src="assets/js/i18n.js?v=20261004-0245"></script>
+  <script src="assets/js/content-data.js?v=20261004-0245"></script>
+  <script src="assets/js/auth.js?v=20261004-0245"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261004-0245"></script>
+  <script src="assets/js/live-session.js?v=20261004-0245"></script>
+  <script src="assets/js/results-dashboard.js?v=20261004-0245"></script>
+  <script src="assets/js/moderator-panel.js?v=20261004-0245"></script>
+  <script src="assets/js/app.js?v=20261004-0245"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
