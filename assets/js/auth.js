@@ -585,37 +585,28 @@ window.AuthModule = (function () {
       window.LiveSession.updateFormLinks(activeCode);
     }
 
-    // 2. Injeção direta em todos os seletores e links do website
-    const formConfigs = [
-      {
-        selector: "#btn-form-2, .form-link-game",
-        url: (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGameTallentto)
-          || "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
-        params: activeCode ? `entry.1909349741=${encodeURIComponent(activeCode)}&entry.178320833=${encodeURIComponent(activeCode)}` : ""
-      },
-      {
-        selector: "#btn-form-3, .form-link-sim",
-        url: (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex)
-          || "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform",
-        params: activeCode ? `entry.576387166=${encodeURIComponent(activeCode)}` : ""
-      },
-      {
-        selector: "#btn-form-global, .form-link-global",
-        url: (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGlobal)
-          || "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform",
-        params: activeCode ? `entry.208145689=${encodeURIComponent(activeCode)}` : ""
-      }
-    ];
+    // 2. Injeção direta em todos os seletores e links do website com parâmetros oficiais (?usp=pp_url&entry.FIELD_ID=CODE)
+    const url1 = (window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === "function")
+      ? window.LiveSession.getPrefilledFormUrl(1, activeCode)
+      : (activeCode 
+          ? `https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform?usp=pp_url&entry.1909349741=${encodeURIComponent(activeCode)}`
+          : "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform");
 
-    formConfigs.forEach(item => {
-      let finalUrl = item.url;
-      if (item.params) {
-        finalUrl += `${finalUrl.includes("?") ? "&" : "?"}${item.params}`;
-      }
-      document.querySelectorAll(item.selector).forEach(el => {
-        el.href = finalUrl;
-      });
-    });
+    const url2 = (window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === "function")
+      ? window.LiveSession.getPrefilledFormUrl(2, activeCode)
+      : (activeCode 
+          ? `https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform?usp=pp_url&entry.576387166=${encodeURIComponent(activeCode)}`
+          : "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform");
+
+    const url3 = (window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === "function")
+      ? window.LiveSession.getPrefilledFormUrl(3, activeCode)
+      : (activeCode 
+          ? `https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform?usp=pp_url&entry.208145689=${encodeURIComponent(activeCode)}`
+          : "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform");
+
+    document.querySelectorAll("#btn-form-2, .form-link-game").forEach(el => { el.href = url1; });
+    document.querySelectorAll("#btn-form-3, .form-link-sim").forEach(el => { el.href = url2; });
+    document.querySelectorAll("#btn-form-global, .form-link-global").forEach(el => { el.href = url3; });
 
     console.info(`🔐 AuthModule: Injeção de código [${activeCode || 'VAZIO'}] atualizada nos Google Forms.`);
   }

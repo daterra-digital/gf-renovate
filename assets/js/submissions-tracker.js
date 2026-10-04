@@ -720,6 +720,7 @@ window.SubmissionsTracker = (function () {
 
     const isStep3Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(3);
     const isStep4Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(4);
+    const isStep5Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(5);
 
     const greenBadge = `
       <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
@@ -735,24 +736,67 @@ window.SubmissionsTracker = (function () {
       </span>
     `;
 
+    // Slot 4: Avaliação 1 (Serious Game - Form 1)
     const slot4Container = document.getElementById("submission-counter-slot-4");
+    const slot4Details = document.getElementById("slot-4-details");
     if (slot4Container) {
       if (isForm1Done) slot4Container.innerHTML = greenBadge;
       else if (isStep3Alert) slot4Container.innerHTML = redBadge;
       else slot4Container.innerHTML = "";
     }
+    if (slot4Details) {
+      if (isForm1Done) {
+        slot4Details.classList.add("completed", "border-emerald-500");
+        slot4Details.classList.remove("alert-jump", "border-red-500", "border-slate-200");
+      } else if (isStep3Alert) {
+        slot4Details.classList.remove("completed", "border-emerald-500", "border-slate-200");
+        slot4Details.classList.add("alert-jump", "border-red-500");
+      } else {
+        slot4Details.classList.remove("completed", "border-emerald-500", "alert-jump", "border-red-500");
+        slot4Details.classList.add("border-slate-200");
+      }
+    }
 
+    // Slot 7: Avaliação 2 (Simulador - Form 2)
     const slot7Container = document.getElementById("submission-counter-slot-7");
+    const slot7Details = document.getElementById("slot-7-details");
     if (slot7Container) {
       if (isForm2Done) slot7Container.innerHTML = greenBadge;
       else if (isStep4Alert) slot7Container.innerHTML = redBadge;
       else slot7Container.innerHTML = "";
     }
+    if (slot7Details) {
+      if (isForm2Done) {
+        slot7Details.classList.add("completed", "border-emerald-500");
+        slot7Details.classList.remove("alert-jump", "border-red-500", "border-slate-200");
+      } else if (isStep4Alert) {
+        slot7Details.classList.remove("completed", "border-emerald-500", "border-slate-200");
+        slot7Details.classList.add("alert-jump", "border-red-500");
+      } else {
+        slot7Details.classList.remove("completed", "border-emerald-500", "alert-jump", "border-red-500");
+        slot7Details.classList.add("border-slate-200");
+      }
+    }
 
+    // Slot 9: Avaliação Global (Form 3)
     const slot9Container = document.getElementById("submission-counter-slot-9");
+    const slot9Details = document.getElementById("slot-9-details");
     if (slot9Container) {
       if (isForm3Done) slot9Container.innerHTML = greenBadge;
+      else if (isStep5Alert) slot9Container.innerHTML = redBadge;
       else slot9Container.innerHTML = "";
+    }
+    if (slot9Details) {
+      if (isForm3Done) {
+        slot9Details.classList.add("completed", "border-emerald-500");
+        slot9Details.classList.remove("alert-jump", "border-red-500", "border-slate-200");
+      } else if (isStep5Alert) {
+        slot9Details.classList.remove("completed", "border-emerald-500", "border-slate-200");
+        slot9Details.classList.add("alert-jump", "border-red-500");
+      } else {
+        slot9Details.classList.remove("completed", "border-emerald-500", "alert-jump", "border-red-500");
+        slot9Details.classList.add("border-slate-200");
+      }
     }
 
     if (window.lucide) {
@@ -824,6 +868,15 @@ window.SubmissionsTracker = (function () {
     generateBadgeHTML,
     hasParticipantSubmitted,
     getSubmittedCodes: (type) => Array.from((state.submittedCodes && state.submittedCodes[type]) || []),
+    markSubmitted: (type, code) => {
+      const clean = String(code || "").trim().toUpperCase();
+      if (!clean) return;
+      if (type === 1 || type === "1" || type === "game") state.submittedCodes.game.add(clean);
+      if (type === 2 || type === "2" || type === "sim") state.submittedCodes.sim.add(clean);
+      if (type === 3 || type === "3" || type === "global") state.submittedCodes.global.add(clean);
+      updateAllCounters();
+    },
+    getRawState: () => state,
     renderProgramStatusBadges,
     getCounts: () => ({ ...state.counts }),
     getTotalParticipants: () => state.totalParticipants,

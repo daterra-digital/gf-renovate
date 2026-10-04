@@ -381,7 +381,7 @@ function renderSchedule() {
             ${isEn ? "Submit your feedback on gameplay, clarity, and training utility. Your participant code is automatically attached." : "Registe as suas respostas sobre a jogabilidade, clareza e utilidade formativa. O seu código de participante será associado automaticamente."}
           </p>
           <div class="pt-1">
-            <a href="${RENOVATE_CONFIG.externalLinks.googleFormGameTallentto}" target="_blank" rel="noopener noreferrer" 
+            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(1) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGameTallentto)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-game inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Open Serious Game Evaluation (Form 1)" : "Abrir Avaliação Serious Game (Form 1)"}</span>
@@ -426,7 +426,7 @@ function renderSchedule() {
             ${isEn ? "Validation of agronomic fidelity, learning curve, and field decision-support applicability." : "Validação da fidelidade agronómica, curva de aprendizagem e aplicabilidade no apoio à decisão no campo."}
           </p>
           <div class="pt-1">
-            <a href="${RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex}" target="_blank" rel="noopener noreferrer" 
+            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(2) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-sim inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="clipboard-list" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Open Simulator Evaluation (Form 2)" : "Abrir Avaliação Simulador (Form 2)"}</span>
@@ -448,7 +448,7 @@ function renderSchedule() {
             ${isEn ? "Overall rating of training impact, agricultural operator certification feasibility, and priorities for the RENOVATE project." : "Classificação global do impacto pedagógico, viabilidade de certificação de operadores agrários e prioridades para o projeto RENOVATE."}
           </p>
           <div class="pt-1">
-            <a href="${RENOVATE_CONFIG.externalLinks.googleFormGlobal}" target="_blank" rel="noopener noreferrer" 
+            <a href="${(window.LiveSession && typeof window.LiveSession.getPrefilledFormUrl === 'function') ? window.LiveSession.getPrefilledFormUrl(3) : (RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.googleFormGlobal)}" target="_blank" rel="noopener noreferrer" 
                class="form-link-global inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
               <i data-lucide="check-check" class="w-4 h-4 text-[#FFCC66]"></i>
               <span>${isEn ? "Submit Overall Evaluation" : "Submeter Avaliação Global"}</span>
@@ -605,13 +605,14 @@ function renderSchedule() {
     const summary = detailsEl.querySelector("summary");
     if (summary) {
       summary.addEventListener("click", () => {
-        // NÃO-BLOQUEANTE: se o participante abrir slot-7 ou slot-9, atualiza alertas visuais de passos saltados
+        // NÃO-BLOQUEANTE: se o participante abrir slot-7, slot-9, slot-10 ou slot-11, atualiza alertas visuais de passos saltados
         if (!detailsEl.open && window.LiveSession && typeof window.LiveSession.validateAdvanceToStep === "function") {
           if (detailsEl.id === "slot-7-details") {
             window.LiveSession.validateAdvanceToStep(4);
-          }
-          if (detailsEl.id === "slot-9-details") {
+          } else if (detailsEl.id === "slot-9-details") {
             window.LiveSession.validateAdvanceToStep(5);
+          } else if (detailsEl.id === "slot-10-details" || detailsEl.id === "slot-11-details") {
+            window.LiveSession.validateAdvanceToStep(6);
           }
         }
       });
@@ -636,11 +637,16 @@ function renderSchedule() {
 
   // Atualizar ícones e sincronizar com o estado da sessão ao vivo
   if (window.lucide) window.lucide.createIcons();
-  if (window.LiveSession && typeof window.LiveSession.render === "function") {
-    window.LiveSession.render();
+  if (window.LiveSession) {
+    if (typeof window.LiveSession.updateFormLinks === "function") {
+      window.LiveSession.updateFormLinks();
+    }
+    if (typeof window.LiveSession.render === "function") {
+      window.LiveSession.render();
+    }
   }
 
-  // Atualizar contadores em tempo real nos dropdowns do programa
+  // Atualizar contadores e bordas em tempo real nos dropdowns do programa
   if (window.SubmissionsTracker && typeof window.SubmissionsTracker.updateAllCounters === "function") {
     window.SubmissionsTracker.updateAllCounters();
   }

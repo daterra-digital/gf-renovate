@@ -189,9 +189,72 @@ const LiveSession = (function () {
       return false;
     }
     state.participantCode = newCode.trim().toUpperCase();
+    try {
+      localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, state.participantCode);
+    } catch (e) {}
     loadStorageState(); // recarregar flags associadas a este código
     evaluateStepConditions();
+    updateFormLinks(state.participantCode);
     return true;
+  }
+
+  const FORM_FIELD_IDS = {
+    1: "1909349741",
+    game: "1909349741",
+    2: "576387166",
+    sim: "576387166",
+    3: "208145689",
+    global: "208145689"
+  };
+
+  const FORM_BASE_URLS = {
+    1: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
+    game: "https://docs.google.com/forms/d/e/1FAIpQLScAwHNGoYqikgsHwTOgKWC80l0F9b3S-kgXEbyCjxxjv_fTUQ/viewform",
+    2: "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform",
+    sim: "https://docs.google.com/forms/d/e/1FAIpQLSeyF3Ty9bzdw1oexKLsX2dC3StkoeUW7AyeFBPDVY6sU6OPmQ/viewform",
+    3: "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform",
+    global: "https://docs.google.com/forms/d/e/1FAIpQLSc1tR_sfcQMqXjd26UGfwyjLInt1fJw2IMM2ERXJAyjfdT1LA/viewform"
+  };
+
+  /**
+   * Constrói dinamicamente a URL com pré-preenchimento oficial do Google Forms (?usp=pp_url&entry.FIELD_ID=CODE)
+   * Form 1 (Serious Game): entry.1909349741
+   * Form 2 (Simulador): entry.576387166
+   * Form 3 (Avaliação Global): entry.208145689
+   */
+  function getPrefilledFormUrl(formTypeOrNum, codeOverride) {
+    const key = String(formTypeOrNum || "1").toLowerCase();
+    const entryId = FORM_FIELD_IDS[key] || "1909349741";
+
+    let baseUrl = "";
+    if (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks) {
+      if (key === "1" || key === "game") baseUrl = RENOVATE_CONFIG.externalLinks.googleFormGameTallentto;
+      else if (key === "2" || key === "sim") baseUrl = RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex;
+      else if (key === "3" || key === "global") baseUrl = RENOVATE_CONFIG.externalLinks.googleFormGlobal;
+    }
+    if (!baseUrl) {
+      baseUrl = FORM_BASE_URLS[key] || FORM_BASE_URLS[1];
+    }
+
+    // Limpar parâmetros anteriores de entry ou usp caso existam na URL base
+    try {
+      const u = new URL(baseUrl);
+      const sp = new URLSearchParams(u.search);
+      Array.from(sp.keys()).forEach(k => {
+        if (k.startsWith("entry.") || k === "usp") sp.delete(k);
+      });
+      u.search = sp.toString();
+      baseUrl = u.toString();
+    } catch (e) {}
+
+    const code = (codeOverride !== undefined ? codeOverride : (state.participantCode || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || ""))).trim().toUpperCase();
+
+    if (!code) {
+      return baseUrl;
+    }
+
+    const separator = baseUrl.includes("?") ? "&" : "?";
+    return `${baseUrl}${separator}usp=pp_url&entry.${entryId}=${encodeURIComponent(code)}`;
   }
 
   /**
@@ -199,43 +262,21 @@ const LiveSession = (function () {
    */
   function updateFormLinks(code) {
     const activeCode = (code !== undefined ? code : state.participantCode) || "";
-    const formConfig = [
-      { 
-        id: "btn-form-2", 
-        url: RENOVATE_CONFIG.externalLinks.googleFormGameTallentto, 
-        selector: ".form-link-game",
-        entryParams: activeCode ? `entry.1909349741=${encodeURIComponent(activeCode)}&entry.178320833=${encodeURIComponent(activeCode)}` : ""
-      },
-      { 
-        id: "btn-form-3", 
-        url: RENOVATE_CONFIG.externalLinks.googleFormSimVirmedex, 
-        selector: ".form-link-sim",
-        entryParams: activeCode ? `entry.576387166=${encodeURIComponent(activeCode)}` : ""
-      },
-      { 
-        id: "btn-form-global", 
-        url: RENOVATE_CONFIG.externalLinks.googleFormGlobal, 
-        selector: ".form-link-global",
-        entryParams: activeCode ? `entry.208145689=${encodeURIComponent(activeCode)}` : ""
-      }
-    ];
+    const url1 = getPrefilledFormUrl(1, activeCode);
+    const url2 = getPrefilledFormUrl(2, activeCode);
+    const url3 = getPrefilledFormUrl(3, activeCode);
 
-    formConfig.forEach(item => {
-      if (!item.url) return;
-      let fullUrl = item.url;
-      if (item.entryParams) {
-        fullUrl += `${fullUrl.includes("?") ? "&" : "?"}${item.entryParams}`;
-      }
+    const btnForm1 = document.getElementById("btn-form-2");
+    if (btnForm1) btnForm1.href = url1;
+    document.querySelectorAll(".form-link-game").forEach(el => { el.href = url1; });
 
-      const btn = document.getElementById(item.id);
-      if (btn) btn.href = fullUrl;
+    const btnForm2 = document.getElementById("btn-form-3");
+    if (btnForm2) btnForm2.href = url2;
+    document.querySelectorAll(".form-link-sim").forEach(el => { el.href = url2; });
 
-      if (item.selector) {
-        document.querySelectorAll(item.selector).forEach(el => {
-          el.href = fullUrl;
-        });
-      }
-    });
+    const btnForm3 = document.getElementById("btn-form-global");
+    if (btnForm3) btnForm3.href = url3;
+    document.querySelectorAll(".form-link-global").forEach(el => { el.href = url3; });
 
     // Garantir que todos os botões do Serious Game apontam para o link oficial da Tallentto
     const gameUrl = (window.RENOVATE_CONFIG && RENOVATE_CONFIG.externalLinks && RENOVATE_CONFIG.externalLinks.seriousGameTallentto) 
@@ -343,6 +384,9 @@ const LiveSession = (function () {
     if (isForm2Done && state.jumpAlertSteps.includes(4)) {
       state.jumpAlertSteps = state.jumpAlertSteps.filter(s => s !== 4);
     }
+    if (isForm3Done && state.jumpAlertSteps.includes(5)) {
+      state.jumpAlertSteps = state.jumpAlertSteps.filter(s => s !== 5);
+    }
 
     const calculatedCompleted = [];
     if (code) calculatedCompleted.push(1);
@@ -421,6 +465,19 @@ const LiveSession = (function () {
       if (form1Done && form2Done) {
         clearJumpAlert(3);
         clearJumpAlert(4);
+      }
+    } else if (targetStep >= 6) {
+      const form1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
+      const form2Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(2, code));
+      const form3Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(3, code));
+
+      if (!form1Done) triggerJumpAlert(3);
+      if (!form2Done) triggerJumpAlert(4);
+      if (!form3Done) triggerJumpAlert(5);
+      if (form1Done && form2Done && form3Done) {
+        clearJumpAlert(3);
+        clearJumpAlert(4);
+        clearJumpAlert(5);
       }
     }
     return true;
@@ -510,6 +567,34 @@ const LiveSession = (function () {
   function bindAutomaticStepTriggers() {
     if (window._renovateAutoTriggersBound) return;
     window._renovateAutoTriggersBound = true;
+
+    // Intercetor dinâmico de clique e toque em botões de Google Forms (garante preenchimento no exato instante da ação)
+    function interceptFormLinkInteraction(e) {
+      const link = e.target && e.target.closest && e.target.closest("#btn-form-2, .form-link-game, #btn-form-3, .form-link-sim, #btn-form-global, .form-link-global");
+      if (!link) return;
+
+      let formType = 1;
+      if (link.id === "btn-form-3" || link.classList.contains("form-link-sim")) {
+        formType = 2;
+      } else if (link.id === "btn-form-global" || link.classList.contains("form-link-global")) {
+        formType = 3;
+      }
+
+      const currentCode = (state.participantCode || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || "")).trim().toUpperCase();
+
+      const freshUrl = getPrefilledFormUrl(formType, currentCode);
+      link.href = freshUrl;
+
+      // Dispara validação não-bloqueante de saltos ao interagir com formulários 2 e 3
+      if (formType === 2) {
+        validateAdvanceToStep(4);
+      } else if (formType === 3) {
+        validateAdvanceToStep(5);
+      }
+    }
+
+    document.addEventListener("pointerdown", interceptFormLinkInteraction, { capture: true });
+    document.addEventListener("click", interceptFormLinkInteraction, { capture: true });
 
     // Escuta cliques para registar cliques e atualizar estados visuais SEM bloquear a navegação
     document.addEventListener("click", (e) => {
@@ -760,6 +845,7 @@ const LiveSession = (function () {
     getState: () => ({ ...state }),
     setParticipantCode,
     getParticipantCode: () => state.participantCode,
+    getPrefilledFormUrl,
     updateFormLinks,
     verifyModeratorPin,
     unlockStep,

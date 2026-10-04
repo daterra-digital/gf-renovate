@@ -195,10 +195,13 @@ header {
   border-color: var(--renovate-yellow);
   box-shadow: 0 4px 20px -2px rgba(255, 204, 102, 0.35);
 }
-.step-card.completed {
-  border-color: #10B981;
+.step-card.completed,
+details.schedule-accordion.completed {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 4px 16px -2px rgba(16, 185, 129, 0.15) !important;
 }
-.step-card.alert-jump {
+.step-card.alert-jump,
+details.schedule-accordion.alert-jump {
   border-color: #EF4444 !important;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25), 0 4px 16px -2px rgba(239, 68, 68, 0.2) !important;
   animation: pulse-border-red 2.5s infinite ease-in-out;
