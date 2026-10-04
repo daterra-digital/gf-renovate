@@ -375,4 +375,15 @@ body.auth-locked footer {
   box-shadow: 0 0 50px -10px rgba(255, 204, 102, 0.25);
 }
 
+/* Previne estiramento vertical dos dots do carrossel em mobile */
+.video-slider-dot {
+  flex: none !important;
+  flex-shrink: 0 !important;
+  height: 10px !important;
+  max-height: 10px !important;
+  min-height: 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
 
