@@ -2800,18 +2800,31 @@ window.ResultsDashboard = (function () {
 
     const ctx = canvas.getContext("2d");
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabels = [
-      "Q13.1 | Q24.1",
-      "Q13.2 | Q24.2",
-      "Q13.3 | Q24.3",
-      "Q13.4 | Q24.4",
-      "Q13.5 | Q24.5",
-      "Q13.6 | Q24.6",
-      "Q13.7 | Q24.7",
-      "Q13.8 | Q24.8",
-      "Q13.9 | Q24.9",
-      "Q13.10 | Q24.10"
+    const susLabelsPt = [
+      "1. Frequência de Uso",
+      "2. Baixa Complexidade",
+      "3. Facilidade de Uso",
+      "4. Independência Técnica",
+      "5. Boa Integração",
+      "6. Consistência Geral",
+      "7. Aprendizagem Rápida",
+      "8. Conforto de Uso",
+      "9. Confiança Operacional",
+      "10. Fácil Iniciação"
     ];
+    const susLabelsEn = [
+      "1. Frequency of Use",
+      "2. Low Complexity",
+      "3. Ease of Use",
+      "4. Tech Independence",
+      "5. Well Integrated",
+      "6. Overall Consistency",
+      "7. Quick Learning",
+      "8. Usability Comfort",
+      "9. Confidence in Use",
+      "10. Easy Onboarding"
+    ];
+    const susLabels = isEn ? susLabelsEn : susLabelsPt;
 
     window.chartInstances.susComparison = new Chart(ctx, {
       type: "bar",
@@ -2872,9 +2885,8 @@ window.ResultsDashboard = (function () {
                   "5. Well Integrated", "6. Overall Consistency", "7. Quick Learning", "8. Usability Comfort",
                   "9. Confidence in Use", "10. Easy Onboarding"
                 ];
-                const code = susLabels[idx] || "";
                 const desc = isEn ? titlesEn[idx] : titlesPt[idx];
-                return `${code} (${desc})`;
+                return `${desc} (Q13.${idx + 1} & Q24.${idx + 1})`;
               },
               label: function(context) {
                 const val = context.parsed.y;
@@ -2921,7 +2933,17 @@ window.ResultsDashboard = (function () {
               color: "#1E293B",
               maxRotation: 45,
               minRotation: 0,
-              autoSkip: false
+              autoSkip: false,
+              callback: function(val, index) {
+                if (window.innerWidth < 640) {
+                  return String(index + 1);
+                }
+                if (typeof this.getLabelForValue === "function") {
+                  return this.getLabelForValue(val);
+                }
+                const currentLabels = (this.chart && this.chart.data && this.chart.data.labels) || susLabels;
+                return currentLabels[index] || val;
+              }
             },
             grid: {
               display: false
@@ -2931,6 +2953,19 @@ window.ResultsDashboard = (function () {
       }
     });
     state.charts.susComparison = window.chartInstances.susComparison;
+
+    // Alternar automaticamente a visualização se o utilizador redimensionar a janela ou rodar o ecrã
+    if (!window._susResizeListenerAttached) {
+      window._susResizeListenerAttached = true;
+      window.addEventListener("resize", () => {
+        const sc = window.chartInstances && window.chartInstances.susComparison;
+        if (sc && typeof sc.update === "function") {
+          try {
+            sc.update();
+          } catch (e) {}
+        }
+      });
+    }
   }
 
   /**
@@ -2944,18 +2979,31 @@ window.ResultsDashboard = (function () {
     if (!chart) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabels = [
-      "Q13.1 | Q24.1",
-      "Q13.2 | Q24.2",
-      "Q13.3 | Q24.3",
-      "Q13.4 | Q24.4",
-      "Q13.5 | Q24.5",
-      "Q13.6 | Q24.6",
-      "Q13.7 | Q24.7",
-      "Q13.8 | Q24.8",
-      "Q13.9 | Q24.9",
-      "Q13.10 | Q24.10"
+    const susLabelsPt = [
+      "1. Frequência de Uso",
+      "2. Baixa Complexidade",
+      "3. Facilidade de Uso",
+      "4. Independência Técnica",
+      "5. Boa Integração",
+      "6. Consistência Geral",
+      "7. Aprendizagem Rápida",
+      "8. Conforto de Uso",
+      "9. Confiança Operacional",
+      "10. Fácil Iniciação"
     ];
+    const susLabelsEn = [
+      "1. Frequency of Use",
+      "2. Low Complexity",
+      "3. Ease of Use",
+      "4. Tech Independence",
+      "5. Well Integrated",
+      "6. Overall Consistency",
+      "7. Quick Learning",
+      "8. Usability Comfort",
+      "9. Confidence in Use",
+      "10. Easy Onboarding"
+    ];
+    const susLabels = isEn ? susLabelsEn : susLabelsPt;
 
     const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||
                         (state.metrics?.susGame?.average !== null && state.metrics?.susGame?.average !== undefined);

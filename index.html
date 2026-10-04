@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0210">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0230">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261004-0210"></script>
+  <script src="system-status.js?v=20261004-0230"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -901,6 +901,25 @@
             <div class="h-[340px]">
               <canvas id="chart-sus-comparison"></canvas>
             </div>
+
+            <!-- Acordeão de Legenda (Apenas Mobile) -->
+            <details class="mt-4 block sm:hidden bg-slate-50 border border-slate-200 rounded-lg p-3 cursor-pointer">
+              <summary data-i18n="results.sus.legendSummary" class="font-semibold text-xs text-slate-700 select-none outline-none">
+                Ver legenda das 10 Dimensões
+              </summary>
+              <ul class="mt-3 text-[11px] leading-relaxed text-slate-600 space-y-1">
+                <li><strong>1.</strong> Q13.1 & Q24.1 - <span data-i18n="results.sus.dim1">Frequência de Uso</span></li>
+                <li><strong>2.</strong> Q13.2 & Q24.2 - <span data-i18n="results.sus.dim2">Baixa Complexidade</span></li>
+                <li><strong>3.</strong> Q13.3 & Q24.3 - <span data-i18n="results.sus.dim3">Facilidade de Uso</span></li>
+                <li><strong>4.</strong> Q13.4 & Q24.4 - <span data-i18n="results.sus.dim4">Independência Técnica</span></li>
+                <li><strong>5.</strong> Q13.5 & Q24.5 - <span data-i18n="results.sus.dim5">Boa Integração</span></li>
+                <li><strong>6.</strong> Q13.6 & Q24.6 - <span data-i18n="results.sus.dim6">Consistência Geral</span></li>
+                <li><strong>7.</strong> Q13.7 & Q24.7 - <span data-i18n="results.sus.dim7">Aprendizagem Rápida</span></li>
+                <li><strong>8.</strong> Q13.8 & Q24.8 - <span data-i18n="results.sus.dim8">Conforto de Uso</span></li>
+                <li><strong>9.</strong> Q13.9 & Q24.9 - <span data-i18n="results.sus.dim9">Confiança Operacional</span></li>
+                <li><strong>10.</strong> Q13.10 & Q24.10 - <span data-i18n="results.sus.dim10">Fácil Iniciação</span></li>
+              </ul>
+            </details>
             <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1 text-[10px] text-slate-500">
               <span class="font-medium"><strong>Q13</strong> (Serious Game) vs <strong>Q24</strong> (Simulador 3D)</span>
               <span class="font-mono text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Questões emparelhadas Q13.1|Q24.1 a Q13.10|Q24.10</span>
@@ -1940,15 +1959,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261004-0210"></script>
-  <script src="assets/js/i18n.js?v=20261004-0210"></script>
-  <script src="assets/js/content-data.js?v=20261004-0210"></script>
-  <script src="assets/js/auth.js?v=20261004-0210"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261004-0210"></script>
-  <script src="assets/js/live-session.js?v=20261004-0210"></script>
-  <script src="assets/js/results-dashboard.js?v=20261004-0210"></script>
-  <script src="assets/js/moderator-panel.js?v=20261004-0210"></script>
-  <script src="assets/js/app.js?v=20261004-0210"></script>
+  <script src="system-status.js?v=20261004-0230"></script>
+  <script src="assets/js/i18n.js?v=20261004-0230"></script>
+  <script src="assets/js/content-data.js?v=20261004-0230"></script>
+  <script src="assets/js/auth.js?v=20261004-0230"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261004-0230"></script>
+  <script src="assets/js/live-session.js?v=20261004-0230"></script>
+  <script src="assets/js/results-dashboard.js?v=20261004-0230"></script>
+  <script src="assets/js/moderator-panel.js?v=20261004-0230"></script>
+  <script src="assets/js/app.js?v=20261004-0230"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
