@@ -968,6 +968,20 @@ function initVideoSlider() {
     });
   }
 
+  // Inicialização das Facades de Vídeo do Carrossel (Slides 1 e 2)
+  document.querySelectorAll('.video-facade').forEach(facade => {
+    if (!facade.dataset.facadeInitialized) {
+      facade.dataset.facadeInitialized = "true";
+      facade.addEventListener('click', function() {
+        const videoId = this.getAttribute('data-video-id');
+        if (!videoId) return;
+        const iframeHtml = `<iframe class="absolute inset-0 w-full h-full rounded-lg" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        this.innerHTML = iframeHtml;
+        this.classList.remove('cursor-pointer', 'group');
+      });
+    }
+  });
+
   updateControls();
 }
 

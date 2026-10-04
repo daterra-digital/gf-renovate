@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0330">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0345">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261004-0330"></script>
+  <script src="system-status.js?v=20261004-0345"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -1206,12 +1206,60 @@
           <div id="video-slider-track" class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar rounded-2xl bg-slate-950 shadow-xl border border-slate-200">
             <!-- Slide 1 (Predefinido / Inicial): Vídeo RENOVATE 1 -->
             <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="0">
-              <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/nWiqYTdcrzk" title="Vídeo RENOVATE 1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <div class="relative w-full aspect-video rounded-lg overflow-hidden cursor-pointer group video-facade" data-video-id="nWiqYTdcrzk">
+                <!-- Imagem de Fundo -->
+                <img src="assets/images/gf1/renovate-video.png" alt="Vídeo RENOVATE" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                <!-- Gradiente de Escurecimento (Legibilidade) -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+                <!-- Badges Topo -->
+                <div class="absolute top-4 left-4 flex gap-2">
+                  <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">YouTube HD</span>
+                  <span class="bg-slate-900/80 backdrop-blur text-slate-100 text-[10px] font-medium px-2 py-1 rounded">Projeto RENOVATE</span>
+                </div>
+                <!-- Botão Play Central -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-16 h-12 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-red-600/30">
+                    <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+                <!-- Barra Inferior -->
+                <div class="absolute bottom-4 left-4 flex items-center gap-2 text-slate-200 text-[11px] font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                  <span>Clique para reproduzir em alta resolução</span>
+                </div>
+                <div class="absolute bottom-4 right-4 text-white font-bold text-[10px] bg-black/50 px-2 py-1 rounded">
+                  HD 1080p
+                </div>
+              </div>
             </div>
 
             <!-- Slide 2: Vídeo RENOVATE 2 -->
             <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="1">
-              <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/Vxj4jZUkYek" title="Vídeo RENOVATE 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <div class="relative w-full aspect-video rounded-lg overflow-hidden cursor-pointer group video-facade" data-video-id="Vxj4jZUkYek">
+                <!-- Imagem de Fundo -->
+                <img src="assets/images/gf1/renovate-synergy.png" alt="Vídeo RENOVATE Synergy Days" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                <!-- Gradiente de Escurecimento (Legibilidade) -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+                <!-- Badges Topo -->
+                <div class="absolute top-4 left-4 flex gap-2">
+                  <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">YouTube HD</span>
+                  <span class="bg-slate-900/80 backdrop-blur text-slate-100 text-[10px] font-medium px-2 py-1 rounded">RENOVATE Synergy Days</span>
+                </div>
+                <!-- Botão Play Central -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-16 h-12 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-red-600/30">
+                    <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+                <!-- Barra Inferior -->
+                <div class="absolute bottom-4 left-4 flex items-center gap-2 text-slate-200 text-[11px] font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                  <span>Clique para reproduzir em alta resolução</span>
+                </div>
+                <div class="absolute bottom-4 right-4 text-white font-bold text-[10px] bg-black/50 px-2 py-1 rounded">
+                  HD 1080p
+                </div>
+              </div>
             </div>
 
             <!-- Slide 3 (Espaço Reservado para Santarém): Vídeo Oficial do Grupo Focal 2 -->
@@ -2058,15 +2106,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261004-0330"></script>
-  <script src="assets/js/i18n.js?v=20261004-0330"></script>
-  <script src="assets/js/content-data.js?v=20261004-0330"></script>
-  <script src="assets/js/auth.js?v=20261004-0330"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261004-0330"></script>
-  <script src="assets/js/live-session.js?v=20261004-0330"></script>
-  <script src="assets/js/results-dashboard.js?v=20261004-0330"></script>
-  <script src="assets/js/moderator-panel.js?v=20261004-0330"></script>
-  <script src="assets/js/app.js?v=20261004-0330"></script>
+  <script src="system-status.js?v=20261004-0345"></script>
+  <script src="assets/js/i18n.js?v=20261004-0345"></script>
+  <script src="assets/js/content-data.js?v=20261004-0345"></script>
+  <script src="assets/js/auth.js?v=20261004-0345"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261004-0345"></script>
+  <script src="assets/js/live-session.js?v=20261004-0345"></script>
+  <script src="assets/js/results-dashboard.js?v=20261004-0345"></script>
+  <script src="assets/js/moderator-panel.js?v=20261004-0345"></script>
+  <script src="assets/js/app.js?v=20261004-0345"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
