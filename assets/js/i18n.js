@@ -234,10 +234,13 @@ window.I18nManager = (function () {
       "results.deliv.title": "Relatório de Análise de Expectativas de Formação e Resultados das Reuniões dos Grupos Focais",
       "results.deliv.abstract": "Relatório oficial que consolida as expectativas de 153 intervenientes do setor agrícola em 6 países europeus (PT, ES, FR, IT, BE, PL), estabelecendo as diretrizes técnicas e pedagógicas da plataforma RENOVATE, Serious Games e simuladores 3D.",
       "results.deliv.highlightsTitle": "Principais Conclusões & Diretrizes Extraídas",
+      // Galeria de Vídeos & Reportagem Audiovisual (Carrossel)
+      "results.videoSection.title": "Galeria de Vídeos & Reportagem Audiovisual",
+      "results.videoSection.desc": "Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS e sessões RENOVATE.",
       // Vídeo Oficial do Grupo Focal 2 (Santarém)
       "results.gf2video.title": "Vídeo Oficial do Grupo Focal 2 (Santarém)",
       "results.gf2video.desc": "Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.",
-      "results.gf2video.badge": "Em Produção • Brevemente",
+      "results.gf2video.badge": "Disponível Brevemente",
       "results.gf2video.boxTitle": "Vídeo do Grupo Focal 2 em Fase de Captação e Edição",
       "results.gf2video.boxText": "A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.",
       "results.gf2video.boxBadge": "Disponível após 06 de Outubro de 2026",
@@ -612,10 +615,13 @@ window.I18nManager = (function () {
       "results.deliv.title": "Reports on analysis of expectation for training and results of Focus Group meetings",
       "results.deliv.abstract": "Official report consolidating expectations from 153 agricultural stakeholders across 6 European countries (PT, ES, FR, IT, BE, PL), establishing the technical and pedagogical guidelines for the RENOVATE platform, Serious Games, and 3D simulators.",
       "results.deliv.highlightsTitle": "Key Conclusions & Extracted Guidelines",
+      // Video Gallery & Audiovisual Coverage (Carousel)
+      "results.videoSection.title": "Video Gallery & Audiovisual Coverage",
+      "results.videoSection.desc": "Official RENOVATE project videos, hands-on training demonstrations, and Focus Group 2 coverage at ESAS.",
       // Official Focus Group 2 Video (Santarém)
       "results.gf2video.title": "Official Video: Focus Group 2 (Santarém)",
       "results.gf2video.desc": "Audiovisual coverage, hands-on training dynamics and participant testimonials at ESAS.",
-      "results.gf2video.badge": "In Production • Coming Soon",
+      "results.gf2video.badge": "Available Soon",
       "results.gf2video.boxTitle": "Focus Group 2 Video in Recording & Editing Phase",
       "results.gf2video.boxText": "The official audiovisual report featuring Serious Game trials, 3D Simulator demonstrations, and participant interviews will be published here after the session concludes.",
       "results.gf2video.boxBadge": "Available after 06 October 2026",
@@ -909,6 +915,9 @@ window.I18nManager = (function () {
     }
     if (window.ModeratorPanel && typeof window.ModeratorPanel.updateSubmissionsGrid === "function") {
       window.ModeratorPanel.updateSubmissionsGrid();
+    }
+    if (typeof window.initVideoSlider === "function") {
+      window.initVideoSlider();
     }
 
     if (window.lucide) {

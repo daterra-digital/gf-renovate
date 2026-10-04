@@ -157,6 +157,15 @@ header {
   background: #64748B;
 }
 
+/* Utilitário para ocultar barra de scroll em carrosséis mantendo swipe nativo */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* 16:9 Aspect Ratio Container for Videos, Slides & Galleries */
 .aspect-16-9 {
   position: relative;

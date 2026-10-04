@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0300">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261004-0330">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261004-0300"></script>
+  <script src="system-status.js?v=20261004-0330"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -1170,78 +1170,112 @@
         </div>
       </div>
 
-      <!-- Secção de Vídeo Oficial do Grupo Focal 2 (Santarém) -->
+      <!-- Secção de Vídeos Oficiais & Multimédia RENOVATE (Carrossel Interativo) -->
       <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 data-i18n="results.gf2video.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <h3 data-i18n="results.videoSection.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
-              Vídeo Oficial do Grupo Focal 2 (Santarém)
+              Galeria de Vídeos & Reportagem Audiovisual
             </h3>
-            <p data-i18n="results.gf2video.desc" class="text-xs text-slate-500">
-              Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.
+            <p data-i18n="results.videoSection.desc" class="text-xs text-slate-500">
+              Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS e sessões RENOVATE.
             </p>
           </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300 shadow-2xs">
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span data-i18n="results.gf2video.badge">Em Produção • Brevemente</span>
-          </span>
-        </div>
-
-        <!-- Leitor 16:9 Estilizado para o Vídeo GF2 (Design Cinematográfico em Alta Resolução) -->
-        <div id="gf2-video-player-container" class="aspect-16-9 bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-200 relative group">
-          <!-- Fundo Gradiente Cinematográfico Escuro -->
-          <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-amber-950/70"></div>
-          
-          <!-- Malha Tecnológica Subtil Audiovisual -->
-          <div class="absolute inset-0 opacity-15 pointer-events-none" 
-               style="background-image: radial-gradient(rgba(255, 204, 102, 0.4) 1px, transparent 1px); background-size: 24px 24px;"></div>
-
-          <!-- Badges Informativos no Topo -->
-          <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2 z-10">
-            <span class="inline-flex items-center gap-1.5 bg-red-600/90 text-white text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
-              <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
-              YouTube HD • GF2
-            </span>
-            <span class="bg-slate-900/85 backdrop-blur-sm text-slate-200 text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 hidden sm:inline-block">
-              2ª Sessão Santarém • ESAS & Consórcio RENOVATE
-            </span>
-          </div>
-
-          <!-- Conteúdo Central: Em Produção / Brevemente -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 text-center z-10 space-y-3">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-2xl ring-4 ring-amber-400/30 group-hover:scale-105 transition-transform duration-300">
-              <i data-lucide="video" class="w-8 h-8 sm:w-10 sm:h-10"></i>
-            </div>
-
-            <div class="max-w-lg space-y-1.5 px-2">
-              <h4 data-i18n="results.gf2video.boxTitle" class="text-white text-base sm:text-lg font-extrabold tracking-tight drop-shadow-sm">
-                Vídeo do Grupo Focal 2 em Fase de Captação e Edição
-              </h4>
-              <p data-i18n="results.gf2video.boxText" class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
-                A reportagem audiovisual oficial com as demonstrações do Serious Game, Simulador 3D e entrevistas aos participantes será publicada aqui após a conclusão dos trabalhos.
-              </p>
-            </div>
-
-            <div class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm px-3.5 py-1.5 rounded-lg border border-white/15 text-white text-xs font-semibold transition">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-              <span data-i18n="results.gf2video.boxBadge">Disponível após 06 de Outubro de 2026</span>
-            </div>
-          </div>
-
-          <!-- Badges de Rodapé do Player -->
-          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs z-10">
-            <span class="bg-slate-900/85 backdrop-blur-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 border border-white/10 shadow text-[11px] sm:text-xs">
-              <i data-lucide="film" class="w-3.5 h-3.5 text-amber-400"></i>
-              <span data-i18n="results.gf2video.footer">Reportagem Audiovisual DATERRA & RENOVATE</span>
-            </span>
-            <span class="bg-black/75 px-2.5 py-1 rounded-md font-mono text-[11px] font-bold">
-              Full HD 1080p
+          <div class="flex items-center gap-2">
+            <span id="video-slider-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-300 shadow-2xs">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span id="video-slider-badge-text">Vídeo 1 de 3: RENOVATE 1</span>
             </span>
           </div>
         </div>
 
-        <p data-i18n="results.gf2video.caption" class="text-[11px] text-slate-500 italic">
+        <!-- Contentor Principal do Carrossel (Slider) com Navegação Lateral -->
+        <div class="relative group/slider w-full">
+          <!-- Botão de Navegação Esquerda (<<) -->
+          <button type="button" id="slider-btn-prev" aria-label="Vídeo anterior" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white flex items-center justify-center shadow-xl backdrop-blur-xs border border-white/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+            <i data-lucide="chevron-left" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+          </button>
+
+          <!-- Botão de Navegação Direita (>>) -->
+          <button type="button" id="slider-btn-next" aria-label="Próximo vídeo" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white flex items-center justify-center shadow-xl backdrop-blur-xs border border-white/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+            <i data-lucide="chevron-right" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+          </button>
+
+          <!-- Slider Track -->
+          <div id="video-slider-track" class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar rounded-2xl bg-slate-950 shadow-xl border border-slate-200">
+            <!-- Slide 1 (Predefinido / Inicial): Vídeo RENOVATE 1 -->
+            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="0">
+              <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/nWiqYTdcrzk" title="Vídeo RENOVATE 1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <!-- Slide 2: Vídeo RENOVATE 2 -->
+            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="1">
+              <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/Vxj4jZUkYek" title="Vídeo RENOVATE 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <!-- Slide 3 (Espaço Reservado para Santarém): Vídeo Oficial do Grupo Focal 2 -->
+            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="2">
+              <div class="w-full aspect-video rounded-lg overflow-hidden relative bg-slate-900 border border-slate-800 flex flex-col items-center justify-center p-4 sm:p-8 text-center">
+                <!-- Fundo Gradiente Cinematográfico Escuro -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-amber-950/70"></div>
+                <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: radial-gradient(rgba(255, 204, 102, 0.4) 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+                <!-- Badges Informativos no Topo -->
+                <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2 z-10">
+                  <span class="inline-flex items-center gap-1.5 bg-red-600/90 text-white text-[10px] sm:text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
+                    <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
+                    YouTube HD • GF2
+                  </span>
+                  <span class="bg-slate-900/85 backdrop-blur-sm text-slate-200 text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 hidden sm:inline-block">
+                    2ª Sessão Santarém • ESAS & Consórcio RENOVATE
+                  </span>
+                </div>
+
+                <!-- Conteúdo Central: Em Produção / Brevemente -->
+                <div class="relative z-10 flex flex-col items-center justify-center space-y-2 sm:space-y-3 max-w-lg px-4">
+                  <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-xl ring-4 ring-amber-400/30">
+                    <i data-lucide="video" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                  </div>
+
+                  <div class="space-y-1">
+                    <h4 data-i18n="results.gf2video.title" class="text-white text-sm sm:text-lg font-extrabold tracking-tight drop-shadow-sm">
+                      Vídeo Oficial do Grupo Focal 2 (Santarém)
+                    </h4>
+                    <p data-i18n="results.gf2video.desc" class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-md mx-auto line-clamp-2 sm:line-clamp-none">
+                      Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.
+                    </p>
+                  </div>
+
+                  <div class="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-amber-300 text-[11px] sm:text-xs font-semibold">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span data-i18n="results.gf2video.badge">Disponível Brevemente</span>
+                  </div>
+                </div>
+
+                <!-- Badges de Rodapé do Player -->
+                <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs z-10">
+                  <span class="bg-slate-900/85 backdrop-blur-sm px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5 border border-white/10 shadow text-[10px] sm:text-xs">
+                    <i data-lucide="film" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span data-i18n="results.gf2video.footer">Reportagem Audiovisual DATERRA & RENOVATE</span>
+                  </span>
+                  <span class="bg-black/75 px-2 py-0.5 rounded font-mono text-[10px] sm:text-[11px] font-bold">
+                    Full HD 1080p
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicadores de Paginação / Dots do Carrossel -->
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button type="button" class="video-slider-dot h-2.5 rounded-full bg-amber-500 w-6 transition-all cursor-pointer" data-slide="0" aria-label="Slide 1: RENOVATE 1"></button>
+          <button type="button" class="video-slider-dot h-2.5 rounded-full bg-slate-300 w-2.5 hover:bg-slate-400 transition-all cursor-pointer" data-slide="1" aria-label="Slide 2: RENOVATE 2"></button>
+          <button type="button" class="video-slider-dot h-2.5 rounded-full bg-slate-300 w-2.5 hover:bg-slate-400 transition-all cursor-pointer" data-slide="2" aria-label="Slide 3: Santarém"></button>
+        </div>
+
+        <p data-i18n="results.gf2video.caption" class="text-[11px] text-slate-500 italic text-center">
           A cobertura audiovisual integra o Entregável 1.3 do projeto RENOVATE e servirá de suporte à disseminação das ferramentas digitais a nível europeu.
         </p>
       </div>
@@ -2024,15 +2058,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261004-0300"></script>
-  <script src="assets/js/i18n.js?v=20261004-0300"></script>
-  <script src="assets/js/content-data.js?v=20261004-0300"></script>
-  <script src="assets/js/auth.js?v=20261004-0300"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261004-0300"></script>
-  <script src="assets/js/live-session.js?v=20261004-0300"></script>
-  <script src="assets/js/results-dashboard.js?v=20261004-0300"></script>
-  <script src="assets/js/moderator-panel.js?v=20261004-0300"></script>
-  <script src="assets/js/app.js?v=20261004-0300"></script>
+  <script src="system-status.js?v=20261004-0330"></script>
+  <script src="assets/js/i18n.js?v=20261004-0330"></script>
+  <script src="assets/js/content-data.js?v=20261004-0330"></script>
+  <script src="assets/js/auth.js?v=20261004-0330"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261004-0330"></script>
+  <script src="assets/js/live-session.js?v=20261004-0330"></script>
+  <script src="assets/js/results-dashboard.js?v=20261004-0330"></script>
+  <script src="assets/js/moderator-panel.js?v=20261004-0330"></script>
+  <script src="assets/js/app.js?v=20261004-0330"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

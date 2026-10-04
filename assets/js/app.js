@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderGF1();
   renderResultsAndMedia();
   renderPartners();
+  initVideoSlider();
 
   // Injetar código nos links dinâmicos do programa
   if (window.AuthModule) {
@@ -118,8 +119,11 @@ function initTabNavigation() {
     });
 
     // Redimensionar e atualizar gráficos se a tab selecionada for 'results'
-    if (targetTab === "results" && window.ResultsDashboard) {
-      ResultsDashboard.onTabShown();
+    if (targetTab === "results") {
+      if (window.ResultsDashboard) {
+        ResultsDashboard.onTabShown();
+      }
+      initVideoSlider();
     }
 
     // Garantir renderização imediata do GF1 ao abrir a aba
@@ -861,6 +865,110 @@ function renderResultsAndMedia() {
   }).join("");
 
   if (window.lucide) window.lucide.createIcons();
+  initVideoSlider();
+}
+
+/**
+ * Inicialização e Controlo do Carrossel de Vídeos (Media Slider)
+ * 3 Slides: 1. Vídeo RENOVATE 1, 2. Vídeo RENOVATE 2, 3. Vídeo Oficial Santarém (Placeholder)
+ */
+function initVideoSlider() {
+  const slider = document.getElementById("video-slider-track");
+  const prevBtn = document.getElementById("slider-btn-prev");
+  const nextBtn = document.getElementById("slider-btn-next");
+  const badgeText = document.getElementById("video-slider-badge-text");
+  const dots = document.querySelectorAll(".video-slider-dot");
+  if (!slider) return;
+
+  function updateControls() {
+    const scrollLeft = slider.scrollLeft;
+    const maxScroll = Math.max(0, slider.scrollWidth - slider.clientWidth);
+    const width = slider.clientWidth || slider.offsetWidth || 1;
+    const currentIndex = Math.min(2, Math.max(0, Math.round(scrollLeft / width)));
+
+    // Atualizar botões de navegação
+    if (prevBtn) {
+      if (scrollLeft <= 10) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add("opacity-30", "pointer-events-none");
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove("opacity-30", "pointer-events-none");
+      }
+    }
+
+    if (nextBtn) {
+      if (scrollLeft >= maxScroll - 10) {
+        nextBtn.disabled = true;
+        nextBtn.classList.add("opacity-30", "pointer-events-none");
+      } else {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove("opacity-30", "pointer-events-none");
+      }
+    }
+
+    // Atualizar badge indicador
+    if (badgeText) {
+      const isEn = window.I18nManager && typeof window.I18nManager.isEnglish === "function" && window.I18nManager.isEnglish();
+      const labels = isEn
+        ? ["Video 1 of 3: RENOVATE 1", "Video 2 of 3: RENOVATE 2", "Video 3 of 3: Santarém (Coming Soon)"]
+        : ["Vídeo 1 de 3: RENOVATE 1", "Vídeo 2 de 3: RENOVATE 2", "Vídeo 3 de 3: Santarém (Brevemente)"];
+      badgeText.textContent = labels[currentIndex] || `${isEn ? "Video" : "Vídeo"} ${currentIndex + 1} / 3`;
+    }
+
+    // Atualizar dots
+    dots.forEach((dot, idx) => {
+      if (idx === currentIndex) {
+        dot.classList.remove("bg-slate-300", "w-2.5");
+        dot.classList.add("bg-amber-500", "w-6");
+      } else {
+        dot.classList.remove("bg-amber-500", "w-6");
+        dot.classList.add("bg-slate-300", "w-2.5");
+      }
+    });
+  }
+
+  if (!slider.dataset.sliderInitialized) {
+    slider.dataset.sliderInitialized = "true";
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        const width = slider.clientWidth || slider.offsetWidth;
+        slider.scrollBy({ left: -width, behavior: "smooth" });
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const width = slider.clientWidth || slider.offsetWidth;
+        slider.scrollBy({ left: width, behavior: "smooth" });
+      });
+    }
+
+    dots.forEach((dot, idx) => {
+      dot.addEventListener("click", () => {
+        const width = slider.clientWidth || slider.offsetWidth;
+        slider.scrollTo({ left: idx * width, behavior: "smooth" });
+      });
+    });
+
+    let ticking = false;
+    slider.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateControls();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener("resize", () => {
+      updateControls();
+    });
+  }
+
+  updateControls();
 }
 
 /**
@@ -1179,4 +1287,5 @@ window.renderSchedule = renderSchedule;
 window.renderGF1 = renderGF1;
 window.renderResultsAndMedia = renderResultsAndMedia;
 window.renderPartners = renderPartners;
+window.initVideoSlider = initVideoSlider;
 window.showToast = showToast;
