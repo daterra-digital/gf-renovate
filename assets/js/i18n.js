@@ -382,7 +382,13 @@ window.I18nManager = (function () {
       "mod.qrReconnectNotice": "Se fechou o browser no smartphone/PC ou perdeu a ligação, leia este código ou aceda ao link para regressar à Sessão ao Vivo.",
       "mod.qrCopyLink": "Copiar Link",
       "mod.qrFullscreen": "Ecrã Inteiro",
-      "mod.qrClose": "Fechar Projeção"
+      "mod.qrClose": "Fechar Projeção",
+      "mod.submissionsGridTitle": "Quadro de Monitorização de Submissões em Tempo Real",
+      "mod.submissionsGridDesc": "Luzes verdes e vermelhas indicando a submissão dos 3 formulários por cada participante.",
+      "mod.legendSubmitted": "Submetido",
+      "mod.legendPending": "Por submeter",
+      "mod.accordionFgTitle": "Submissão Questionários Grupo Focal",
+      "mod.accordionNsTitle": "Submissão Questionários Remoto"
     },
 
     "en-GB": {
@@ -754,7 +760,13 @@ window.I18nManager = (function () {
       "mod.qrReconnectNotice": "If your phone or PC browser closed or you lost connection, scan this code or access the link to return to the Live Session.",
       "mod.qrCopyLink": "Copy Link",
       "mod.qrFullscreen": "Fullscreen",
-      "mod.qrClose": "Close Projection"
+      "mod.qrClose": "Close Projection",
+      "mod.submissionsGridTitle": "Real-Time Submissions Monitoring Board",
+      "mod.submissionsGridDesc": "Green and red lights indicating submission status of the 3 forms for each participant.",
+      "mod.legendSubmitted": "Submitted",
+      "mod.legendPending": "Pending submission",
+      "mod.accordionFgTitle": "Focus Group Questionnaires Submission",
+      "mod.accordionNsTitle": "Remote Questionnaires Submission"
     }
   };
 
@@ -894,6 +906,9 @@ window.I18nManager = (function () {
       if (typeof window.AuthModule.syncUIWithPhase === "function") window.AuthModule.syncUIWithPhase();
       if (typeof window.AuthModule.syncUIWithStatus === "function") window.AuthModule.syncUIWithStatus();
       if (typeof window.AuthModule.renderHeaderUserBadge === "function") window.AuthModule.renderHeaderUserBadge();
+    }
+    if (window.ModeratorPanel && typeof window.ModeratorPanel.updateSubmissionsGrid === "function") {
+      window.ModeratorPanel.updateSubmissionsGrid();
     }
 
     if (window.lucide) {

@@ -194,6 +194,9 @@ window.ModeratorPanel = (function () {
       pane.classList.add("animate-fadeIn");
     }
 
+    renderSubmissionsGrid();
+    updateSubmissionsGrid();
+
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -304,6 +307,154 @@ window.ModeratorPanel = (function () {
 
     if (window.lucide) {
       window.lucide.createIcons();
+    }
+  }
+
+  /* ==========================================================================
+     MÓDULO 2.5: QUADRO DE MONITORIZAÇÃO VISUAL DE SUBMISSÕES (TEMPO REAL)
+     ========================================================================== */
+
+  /**
+   * Renderiza a estrutura da grelha de participantes para Grupo Focal (50) e Remoto (50)
+   */
+  function renderSubmissionsGrid() {
+    const fgContainer = document.getElementById("grid-submissions-fg");
+    const nsContainer = document.getElementById("grid-submissions-ns");
+
+    if (fgContainer && fgContainer.children.length === 0) {
+      const fgCards = [];
+      for (let i = 1; i <= 50; i++) {
+        const num = String(i).padStart(2, "0");
+        const code = `FG2-PT${num}`;
+        fgCards.push(`
+          <div class="mod-participant-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-slate-300 transition" data-code="${code}">
+            <span class="font-mono text-xs font-bold text-slate-800 tracking-tight">${code}</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="mod-ind-1 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 1: Serious Game">1</span>
+              <span class="mod-ind-2 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 2: Simulador">2</span>
+              <span class="mod-ind-3 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 3: Avaliação Global">3</span>
+            </div>
+          </div>
+        `);
+      }
+      fgContainer.innerHTML = fgCards.join("");
+    }
+
+    if (nsContainer && nsContainer.children.length === 0) {
+      const nsCards = [];
+      for (let i = 1; i <= 50; i++) {
+        const num = String(i).padStart(2, "0");
+        const code = `NS-PT${num}`;
+        nsCards.push(`
+          <div class="mod-participant-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-slate-300 transition" data-code="${code}">
+            <span class="font-mono text-xs font-bold text-slate-800 tracking-tight">${code}</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="mod-ind-1 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 1: Serious Game">1</span>
+              <span class="mod-ind-2 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 2: Simulador">2</span>
+              <span class="mod-ind-3 w-5 h-5 text-[10px] flex items-center justify-center rounded font-bold bg-red-500 text-white shadow-2xs transition-colors" title="Form 3: Avaliação Global">3</span>
+            </div>
+          </div>
+        `);
+      }
+      nsContainer.innerHTML = nsCards.join("");
+    }
+  }
+
+  /**
+   * Atualiza as luzes verdes/vermelhas de submissão para todos os participantes em tempo real
+   */
+  function updateSubmissionsGrid() {
+    const fgContainer = document.getElementById("grid-submissions-fg");
+    const nsContainer = document.getElementById("grid-submissions-ns");
+    if (!fgContainer || !nsContainer) return;
+
+    if (fgContainer.children.length === 0 || nsContainer.children.length === 0) {
+      renderSubmissionsGrid();
+    }
+
+    const isEn = window.I18nManager && typeof window.I18nManager.isEnglish === "function" && window.I18nManager.isEnglish();
+    const tracker = window.SubmissionsTracker;
+
+    function applyIndicatorState(el, isDone) {
+      if (!el) return;
+      if (isDone) {
+        el.classList.remove("bg-red-500");
+        el.classList.add("bg-emerald-500");
+      } else {
+        el.classList.remove("bg-emerald-500");
+        el.classList.add("bg-red-500");
+      }
+    }
+
+    // Processar Grupo Focal (FG)
+    let fgCompleted = 0;
+    const fgCards = fgContainer.querySelectorAll(".mod-participant-card");
+    fgCards.forEach(card => {
+      const code = card.getAttribute("data-code");
+      if (!code) return;
+
+      const f1 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(1, code) : false;
+      const f2 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(2, code) : false;
+      const f3 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(3, code) : false;
+
+      applyIndicatorState(card.querySelector(".mod-ind-1"), f1);
+      applyIndicatorState(card.querySelector(".mod-ind-2"), f2);
+      applyIndicatorState(card.querySelector(".mod-ind-3"), f3);
+
+      if (f1 && f2 && f3) {
+        fgCompleted++;
+        card.classList.add("bg-emerald-50/50", "border-emerald-300");
+        card.classList.remove("bg-slate-50", "border-slate-200");
+      } else {
+        card.classList.remove("bg-emerald-50/50", "border-emerald-300");
+        card.classList.add("bg-slate-50", "border-slate-200");
+      }
+    });
+
+    // Processar Remoto (NS)
+    let nsCompleted = 0;
+    const nsCards = nsContainer.querySelectorAll(".mod-participant-card");
+    nsCards.forEach(card => {
+      const code = card.getAttribute("data-code");
+      if (!code) return;
+
+      const f1 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(1, code) : false;
+      const f2 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(2, code) : false;
+      const f3 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(3, code) : false;
+
+      applyIndicatorState(card.querySelector(".mod-ind-1"), f1);
+      applyIndicatorState(card.querySelector(".mod-ind-2"), f2);
+      applyIndicatorState(card.querySelector(".mod-ind-3"), f3);
+
+      if (f1 && f2 && f3) {
+        nsCompleted++;
+        card.classList.add("bg-emerald-50/50", "border-emerald-300");
+        card.classList.remove("bg-slate-50", "border-slate-200");
+      } else {
+        card.classList.remove("bg-emerald-50/50", "border-emerald-300");
+        card.classList.add("bg-slate-50", "border-slate-200");
+      }
+    });
+
+    // Atualizar badges de progresso nos summaries dos acordeões
+    const fgBadge = document.getElementById("mod-fg-progress-badge");
+    if (fgBadge) {
+      fgBadge.textContent = `${fgCompleted}/50 ${isEn ? "completed" : "completos"}`;
+      if (fgCompleted > 0) {
+        fgBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs";
+      } else {
+        fgBadge.className = "text-[11px] font-bold text-slate-600";
+      }
+    }
+
+    const nsBadge = document.getElementById("mod-ns-progress-badge");
+    if (nsBadge) {
+      nsBadge.textContent = `${nsCompleted}/50 ${isEn ? "completed" : "completos"}`;
+      if (nsCompleted > 0) {
+        nsBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs";
+      } else {
+        nsBadge.className = "text-[11px] font-bold text-slate-600";
+      }
     }
   }
 
@@ -597,6 +748,8 @@ window.ModeratorPanel = (function () {
   function renderAllModeratorControls() {
     renderAccessControls();
     loadTotalTarget();
+    renderSubmissionsGrid();
+    updateSubmissionsGrid();
   }
 
   function initEvents() {
@@ -867,6 +1020,8 @@ window.ModeratorPanel = (function () {
     closeQrProjection,
     fetchSubmissionsCount,
     setTotalTarget,
-    isModeratorAuthenticated
+    isModeratorAuthenticated,
+    renderSubmissionsGrid,
+    updateSubmissionsGrid
   };
 })();

@@ -908,6 +908,15 @@ window.SubmissionsTracker = (function () {
       if (window.LiveSession && typeof window.LiveSession.evaluateStepConditions === "function") {
         window.LiveSession.evaluateStepConditions();
       }
+
+      // 6. Atualizar grelha de monitorização visual de submissões no Painel de Moderação
+      if (window.ModeratorPanel && typeof window.ModeratorPanel.updateSubmissionsGrid === "function") {
+        try {
+          window.ModeratorPanel.updateSubmissionsGrid();
+        } catch (gridErr) {
+          console.warn("Aviso ao sincronizar grelha de submissões com ModeratorPanel:", gridErr);
+        }
+      }
     } finally {
       isUpdatingCounters = false;
     }
