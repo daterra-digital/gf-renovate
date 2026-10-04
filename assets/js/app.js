@@ -474,39 +474,23 @@ function renderSchedule() {
         </div>
       `;
     } else if (item.type === "break") {
-      embeddedContent = `
-        <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-200 flex items-center gap-3 text-xs text-amber-900">
-          <div class="w-9 h-9 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
-            <i data-lucide="coffee" class="w-5 h-5"></i>
-          </div>
-          <p>${isEn ? "Coffee break, rest, and informal networking hosted by DATERRA for all invited participants in the ESAS reception area." : "Momento de pausa técnica, café e convívio informal oferecido pela DATERRA a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
-        </div>
-      `;
+      embeddedContent = "";
     } else if (item.type === "lunch") {
-      embeddedContent = `
-        <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 flex items-center gap-3 text-xs text-emerald-900">
-          <div class="w-9 h-9 rounded-full bg-emerald-200 text-emerald-900 flex items-center justify-center shrink-0">
-            <i data-lucide="utensils" class="w-5 h-5"></i>
-          </div>
-          <p>${isEn ? "Standing buffet lunch hosted by DATERRA for all invited participants of the 2nd Focus Group session." : "Almoço volante de networking oferecido pela DATERRA a todos os participantes convidados da 2ª sessão do Grupo Focal."}</p>
-        </div>
-      `;
+      embeddedContent = "";
     } else if (item.type === "discussion") {
       embeddedContent = `
         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
           <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
             <i data-lucide="line-chart" class="w-4 h-4 text-amber-600"></i>
-            ${isEn ? "Auditorium Discussion Topics" : "Tópicos de Debate em Auditório"}
+            ${isEn ? "Discussion Topics" : "Tópicos de Debate"}
           </div>
           <ul class="text-xs text-slate-600 space-y-1 list-disc list-inside">
             ${isEn ? `
-              <li>Projection and reflection on submitted questionnaire responses.</li>
-              <li>Barriers identified in using digital tools within real-world farm contexts.</li>
-              <li>Practical recommendations for the international RENOVATE consortium.</li>
+              <li>Joint projection and reflection on the responses submitted in the questionnaires.</li>
+              <li>Advantages of interactive learning versus barriers to using the tools in real farming conditions.</li>
             ` : `
-              <li>Projeção e reflexão sobre as respostas submetidas nos questionários.</li>
-              <li>Barreiras identificadas na utilização das ferramentas em contexto real de exploração.</li>
-              <li>Sugestões práticas de melhoria para o consórcio internacional RENOVATE.</li>
+              <li>Projeção e reflexão conjunta sobre as respostas submetidas nos questionários.</li>
+              <li>Vantagens da aprendizagem interativa face às barreiras de utilização das ferramentas em condições reais.</li>
             `}
           </ul>
         </div>
@@ -519,7 +503,7 @@ function renderSchedule() {
             ${isEn ? "Closing of Proceedings & Access to Reports" : "Encerramento dos Trabalhos & Acesso a Relatórios"}
           </div>
           <p class="text-xs text-slate-600">
-            ${isEn ? "Thank you to all participants for active contribution. Consolidated findings will be integrated into Project Deliverable 1.4." : "Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Entregável 1.4 do projeto."}
+            ${isEn ? "Thank you to all participants for their active contribution. Consolidated results will be integrated into Project Deliverable 1.3." : "Agradecimento a todos os participantes pela contribuição ativa. Os resultados consolidados serão integrados no Entregável 1.3 do projeto."}
           </p>
         </div>
       `;
@@ -528,6 +512,11 @@ function renderSchedule() {
     const isOpen = (item.id === savedOpenSlot) ? "open" : "";
     const lockedClasses = "hover:border-[#F5B842]";
     const lockedSummaryClasses = "hover:bg-slate-50 cursor-pointer";
+    const defaultSpeakerLabel = isEn ? "Speakers" : "Intervenientes";
+    const speakerLabelText = isEn
+      ? (item.speakerLabelEn || defaultSpeakerLabel)
+      : (item.speakerLabel || defaultSpeakerLabel);
+    const speakerIcon = item.speakerIcon || "user";
 
     return `
       <details id="${item.id}-details" class="schedule-accordion accordion-step-${item.step || ''} group bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm transition-all ${lockedClasses}" ${isOpen}>
@@ -563,13 +552,11 @@ function renderSchedule() {
         <div class="px-4 sm:px-6 pb-5 pt-3 border-t border-slate-100 space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
             <span class="font-medium text-amber-800 flex items-center gap-1.5">
-              <i data-lucide="user" class="w-3.5 h-3.5"></i>
-              <strong>${isEn ? "Speakers:" : "Intervenientes:"}</strong> ${itemSpeaker}
+              <i data-lucide="${speakerIcon}" class="w-3.5 h-3.5"></i>
+              <strong>${speakerLabelText}:</strong> ${itemSpeaker}
             </span>
           </div>
-          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            ${itemDesc}
-          </p>
+          ${itemDesc ? `<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${itemDesc}</p>` : ''}
           ${embeddedContent}
         </div>
       </details>
