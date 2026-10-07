@@ -324,6 +324,93 @@ window.AuthModule = (function () {
   }
 
   /**
+   * Regista o login oficial no Google Sheets (Google Apps Script API) e na Firebase Realtime Database (/Logins)
+   * Suporta códigos de participantes presenciais (FG2-PT), remotos (NS-PT) e moderador especial (MODERATOR).
+   */
+  function registerLoginRemote(participantCode, role = "participant") {
+    if (!participantCode) return;
+    const cleanCode = String(participantCode).trim().toUpperCase();
+    const timestamp = new Date().toISOString();
+
+    const record = {
+      "Carimbo de datahora": timestamp,
+      "Código do Participante": cleanCode
+    };
+
+    // 1. Firebase Realtime Database (/Logins)
+    try {
+      const firebaseUrl = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.firebaseUrl)
+        || window.RENOVATE_FIREBASE_URL
+        || "https://renovate-fg2-default-rtdb.europe-west1.firebasedatabase.app";
+
+      let sdkUsed = false;
+      if (typeof firebase !== "undefined" && firebase.database) {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp({ databaseURL: firebaseUrl });
+          }
+          firebase.database().ref("/Logins").push(record)
+            .then(() => {
+              console.info(`🔥 Firebase Realtime Database: Login registado com sucesso [${cleanCode}]`);
+            })
+            .catch(err => {
+              console.warn("Aviso ao registar login via Firebase SDK, a tentar REST fallback:", err);
+              fetch(`${firebaseUrl}/Logins.json`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(record)
+              }).catch(() => {});
+            });
+          sdkUsed = true;
+        } catch (e) {
+          console.warn("Aviso ao inicializar Firebase SDK para login:", e);
+        }
+      }
+
+      if (!sdkUsed) {
+        fetch(`${firebaseUrl}/Logins.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(record)
+        }).then(res => {
+          if (res.ok) {
+            console.info(`🔥 Firebase REST: Login gravado em /Logins [${cleanCode}]`);
+          }
+        }).catch(err => console.warn("Aviso ao registar login via Firebase REST:", err));
+      }
+    } catch (fbErr) {
+      console.warn("Aviso ao registar login no Firebase:", fbErr);
+    }
+
+    // 2. Google Sheets via Google Apps Script API
+    try {
+      const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
+        || "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
+      const loginPayload = JSON.stringify({
+        code: cleanCode,
+        participantCode: cleanCode,
+        timestamp: timestamp,
+        role: role
+      });
+
+      fetch(loginEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: loginPayload
+      }).catch(() => {
+        fetch(loginEndpoint, {
+          method: "POST",
+          mode: "no-cors",
+          body: loginPayload
+        }).catch(err => console.warn("Aviso ao registar login no Google Apps Script:", err));
+      });
+      console.info(`📊 Google Sheets: Registo de login enviado [${cleanCode}]`);
+    } catch (gasErr) {
+      console.warn("Aviso ao disparar registo de login no Google Apps Script:", gasErr);
+    }
+  }
+
+  /**
    * Executa a autenticação e login na Área Reservada
    */
   function login(code, key, consent) {
@@ -389,9 +476,11 @@ window.AuthModule = (function () {
       };
     }
 
-    // Validar se o código pertence à fase ativa ou se é código de moderação
+    // Validar se o código pertence aos códigos presenciais (FG2-PT), remotos (NS-PT) ou moderação
     const phase = getEffectivePhase();
-    const validCodes = phase === "phase2" ? REMOTE_CODES : PRESENTIAL_CODES;
+    const isPresentialCode = PRESENTIAL_CODES.includes(cleanCode);
+    const isRemoteCode = REMOTE_CODES.includes(cleanCode);
+    const isValidParticipantCode = isPresentialCode || isRemoteCode;
 
     let userRole = "participant";
     let finalCode = cleanCode;
@@ -413,16 +502,12 @@ window.AuthModule = (function () {
         ? "ADMIN-FG2"
         : (cleanCode.endsWith("-MD") ? cleanCode : `${cleanCode}-MD`);
     } else {
-      if (!validCodes.includes(cleanCode)) {
+      if (!isValidParticipantCode) {
         return {
           success: false,
-          error: phase === "phase2"
-            ? (isEn 
-                ? "In-person codes (FG2-PT) are closed for new logins. Please enter an assigned remote code (NS-PT)." 
-                : "Os códigos presenciais (FG2-PT) estão encerrados para novos registos. Introduza o seu código remoto (NS-PT).")
-            : (isEn 
-                ? "Please enter a valid in-person code (FG2-PT01 to FG2-PT50)." 
-                : "Por favor introduza um código presencial válido (FG2-PT01 a FG2-PT50).")
+          error: isEn
+            ? "Please enter a valid participant code (FG2-PT01 to FG2-PT50 or NS-PT01 to NS-PT50)."
+            : "Por favor introduza um código de participante válido (FG2-PT01 a FG2-PT50 ou NS-PT01 a NS-PT50)."
         };
       }
 
@@ -465,10 +550,11 @@ window.AuthModule = (function () {
 
     // Gravação segura no localStorage
     try {
+      const sessionPhase = isRemoteCode ? "phase2" : (isPresentialCode ? "phase1" : phase);
       localStorage.setItem(STORAGE_KEYS.SESSION_ACTIVE, "true");
       localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, finalCode);
       localStorage.setItem(STORAGE_KEYS.USER_ROLE, userRole);
-      localStorage.setItem(STORAGE_KEYS.SESSION_PHASE, phase);
+      localStorage.setItem(STORAGE_KEYS.SESSION_PHASE, sessionPhase);
       localStorage.setItem(STORAGE_KEYS.CONSENT_TIMESTAMP, new Date().toISOString());
       if (userRole === "moderator") {
         sessionStorage.setItem("renovate_mod_authenticated", "true");
@@ -477,29 +563,9 @@ window.AuthModule = (function () {
       console.error("Erro ao gravar sessão no localStorage:", e);
     }
 
-    // Registo oficial de sessão via POST na API Google Apps Script (Alimenta separador Logins e Amostra Total - omitido para utilizador confidencial)
-    if (!isSpecialModCode) {
-      try {
-        const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
-          || "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
-        const loginPayload = JSON.stringify({ code: finalCode });
-
-        // Disparo em background com tolerância a CORS / 302 redirects do Google Apps Script
-        fetch(loginEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: loginPayload
-        }).catch(() => {
-          fetch(loginEndpoint, {
-            method: "POST",
-            mode: "no-cors",
-            body: loginPayload
-          }).catch(err => console.warn("Aviso ao registar login no Google Apps Script:", err));
-        });
-      } catch (gasErr) {
-        console.warn("Aviso ao disparar registo de login:", gasErr);
-      }
-    }
+    // Registo oficial de login em simultâneo na Firebase Realtime Database (/Logins) e Google Sheets
+    // Inclui códigos de participantes presenciais (FG2-PT), remotos (NS-PT) e moderador especial (MODERATOR)
+    registerLoginRemote(finalCode, userRole);
 
     // Marcar código como ativo em uso (omitido para moderador confidencial para permitir partilha entre múltiplos parceiros)
     if (!isSpecialModCode && !isAdminCode) {
@@ -1439,6 +1505,7 @@ window.AuthModule = (function () {
     syncUIWithPhase,
     syncUIWithStatus,
     renderHeaderUserBadge,
+    registerLoginRemote,
     PRESENTIAL_CODES,
     REMOTE_CODES,
     DEFAULT_KEYS,
