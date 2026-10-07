@@ -54,7 +54,7 @@ window.SubmissionsTracker = (function () {
           parsed.forEach(code => {
             if (code && typeof code === "string") {
               const clean = code.trim().toUpperCase();
-              if (!clean.endsWith("-MD") && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
+              if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
                 state.registeredCodes.add(clean);
               }
             }
@@ -67,7 +67,7 @@ window.SubmissionsTracker = (function () {
         const currentCode = window.AuthModule.getParticipantCode();
         if (currentCode) {
           const clean = currentCode.trim().toUpperCase();
-          if (!clean.endsWith("-MD") && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
+          if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
             state.registeredCodes.add(clean);
           }
         }
@@ -97,7 +97,8 @@ window.SubmissionsTracker = (function () {
   function registerParticipantCode(rawCode) {
     if (!rawCode || typeof rawCode !== "string") return;
     const cleanCode = rawCode.trim().toUpperCase();
-    if (!cleanCode || cleanCode.endsWith("-MD")) return;
+    if (!cleanCode || cleanCode.endsWith("-MD") || cleanCode === "ADMIN" || cleanCode === "ADMIN-FG2" || cleanCode === "MODERATOR") return;
+    if (!/^FG2-PT\d+$/i.test(cleanCode) && !/^NS-PT\d+$/i.test(cleanCode)) return;
 
     state.registeredCodes.add(cleanCode);
     saveRegisteredCodes();
@@ -225,7 +226,7 @@ window.SubmissionsTracker = (function () {
 
       if (code && typeof code === "string") {
         const clean = code.trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
+        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
           uniqueCodes.add(clean);
         }
       }
@@ -328,7 +329,7 @@ window.SubmissionsTracker = (function () {
 
       if (code) {
         const clean = String(code).trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
+        if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
           if (!seenCodes.has(clean)) {
             seenCodes.add(clean);
             codes.push(clean);
@@ -962,7 +963,7 @@ window.SubmissionsTracker = (function () {
         codes.forEach(c => {
           if (c && typeof c === "string") {
             const clean = c.trim().toUpperCase();
-            if (!clean.endsWith("-MD") && clean !== "ADMIN" && !state.registeredCodes.has(clean)) {
+            if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean)) && !state.registeredCodes.has(clean)) {
               state.registeredCodes.add(clean);
               changed = true;
             }

@@ -6,7 +6,7 @@
 
 window.ModeratorPanel = (function () {
   // Constantes de Autenticação e Armazenamento
-  const MODERATOR_PASSWORDS = ["renovate26", "2026"];
+  const MODERATOR_PASSWORDS = ["renovate26", "2026", "focusgroup2renovate"];
   const SESSION_AUTH_KEY = "renovate_mod_authenticated";
   const STORAGE_KEYS = {
     TOTAL_TARGET: "total_target"

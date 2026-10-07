@@ -433,7 +433,7 @@ window.ResultsDashboard = (function () {
 
   function isValidParticipantCode(raw) {
     const code = normalizeParticipantCode(raw);
-    if (!code || code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2") return false;
+    if (!code || code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2" || code === "MODERATOR") return false;
     if (/^FG2-PT\d+$/i.test(code)) return true;
     if (/^NS-PT\d+$/i.test(code)) return true;
     return VALID_PARTICIPANT_CODE.test(code);

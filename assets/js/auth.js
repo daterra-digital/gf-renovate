@@ -31,9 +31,11 @@ window.AuthModule = (function () {
       const currentCode = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE);
       if (isSessionActive && currentCode) {
         const clean = currentCode.trim().toUpperCase();
-        const base = clean.replace(/-MD$/, "");
-        inUse.add(clean);
-        inUse.add(base);
+        if (clean !== "MODERATOR") {
+          const base = clean.replace(/-MD$/, "");
+          inUse.add(clean);
+          inUse.add(base);
+        }
       }
       // 2. Lista de códigos com sessão ativa em uso
       const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
@@ -41,8 +43,10 @@ window.AuthModule = (function () {
         activeList.forEach(c => {
           if (c) {
             const raw = String(c).trim().toUpperCase();
-            inUse.add(raw);
-            inUse.add(raw.replace(/-MD$/, ""));
+            if (raw !== "MODERATOR") {
+              inUse.add(raw);
+              inUse.add(raw.replace(/-MD$/, ""));
+            }
           }
         });
       }
@@ -54,6 +58,7 @@ window.AuthModule = (function () {
     if (!code) return;
     try {
       const clean = String(code).trim().toUpperCase();
+      if (clean === "MODERATOR") return;
       const base = clean.replace(/-MD$/, "");
       const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
       const list = Array.isArray(activeList) ? activeList : [];
@@ -291,7 +296,7 @@ window.AuthModule = (function () {
    */
   function getParticipantType(code) {
     const c = (code || getParticipantCode()).toUpperCase();
-    if (c.includes("-MD") || c.includes("ADMIN") || getUserRole() === "moderator") return "MOD";
+    if (c.includes("-MD") || c.includes("ADMIN") || c === "MODERATOR" || getUserRole() === "moderator") return "MOD";
     if (c.startsWith("FG2")) return "FG2";
     if (c.startsWith("NS")) return "NS";
     return "PARTICIPANT";
@@ -324,13 +329,26 @@ window.AuthModule = (function () {
   function login(code, key, consent) {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const cleanCode = (code || "").trim().toUpperCase();
+    const cleanKey = (key || "").trim().toLowerCase();
     const isModKey = isModeratorMasterKey(key);
 
     // Identificar códigos de moderação especiais
+    const isSpecialModCode = cleanCode === "MODERATOR";
+    const isSpecialModKey = cleanKey === "focusgroup2renovate";
     const isAdminCode = cleanCode === "ADMIN-FG2" || cleanCode === "ADMIN" || cleanCode === "ADMINFG2" || cleanCode === "MOD-PT01" || cleanCode.startsWith("MOD-");
 
+    // Validação específica para o utilizador especial confidencial (moderator / focusgroup2renovate)
+    if (isSpecialModCode && !isSpecialModKey && !isModKey) {
+      return {
+        success: false,
+        error: isEn
+          ? "Incorrect password for moderator. Please check your credentials and try again."
+          : "Palavra-passe de moderador incorreta. Por favor verifique as suas credenciais e tente novamente."
+      };
+    }
+
     // Validação específica para códigos de moderação com palavra-passe incorreta
-    if (isAdminCode && !isModKey) {
+    if (isAdminCode && !isModKey && !isSpecialModKey) {
       return {
         success: false,
         error: isEn
@@ -351,12 +369,12 @@ window.AuthModule = (function () {
             : "A plataforma RENOVATE encontra-se atualmente em manutenção técnica. O acesso está estritamente suspenso para todos os participantes no website oficial. O desbloqueio de manutenção só pode ser realizado pela moderação em ambiente local."
         };
       }
-      if (!isModKey) {
+      if (!isModKey && !isSpecialModKey) {
         return {
           success: false,
           error: isEn
-            ? "The platform is closed for technical maintenance. Only the session moderator (admin-fg2) can log in locally to manage the system."
-            : "A plataforma encontra-se fechada para manutenção técnica. Apenas o moderador da sessão (admin-fg2) pode aceder em localhost para gerir o sistema."
+            ? "The platform is closed for technical maintenance. Only the session moderator can log in locally to manage the system."
+            : "A plataforma encontra-se fechada para manutenção técnica. Apenas o moderador da sessão pode aceder em localhost para gerir o sistema."
         };
       }
     }
@@ -378,8 +396,11 @@ window.AuthModule = (function () {
     let userRole = "participant";
     let finalCode = cleanCode;
 
-    if (isAdminCode) {
-      if (!isModKey) {
+    if (isSpecialModCode) {
+      userRole = "moderator";
+      finalCode = "MODERATOR";
+    } else if (isAdminCode) {
+      if (!isModKey && !isSpecialModKey) {
         return {
           success: false,
           error: isEn
@@ -397,11 +418,11 @@ window.AuthModule = (function () {
           success: false,
           error: phase === "phase2"
             ? (isEn 
-                ? "In-person codes (FG2-PT) are closed for new logins. Please enter an assigned remote code (NS-PT) or admin-fg2." 
-                : "Os códigos presenciais (FG2-PT) estão encerrados para novos registos. Introduza o seu código remoto (NS-PT) ou admin-fg2.")
+                ? "In-person codes (FG2-PT) are closed for new logins. Please enter an assigned remote code (NS-PT)." 
+                : "Os códigos presenciais (FG2-PT) estão encerrados para novos registos. Introduza o seu código remoto (NS-PT).")
             : (isEn 
-                ? "Please enter a valid in-person code (FG2-PT01 to FG2-PT50) or admin-fg2." 
-                : "Por favor introduza um código presencial válido (FG2-PT01 a FG2-PT50) ou admin-fg2.")
+                ? "Please enter a valid in-person code (FG2-PT01 to FG2-PT50)." 
+                : "Por favor introduza um código presencial válido (FG2-PT01 a FG2-PT50).")
         };
       }
 
@@ -421,9 +442,9 @@ window.AuthModule = (function () {
       }
     }
 
-    // 3.1 Verificação de código atualmente em uso por utilizador com sessão ativa
+    // 3.1 Verificação de código atualmente em uso por utilizador com sessão ativa (não bloqueia moderadores nem utilizadores especiais)
     const inUseCodes = getInUseCodes();
-    if (!isModKey && !isAdminCode && (inUseCodes.has(cleanCode) || inUseCodes.has(`${cleanCode}-MD`))) {
+    if (!isModKey && !isAdminCode && !isSpecialModCode && (inUseCodes.has(cleanCode) || inUseCodes.has(`${cleanCode}-MD`))) {
       return {
         success: false,
         error: isEn
@@ -456,30 +477,34 @@ window.AuthModule = (function () {
       console.error("Erro ao gravar sessão no localStorage:", e);
     }
 
-    // Registo oficial de sessão via POST na API Google Apps Script (Alimenta separador Logins e Amostra Total)
-    try {
-      const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
-        || "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
-      const loginPayload = JSON.stringify({ code: finalCode });
+    // Registo oficial de sessão via POST na API Google Apps Script (Alimenta separador Logins e Amostra Total - omitido para utilizador confidencial)
+    if (!isSpecialModCode) {
+      try {
+        const loginEndpoint = (window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.resultsDashboard && window.RENOVATE_CONFIG.resultsDashboard.loginApiUrl)
+          || "https://script.google.com/macros/s/AKfycbzeV5PPgK8MNn0y1MIYAcf8VWzgAA-Dd80WtF2EASy5FPpRs-BZni-TKNGC_Vafx8VU/exec";
+        const loginPayload = JSON.stringify({ code: finalCode });
 
-      // Disparo em background com tolerância a CORS / 302 redirects do Google Apps Script
-      fetch(loginEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: loginPayload
-      }).catch(() => {
+        // Disparo em background com tolerância a CORS / 302 redirects do Google Apps Script
         fetch(loginEndpoint, {
           method: "POST",
-          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: loginPayload
-        }).catch(err => console.warn("Aviso ao registar login no Google Apps Script:", err));
-      });
-    } catch (gasErr) {
-      console.warn("Aviso ao disparar registo de login:", gasErr);
+        }).catch(() => {
+          fetch(loginEndpoint, {
+            method: "POST",
+            mode: "no-cors",
+            body: loginPayload
+          }).catch(err => console.warn("Aviso ao registar login no Google Apps Script:", err));
+        });
+      } catch (gasErr) {
+        console.warn("Aviso ao disparar registo de login:", gasErr);
+      }
     }
 
-    // Marcar código como ativo em uso
-    addActiveCode(finalCode);
+    // Marcar código como ativo em uso (omitido para moderador confidencial para permitir partilha entre múltiplos parceiros)
+    if (!isSpecialModCode && !isAdminCode) {
+      addActiveCode(finalCode);
+    }
 
     // 3. Injeção nos formulários de avaliação com o código final (incluindo sufixo -MD se moderador)
     injectParticipantCodeToForms(finalCode);
@@ -487,8 +512,8 @@ window.AuthModule = (function () {
       window.LiveSession.setParticipantCode(finalCode);
     }
 
-    // Registo do código no rastreador automático de participantes (não contabiliza códigos de moderação genéricos como admin-fg2)
-    if (!isAdminCode && window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
+    // Registo do código no rastreador automático de participantes (não contabiliza códigos de moderação genéricos como admin-fg2 nem moderator)
+    if (!isAdminCode && !isSpecialModCode && window.SubmissionsTracker && typeof window.SubmissionsTracker.registerParticipantCode === "function") {
       window.SubmissionsTracker.registerParticipantCode(finalCode);
     }
 
@@ -704,10 +729,17 @@ window.AuthModule = (function () {
     const panel = document.getElementById("auth-codes-dropdown-panel");
     if (!panel) return;
 
+    const filter = (filterText || "").trim().toUpperCase();
+
+    // Se o código digitado for o especial confidencial "MODERATOR", ocultar dropdown imediatamente
+    if (filter === "MODERATOR") {
+      hideCodesDropdown();
+      return;
+    }
+
     const phase = getEffectivePhase();
     const codes = phase === "phase2" ? REMOTE_CODES : PRESENTIAL_CODES;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const filter = (filterText || "").trim().toUpperCase();
 
     // Obter códigos atualmente em uso por utilizadores com sessão ativa
     const inUseCodes = getInUseCodes();
@@ -721,50 +753,15 @@ window.AuthModule = (function () {
 
     let html = "";
 
-    // 1. Grupo Moderação & Coordenação
-    // Em localhost: sempre disponível na lista para testes de desenvolvimento.
-    // Em produção (GitHub Pages): apenas surge se o utilizador pesquisar explicitamente "admin" ou "mod",
-    // para garantir que participantes comuns vejam exclusivamente crachás de participantes ao abrir a lista.
-    const isLocal = isLocalhost();
-    const shouldShowModGroup = isLocal || filter.includes("ADMIN") || filter.includes("MOD");
-
-    const modCodes = [
-      { code: "admin-fg2", label: isEn ? "admin-fg2 (Moderator Access)" : "admin-fg2 (Acesso de Moderador)" },
-      { code: "MOD-PT01", label: isEn ? "MOD-PT01 (Coordination)" : "MOD-PT01 (Coordenação)" }
-    ];
-    const filteredModCodes = shouldShowModGroup
-      ? modCodes.filter(m => !filter || m.code.toUpperCase().includes(filter) || "ADMIN".includes(filter) || "MOD".includes(filter))
-      : [];
-
-    if (filteredModCodes.length > 0) {
-      html += `<div class="px-3 py-1.5 bg-amber-50 text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center justify-between border-b border-amber-100">`;
-      html += `  <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-3 h-3 text-amber-700"></i> ${modTitle}</span>`;
-      html += `  <span class="text-[9px] font-mono font-bold text-amber-800">Master Pass</span>`;
-      html += `</div>`;
-      html += `<div class="py-1">`;
-      filteredModCodes.forEach(m => {
-        html += `
-          <div class="code-dropdown-item px-3 py-2 hover:bg-amber-100/70 cursor-pointer flex items-center justify-between transition text-xs font-mono font-bold text-amber-950" data-code="${m.code}">
-            <span class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              ${m.label}
-            </span>
-            <span class="text-[10px] font-sans font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-300">Moderação</span>
-          </div>
-        `;
-      });
-      html += `</div>`;
-    }
-
-    // 2. Grupo Participantes Ativos
-    const filteredCodes = codes.filter(c => !filter || c.toUpperCase().includes(filter));
+    // Grupo Participantes Ativos (apenas crachás oficiais; nunca lista moderadores)
+    const filteredCodes = codes.filter(c => c !== "MODERATOR" && !c.includes("ADMIN") && !c.includes("MOD") && (!filter || c.toUpperCase().includes(filter)));
     html += `<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-700 flex items-center justify-between border-t border-b border-slate-200">`;
     html += `  <span>${phaseTitle}</span>`;
     html += `  <span class="text-[9px] font-mono text-slate-500">${filteredCodes.length} ${isEn ? "items" : "códigos"}</span>`;
     html += `</div>`;
     html += `<div class="py-1">`;
 
-    if (filteredCodes.length === 0 && filteredModCodes.length === 0) {
+    if (filteredCodes.length === 0) {
       html += `
         <div class="px-4 py-4 text-center text-slate-500 font-sans text-xs space-y-1">
           <p class="font-bold">${isEn ? `No codes match "${filterText}"` : `Nenhum código corresponde a "${filterText}"`}</p>
@@ -828,6 +825,11 @@ window.AuthModule = (function () {
     const chevron = document.getElementById("auth-code-chevron");
     const input = document.getElementById("auth-participant-code");
     if (!panel) return;
+    const currentVal = input ? input.value.trim().toUpperCase() : "";
+    if (currentVal === "MODERATOR") {
+      hideCodesDropdown();
+      return;
+    }
     renderCodesDropdown(input ? input.value : "");
     panel.classList.remove("hidden");
     if (chevron) {
@@ -1172,9 +1174,16 @@ window.AuthModule = (function () {
 
     if (codeInput) {
       codeInput.addEventListener("focus", () => {
+        const val = codeInput.value.trim().toUpperCase();
+        if (val === "MODERATOR") return;
         showCodesDropdown();
       });
       codeInput.addEventListener("input", (e) => {
+        const val = (e.target.value || "").trim().toUpperCase();
+        if (val === "MODERATOR") {
+          hideCodesDropdown();
+          return;
+        }
         showCodesDropdown();
         renderCodesDropdown(e.target.value);
       });
@@ -1189,6 +1198,11 @@ window.AuthModule = (function () {
       toggleDropdownBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const val = codeInput ? codeInput.value.trim().toUpperCase() : "";
+        if (val === "MODERATOR") {
+          hideCodesDropdown();
+          return;
+        }
         toggleCodesDropdown();
         if (codeInput) codeInput.focus();
       });
@@ -1387,6 +1401,11 @@ window.AuthModule = (function () {
       renderHeaderUserBadge();
       const code = getParticipantCode();
       injectParticipantCodeToForms(code);
+      if (isModerator()) {
+        try {
+          sessionStorage.setItem("renovate_mod_authenticated", "true");
+        } catch (e) {}
+      }
     }
 
     initEvents();
