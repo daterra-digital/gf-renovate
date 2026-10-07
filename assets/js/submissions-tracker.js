@@ -35,14 +35,14 @@ window.SubmissionsTracker = (function () {
   // Submissões validadas e confirmadas pela coordenação do projeto Focus Group 2
   const CONFIRMED_SUBMISSIONS = {
     game: [
-      "FG2-PT13", "FG2-PT38"
+      "FG2-PT08", "FG2-PT13", "FG2-PT15", "FG2-PT17", "FG2-PT33", "FG2-PT38"
     ],
     sim: [
-      "FG2-PT07", "FG2-PT16", "FG2-PT20", "FG2-PT28", "FG2-PT32", "FG2-PT36", "FG2-PT37", "FG2-PT39"
+      "FG2-PT07", "FG2-PT08", "FG2-PT15", "FG2-PT16", "FG2-PT17", "FG2-PT20", "FG2-PT28", "FG2-PT32", "FG2-PT33", "FG2-PT36", "FG2-PT37", "FG2-PT39"
     ],
     global: [
-      "FG2-PT04", "FG2-PT07", "FG2-PT16", "FG2-PT18", "FG2-PT20", "FG2-PT21", "FG2-PT28", "FG2-PT29",
-      "FG2-PT30", "FG2-PT31", "FG2-PT32", "FG2-PT34", "FG2-PT35", "FG2-PT36", "FG2-PT37", "FG2-PT38",
+      "FG2-PT04", "FG2-PT07", "FG2-PT08", "FG2-PT15", "FG2-PT16", "FG2-PT17", "FG2-PT18", "FG2-PT20", "FG2-PT21", "FG2-PT28", "FG2-PT29",
+      "FG2-PT30", "FG2-PT31", "FG2-PT32", "FG2-PT33", "FG2-PT34", "FG2-PT35", "FG2-PT36", "FG2-PT37", "FG2-PT38",
       "FG2-PT39", "FG2-PT41", "FG2-PT42", "FG2-PT43"
     ]
   };
