@@ -431,12 +431,34 @@ window.ResultsDashboard = (function () {
     return raw === null || raw === undefined ? "" : String(raw).trim().toUpperCase();
   }
 
+  /**
+   * Verifica se um código de participante pertence a moderação, administração ou testes técnicos que devem
+   * ser estritamente excluídos do cálculo da Amostra Total e de todas as métricas analíticas.
+   * Exclui: "moderator" / "MODERATOR", "TEST-PROBE", "TEST-CHECK", códigos de teste,
+   * códigos de moderação (-MD, MOD-*, ADMIN-*).
+   */
+  function isExcludedFromSample(raw) {
+    if (!raw) return false;
+    const code = normalizeParticipantCode(raw);
+    if (!code) return false;
+    if (code === "MODERATOR" || code.includes("MODERATOR") || code === "MODERADOR" || code.includes("MODERADOR") || code === "MOD" || code.startsWith("MOD-") || code.endsWith("-MD")) {
+      return true;
+    }
+    if (code === "ADMIN" || code === "ADMIN-FG2" || code.startsWith("ADMIN")) {
+      return true;
+    }
+    if (code === "TEST-PROBE" || code === "TEST-CHECK" || code.startsWith("TEST") || code.includes("TEST") || code.includes("PROBE") || code.includes("CHECK")) {
+      return true;
+    }
+    return false;
+  }
+
   function isValidParticipantCode(raw) {
     const code = normalizeParticipantCode(raw);
-    if (!code || code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2" || code === "MODERATOR") return false;
-    if (/^FG2-PT\d+$/i.test(code)) return true;
-    if (/^NS-PT\d+$/i.test(code)) return true;
-    return VALID_PARTICIPANT_CODE.test(code);
+    if (!code || isExcludedFromSample(code)) return false;
+    if (/^FG2-PT(0[1-9]|[1-4]\d|50)$/i.test(code)) return true;
+    if (/^NS-PT(0[1-9]|[1-4]\d|50)$/i.test(code)) return true;
+    return false;
   }
 
   function round1(x) {
@@ -586,8 +608,7 @@ window.ResultsDashboard = (function () {
   function extractParticipantCodeFromRow(row) {
     if (!row) return "";
     if (typeof row === "string") {
-      const s = normalizeParticipantCode(row);
-      return isValidParticipantCode(s) ? s : "";
+      return normalizeParticipantCode(row);
     }
     if (typeof row !== "object") return "";
 
@@ -602,8 +623,8 @@ window.ResultsDashboard = (function () {
     for (let i = 0; i < directKeys.length; i++) {
       const dk = directKeys[i];
       if (row[dk] !== undefined && row[dk] !== null) {
-        const c = normalizeParticipantCode(row[dk]);
-        if (isValidParticipantCode(c)) return c;
+        const val = String(row[dk]).trim();
+        if (val) return normalizeParticipantCode(val);
       }
     }
 
@@ -613,18 +634,18 @@ window.ResultsDashboard = (function () {
     for (let i = 0; i < maxK; i++) {
       const k = keys[i];
       if (isCodeHeader(k)) {
-        const c = normalizeParticipantCode(row[k]);
-        if (isValidParticipantCode(c)) return c;
+        const val = String(row[k] || "").trim();
+        if (val) return normalizeParticipantCode(val);
       }
     }
 
-    // 3. Varrer todos os valores do objeto procurando padrão de código FG2-PTxx ou NS-PTxx
+    // 3. Varrer todos os valores do objeto procurando padrão de código FG2-PTxx ou NS-PTxx ou código excluído
     for (let i = 0; i < maxK; i++) {
       const k = keys[i];
       const val = row[k];
       if (val !== undefined && val !== null && typeof val !== "object") {
         const c = normalizeParticipantCode(val);
-        if (isValidParticipantCode(c)) return c;
+        if (isValidParticipantCode(c) || isExcludedFromSample(c)) return c;
       }
     }
 
@@ -635,8 +656,7 @@ window.ResultsDashboard = (function () {
    * Verifica se um código pertence a um perfil moderador/administrador que deve ser excluído das métricas
    */
   function isModeratorCode(raw) {
-    const code = normalizeParticipantCode(raw);
-    return code.endsWith("-MD") || code === "ADMIN" || code === "ADMIN-FG2" || code === "MODERATOR";
+    return isExcludedFromSample(raw);
   }
 
   /**
@@ -686,12 +706,22 @@ window.ResultsDashboard = (function () {
         if (k && k !== "_participantCode" && k !== "_qCache") allHeadersSet.add(k);
       }
       const rawCode = extractParticipantCodeFromRow(row);
-      if (isModeratorCode(rawCode)) continue;
+      if (isExcludedFromSample(rawCode) || isModeratorCode(rawCode)) continue;
+
+      let rowHasExcluded = false;
+      for (let kIdx = 0; kIdx < maxK; kIdx++) {
+        const val = row[rowKeys[kIdx]];
+        if (val !== undefined && val !== null && typeof val !== "object" && isExcludedFromSample(val)) {
+          rowHasExcluded = true;
+          break;
+        }
+      }
+      if (rowHasExcluded) continue;
 
       let effectiveCode = "";
       if (isValidParticipantCode(rawCode)) {
         effectiveCode = normalizeParticipantCode(rawCode);
-      } else if (hasSubstantialAnswers(row)) {
+      } else if (hasSubstantialAnswers(row) && !isExcludedFromSample(rawCode)) {
         effectiveCode = rawCode ? `P-${rawCode}` : `RESP-${String(i + 1).padStart(2, "0")}`;
       } else {
         continue;
@@ -1624,21 +1654,21 @@ window.ResultsDashboard = (function () {
         if (!code && Array.isArray(entry)) {
           for (let i = 0; i < entry.length; i++) {
             const s = normalizeParticipantCode(entry[i]);
-            if (isValidParticipantCode(s)) { code = s; break; }
+            if (isValidParticipantCode(s) && !isExcludedFromSample(s)) { code = s; break; }
           }
         }
       }
 
       if (code) {
         const clean = normalizeParticipantCode(code);
-        if (isValidParticipantCode(clean) && !isModeratorCode(clean) && !clean.endsWith("-MD")) {
+        if (isValidParticipantCode(clean) && !isExcludedFromSample(clean)) {
           uniqueCodes.add(clean);
         }
       }
     });
 
     const result = Array.from(uniqueCodes);
-    console.log("[Firebase Parser] /Logins payload (excluindo -MD):", rawLogins, "-> parsed codes:", result);
+    console.log("[Firebase Parser] /Logins payload (excluindo moderador e testes):", rawLogins, "-> parsed codes:", result);
     return result;
   }
 

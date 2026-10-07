@@ -79,6 +79,37 @@ window.SubmissionsTracker = (function () {
   }
 
   /**
+   * Verifica se um código de participante pertence a moderação, administração ou testes técnicos que devem
+   * ser estritamente excluídos do cálculo da Amostra Total (TT) e de todas as métricas e contagens.
+   * Exclui: "moderator" / "MODERATOR", "TEST-PROBE", "TEST-CHECK", códigos de teste,
+   * códigos de moderação (-MD, MOD-*, ADMIN-*).
+   */
+  function isExcludedFromSample(raw) {
+    if (!raw) return false;
+    const code = String(raw).trim().toUpperCase();
+    if (!code) return false;
+    if (code === "MODERATOR" || code.includes("MODERATOR") || code === "MODERADOR" || code.includes("MODERADOR") || code === "MOD" || code.startsWith("MOD-") || code.endsWith("-MD")) {
+      return true;
+    }
+    if (code === "ADMIN" || code === "ADMIN-FG2" || code.startsWith("ADMIN")) {
+      return true;
+    }
+    if (code === "TEST-PROBE" || code === "TEST-CHECK" || code.startsWith("TEST") || code.includes("TEST") || code.includes("PROBE") || code.includes("CHECK")) {
+      return true;
+    }
+    return false;
+  }
+
+  function isValidParticipantCode(raw) {
+    if (!raw) return false;
+    const clean = String(raw).trim().toUpperCase();
+    if (!clean || isExcludedFromSample(clean)) return false;
+    if (/^FG2-PT(0[1-9]|[1-4]\d|50)$/i.test(clean)) return true;
+    if (/^NS-PT(0[1-9]|[1-4]\d|50)$/i.test(clean)) return true;
+    return false;
+  }
+
+  /**
    * Carrega os códigos de participante previamente registados no localStorage
    */
   function loadRegisteredCodes() {
@@ -90,7 +121,7 @@ window.SubmissionsTracker = (function () {
           parsed.forEach(code => {
             if (code && typeof code === "string") {
               const clean = code.trim().toUpperCase();
-              if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
+              if (isValidParticipantCode(clean) && !isExcludedFromSample(clean)) {
                 state.registeredCodes.add(clean);
               }
             }
@@ -98,12 +129,12 @@ window.SubmissionsTracker = (function () {
         }
       }
 
-      // Adicionar código da sessão ativa se for participante padrão (não-moderador)
+      // Adicionar código da sessão ativa se for participante padrão (não-moderador e não-teste)
       if (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function") {
         const currentCode = window.AuthModule.getParticipantCode();
         if (currentCode) {
           const clean = currentCode.trim().toUpperCase();
-          if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT(0[1-9]|[1-4]\d|50)$/.test(clean) || /^NS-PT/.test(clean))) {
+          if (isValidParticipantCode(clean) && !isExcludedFromSample(clean)) {
             state.registeredCodes.add(clean);
           }
         }
@@ -111,6 +142,12 @@ window.SubmissionsTracker = (function () {
     } catch (e) {
       console.warn("Aviso ao carregar participantes registados:", e);
     }
+
+    // Purgar rigorosamente quaisquer códigos excluídos que estivessem em cache local
+    [...state.registeredCodes].forEach(c => {
+      if (isExcludedFromSample(c)) state.registeredCodes.delete(c);
+    });
+    saveRegisteredCodes();
 
     injectConfirmedSubmissions();
 
@@ -124,7 +161,7 @@ window.SubmissionsTracker = (function () {
    */
   function saveRegisteredCodes() {
     try {
-      const arr = Array.from(state.registeredCodes);
+      const arr = Array.from(state.registeredCodes).filter(c => isValidParticipantCode(c) && !isExcludedFromSample(c));
       localStorage.setItem(STORAGE_KEYS.REGISTERED_PARTICIPANTS, JSON.stringify(arr));
     } catch (e) {}
   }
@@ -135,8 +172,7 @@ window.SubmissionsTracker = (function () {
   function registerParticipantCode(rawCode) {
     if (!rawCode || typeof rawCode !== "string") return;
     const cleanCode = rawCode.trim().toUpperCase();
-    if (!cleanCode || cleanCode.endsWith("-MD") || cleanCode === "ADMIN" || cleanCode === "ADMIN-FG2" || cleanCode === "MODERATOR") return;
-    if (!/^FG2-PT\d+$/i.test(cleanCode) && !/^NS-PT\d+$/i.test(cleanCode)) return;
+    if (!cleanCode || isExcludedFromSample(cleanCode) || !isValidParticipantCode(cleanCode)) return;
 
     state.registeredCodes.add(cleanCode);
     saveRegisteredCodes();
@@ -237,26 +273,30 @@ window.SubmissionsTracker = (function () {
           const dk = directKeys[i];
           if (entry[dk] !== undefined && entry[dk] !== null) {
             const c = String(entry[dk]).trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(c)) { code = c; break; }
+            if (isExcludedFromSample(c)) { code = null; break; }
+            if (isValidParticipantCode(c)) { code = c; break; }
           }
         }
 
         if (!code && Array.isArray(entry)) {
           for (let i = 0; i < entry.length; i++) {
             const s = String(entry[i] || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+            if (isExcludedFromSample(s)) { code = null; break; }
+            if (isValidParticipantCode(s)) { code = s; break; }
           }
         } else if (!code) {
           for (const k of Object.keys(entry)) {
             if (/c[oó]digo|participant|usercode/i.test(k)) {
               const s = String(entry[k] || "").trim().toUpperCase();
-              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+              if (isExcludedFromSample(s)) { code = null; break; }
+              if (isValidParticipantCode(s)) { code = s; break; }
             }
           }
           if (!code) {
             for (const k of Object.keys(entry)) {
               const s = String(entry[k] || "").trim().toUpperCase();
-              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+              if (isExcludedFromSample(s)) { code = null; break; }
+              if (isValidParticipantCode(s)) { code = s; break; }
             }
           }
         }
@@ -264,14 +304,14 @@ window.SubmissionsTracker = (function () {
 
       if (code && typeof code === "string") {
         const clean = code.trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean.length >= 3 && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
+        if (isValidParticipantCode(clean) && !isExcludedFromSample(clean)) {
           uniqueCodes.add(clean);
         }
       }
     });
 
     const result = Array.from(uniqueCodes);
-    console.log("[SubmissionsTracker] /Logins payload parsed codes:", result);
+    console.log("[SubmissionsTracker] /Logins payload parsed codes (excluindo moderador e testes):", result);
     return result;
   }
 
@@ -340,26 +380,30 @@ window.SubmissionsTracker = (function () {
           const dk = directKeys[i];
           if (r[dk] !== undefined && r[dk] !== null) {
             const c = String(r[dk]).trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(c)) { code = c; break; }
+            if (isExcludedFromSample(c)) { code = null; break; }
+            if (isValidParticipantCode(c)) { code = c; break; }
           }
         }
 
         if (!code && Array.isArray(r)) {
           for (let i = 0; i < r.length; i++) {
             const s = String(r[i] || "").trim().toUpperCase();
-            if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+            if (isExcludedFromSample(s)) { code = null; break; }
+            if (isValidParticipantCode(s)) { code = s; break; }
           }
         } else if (!code) {
           for (const k of Object.keys(r)) {
             if (/c[oó]digo|participant|usercode/i.test(k)) {
               const s = String(r[k] || "").trim().toUpperCase();
-              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+              if (isExcludedFromSample(s)) { code = null; break; }
+              if (isValidParticipantCode(s)) { code = s; break; }
             }
           }
           if (!code) {
             for (const k of Object.keys(r)) {
               const s = String(r[k] || "").trim().toUpperCase();
-              if (/^(FG2-PT|NS-PT)\d+$/i.test(s)) { code = s; break; }
+              if (isExcludedFromSample(s)) { code = null; break; }
+              if (isValidParticipantCode(s)) { code = s; break; }
             }
           }
         }
@@ -367,17 +411,30 @@ window.SubmissionsTracker = (function () {
 
       if (code) {
         const clean = String(code).trim().toUpperCase();
-        if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean))) {
+        if (isExcludedFromSample(clean)) return;
+        if (isValidParticipantCode(clean)) {
           if (!seenCodes.has(clean)) {
             seenCodes.add(clean);
             codes.push(clean);
           }
         }
       } else if (hasSubstantialAnswers(r)) {
-        const fallbackCode = `RESP-${String(idx + 1).padStart(2, "0")}`;
-        if (!seenCodes.has(fallbackCode)) {
-          seenCodes.add(fallbackCode);
-          codes.push(fallbackCode);
+        let hasExcluded = false;
+        if (typeof r === "object") {
+          for (const k of Object.keys(r)) {
+            const val = r[k];
+            if (val !== undefined && val !== null && typeof val !== "object" && isExcludedFromSample(val)) {
+              hasExcluded = true;
+              break;
+            }
+          }
+        }
+        if (!hasExcluded) {
+          const fallbackCode = `RESP-${String(idx + 1).padStart(2, "0")}`;
+          if (!seenCodes.has(fallbackCode)) {
+            seenCodes.add(fallbackCode);
+            codes.push(fallbackCode);
+          }
         }
       }
     });
@@ -427,7 +484,14 @@ window.SubmissionsTracker = (function () {
               const validLogins = extractValidLoginCodes(val);
               if (validLogins.length > 0) {
                 state.totalParticipants = validLogins.length;
-                validLogins.forEach(c => state.registeredCodes.add(c));
+                validLogins.forEach(c => {
+                  if (isValidParticipantCode(c) && !isExcludedFromSample(c)) {
+                    state.registeredCodes.add(c);
+                  }
+                });
+                [...state.registeredCodes].forEach(c => {
+                  if (isExcludedFromSample(c)) state.registeredCodes.delete(c);
+                });
                 saveRegisteredCodes();
               }
             } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
@@ -469,7 +533,14 @@ window.SubmissionsTracker = (function () {
           const validLogins = extractValidLoginCodes(snapshot.val());
           if (validLogins.length > 0) {
             state.totalParticipants = validLogins.length;
-            validLogins.forEach(c => state.registeredCodes.add(c));
+            validLogins.forEach(c => {
+              if (isValidParticipantCode(c) && !isExcludedFromSample(c)) {
+                state.registeredCodes.add(c);
+              }
+            });
+            [...state.registeredCodes].forEach(c => {
+              if (isExcludedFromSample(c)) state.registeredCodes.delete(c);
+            });
             saveRegisteredCodes();
           } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
             state.totalParticipants = state.registeredCodes.size;
@@ -590,7 +661,7 @@ window.SubmissionsTracker = (function () {
         // O código do participante está na Coluna 1 (B)
         const match = row.match(/^[^,]+,\s*"?([A-Za-z0-9\-_]+)"?/);
         const code = match ? match[1].trim().toUpperCase() : "";
-        if (code && (/^FG2-PT\d+$/i.test(code) || /^NS-PT\d+$/i.test(code)) && !code.endsWith("-MD")) {
+        if (code && isValidParticipantCode(code) && !isExcludedFromSample(code)) {
           if (!state.submittedCodes.game.has(code)) {
             state.submittedCodes.game.add(code);
             added = true;
@@ -651,7 +722,14 @@ window.SubmissionsTracker = (function () {
                 const validLogins = extractValidLoginCodes(val);
                 if (validLogins.length > 0) {
                   state.totalParticipants = validLogins.length;
-                  validLogins.forEach(c => state.registeredCodes.add(c));
+                  validLogins.forEach(c => {
+                    if (isValidParticipantCode(c) && !isExcludedFromSample(c)) {
+                      state.registeredCodes.add(c);
+                    }
+                  });
+                  [...state.registeredCodes].forEach(c => {
+                    if (isExcludedFromSample(c)) state.registeredCodes.delete(c);
+                  });
                   saveRegisteredCodes();
                 }
               } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
@@ -692,7 +770,14 @@ window.SubmissionsTracker = (function () {
           const validLogins = extractValidLoginCodes(snapLogins);
           if (validLogins.length > 0) {
             state.totalParticipants = validLogins.length;
-            validLogins.forEach(c => state.registeredCodes.add(c));
+            validLogins.forEach(c => {
+              if (isValidParticipantCode(c) && !isExcludedFromSample(c)) {
+                state.registeredCodes.add(c);
+              }
+            });
+            [...state.registeredCodes].forEach(c => {
+              if (isExcludedFromSample(c)) state.registeredCodes.delete(c);
+            });
             saveRegisteredCodes();
           } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
             state.totalParticipants = state.registeredCodes.size;
@@ -990,7 +1075,7 @@ window.SubmissionsTracker = (function () {
     getSubmittedCodes: (type) => Array.from((state.submittedCodes && state.submittedCodes[type]) || []),
     markSubmitted: (type, code) => {
       const clean = String(code || "").trim().toUpperCase();
-      if (!clean) return;
+      if (!clean || isExcludedFromSample(clean) || !isValidParticipantCode(clean)) return;
       if (type === 1 || type === "1" || type === "game") state.submittedCodes.game.add(clean);
       if (type === 2 || type === "2" || type === "sim") state.submittedCodes.sim.add(clean);
       if (type === 3 || type === "3" || type === "global") state.submittedCodes.global.add(clean);
@@ -1001,23 +1086,32 @@ window.SubmissionsTracker = (function () {
     getCounts: () => ({ ...state.counts }),
     getTotalParticipants: () => state.totalParticipants,
     setTotalParticipants: (tt, codes) => {
+      let filteredCodes = [];
+      if (Array.isArray(codes)) {
+        filteredCodes = codes
+          .map(c => String(c || "").trim().toUpperCase())
+          .filter(c => isValidParticipantCode(c) && !isExcludedFromSample(c));
+      }
+      const actualCount = filteredCodes.length > 0 ? filteredCodes.length : (typeof tt === "number" ? tt : state.totalParticipants);
       let changed = false;
-      if (typeof tt === "number" && state.totalParticipants !== tt) {
-        state.totalParticipants = tt;
+      if (typeof actualCount === "number" && state.totalParticipants !== actualCount) {
+        state.totalParticipants = actualCount;
         changed = true;
       }
-      if (Array.isArray(codes)) {
-        codes.forEach(c => {
-          if (c && typeof c === "string") {
-            const clean = c.trim().toUpperCase();
-            if (!clean.endsWith("-MD") && clean !== "ADMIN" && clean !== "ADMIN-FG2" && clean !== "MODERATOR" && (/^FG2-PT\d+$/i.test(clean) || /^NS-PT\d+$/i.test(clean)) && !state.registeredCodes.has(clean)) {
-              state.registeredCodes.add(clean);
-              changed = true;
-            }
-          }
-        });
-      }
+      filteredCodes.forEach(clean => {
+        if (!state.registeredCodes.has(clean)) {
+          state.registeredCodes.add(clean);
+          changed = true;
+        }
+      });
+      [...state.registeredCodes].forEach(c => {
+        if (isExcludedFromSample(c)) {
+          state.registeredCodes.delete(c);
+          changed = true;
+        }
+      });
       if (changed) {
+        saveRegisteredCodes();
         updateAllCounters();
       }
     },
