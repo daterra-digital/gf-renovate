@@ -375,6 +375,17 @@ window.ModeratorPanel = (function () {
     const isEn = window.I18nManager && typeof window.I18nManager.isEnglish === "function" && window.I18nManager.isEnglish();
     const tracker = window.SubmissionsTracker;
 
+    // Submissões validadas para o painel de moderação
+    const CONFIRMED_MOD_SUBMISSIONS = {
+      1: new Set(["FG2-PT13", "FG2-PT38"]),
+      2: new Set(["FG2-PT07", "FG2-PT16", "FG2-PT20", "FG2-PT28", "FG2-PT32", "FG2-PT36", "FG2-PT37", "FG2-PT39"]),
+      3: new Set([
+        "FG2-PT04", "FG2-PT07", "FG2-PT16", "FG2-PT18", "FG2-PT20", "FG2-PT21", "FG2-PT28", "FG2-PT29",
+        "FG2-PT30", "FG2-PT31", "FG2-PT32", "FG2-PT34", "FG2-PT35", "FG2-PT36", "FG2-PT37", "FG2-PT38",
+        "FG2-PT39", "FG2-PT41", "FG2-PT42", "FG2-PT43"
+      ])
+    };
+
     function applyIndicatorState(el, isDone) {
       if (!el) return;
       if (isDone) {
@@ -393,9 +404,9 @@ window.ModeratorPanel = (function () {
       const code = card.getAttribute("data-code");
       if (!code) return;
 
-      const f1 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(1, code) : false;
-      const f2 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(2, code) : false;
-      const f3 = tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(3, code) : false;
+      const f1 = CONFIRMED_MOD_SUBMISSIONS[1].has(code) || (tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(1, code) : false);
+      const f2 = CONFIRMED_MOD_SUBMISSIONS[2].has(code) || (tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(2, code) : false);
+      const f3 = CONFIRMED_MOD_SUBMISSIONS[3].has(code) || (tracker && typeof tracker.hasParticipantSubmitted === "function" ? tracker.hasParticipantSubmitted(3, code) : false);
 
       applyIndicatorState(card.querySelector(".mod-ind-1"), f1);
       applyIndicatorState(card.querySelector(".mod-ind-2"), f2);
@@ -534,6 +545,7 @@ window.ModeratorPanel = (function () {
 
       state.pollingCountdown = state.pollingSeconds;
       renderSubmissionsUI();
+      updateSubmissionsGrid();
     } catch (err) {
       console.warn("Aviso em fetchSubmissionsCount:", err);
     } finally {

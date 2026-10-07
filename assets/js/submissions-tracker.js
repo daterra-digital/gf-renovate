@@ -32,6 +32,42 @@ window.SubmissionsTracker = (function () {
     firebaseConnected: false
   };
 
+  // Submissões validadas e confirmadas pela coordenação do projeto Focus Group 2
+  const CONFIRMED_SUBMISSIONS = {
+    game: [
+      "FG2-PT13", "FG2-PT38"
+    ],
+    sim: [
+      "FG2-PT07", "FG2-PT16", "FG2-PT20", "FG2-PT28", "FG2-PT32", "FG2-PT36", "FG2-PT37", "FG2-PT39"
+    ],
+    global: [
+      "FG2-PT04", "FG2-PT07", "FG2-PT16", "FG2-PT18", "FG2-PT20", "FG2-PT21", "FG2-PT28", "FG2-PT29",
+      "FG2-PT30", "FG2-PT31", "FG2-PT32", "FG2-PT34", "FG2-PT35", "FG2-PT36", "FG2-PT37", "FG2-PT38",
+      "FG2-PT39", "FG2-PT41", "FG2-PT42", "FG2-PT43"
+    ]
+  };
+
+  /**
+   * Injeta as submissões confirmadas no estado do rastreador
+   */
+  function injectConfirmedSubmissions() {
+    CONFIRMED_SUBMISSIONS.game.forEach(c => {
+      state.submittedCodes.game.add(c);
+      state.registeredCodes.add(c);
+    });
+    CONFIRMED_SUBMISSIONS.sim.forEach(c => {
+      state.submittedCodes.sim.add(c);
+      state.registeredCodes.add(c);
+    });
+    CONFIRMED_SUBMISSIONS.global.forEach(c => {
+      state.submittedCodes.global.add(c);
+      state.registeredCodes.add(c);
+    });
+    state.counts.game = Math.max(state.counts.game, state.submittedCodes.game.size);
+    state.counts.sim = Math.max(state.counts.sim, state.submittedCodes.sim.size);
+    state.counts.global = Math.max(state.counts.global, state.submittedCodes.global.size);
+  }
+
   /**
    * Obtém a URL da base de dados Firebase
    */
@@ -75,6 +111,8 @@ window.SubmissionsTracker = (function () {
     } catch (e) {
       console.warn("Aviso ao carregar participantes registados:", e);
     }
+
+    injectConfirmedSubmissions();
 
     if (state.totalParticipants === 0 && state.registeredCodes.size > 0) {
       state.totalParticipants = state.registeredCodes.size;
@@ -409,6 +447,7 @@ window.SubmissionsTracker = (function () {
               parsed.codes.forEach(c => state.registeredCodes.add(c));
             }
           }
+          injectConfirmedSubmissions();
           state.isLive = true;
           updateAllCounters();
         } catch (rootErr) {
@@ -435,6 +474,7 @@ window.SubmissionsTracker = (function () {
           } else if (state.registeredCodes.size > 0 && state.totalParticipants === 0) {
             state.totalParticipants = state.registeredCodes.size;
           }
+          injectConfirmedSubmissions();
           state.isLive = true;
           updateAllCounters();
 
@@ -457,6 +497,7 @@ window.SubmissionsTracker = (function () {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.game = parsed.count;
             state.submittedCodes.game = new Set(parsed.codes);
+            injectConfirmedSubmissions();
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             if (parsed.codes.length < parsed.count) {
@@ -477,6 +518,7 @@ window.SubmissionsTracker = (function () {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.sim = parsed.count;
             state.submittedCodes.sim = new Set(parsed.codes);
+            injectConfirmedSubmissions();
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             updateAllCounters();
@@ -494,6 +536,7 @@ window.SubmissionsTracker = (function () {
             const parsed = countValidFormSubmissions(snapshot.val());
             state.counts.global = parsed.count;
             state.submittedCodes.global = new Set(parsed.codes);
+            injectConfirmedSubmissions();
             state.isLive = true;
             parsed.codes.forEach(c => state.registeredCodes.add(c));
             updateAllCounters();
@@ -631,6 +674,7 @@ window.SubmissionsTracker = (function () {
                 parsed.codes.forEach(c => state.registeredCodes.add(c));
               }
             }
+            injectConfirmedSubmissions();
           }
         } catch (rootErr) {
           console.warn("Aviso na leitura da raiz no refreshFromFirebase:", rootErr);
@@ -675,6 +719,7 @@ window.SubmissionsTracker = (function () {
           state.submittedCodes.global = new Set(parsed.codes);
           parsed.codes.forEach(c => state.registeredCodes.add(c));
         }
+      injectConfirmedSubmissions();
       state.isLive = true;
       updateAllCounters();
     } catch (e) {
@@ -752,15 +797,16 @@ window.SubmissionsTracker = (function () {
   function hasParticipantSubmitted(formTypeOrNum, rawCode) {
     if (!rawCode) return false;
     const clean = String(rawCode).trim().toUpperCase();
-    let set = null;
     if (formTypeOrNum === 1 || formTypeOrNum === "1" || formTypeOrNum === "game") {
-      set = state.submittedCodes.game;
+      if (CONFIRMED_SUBMISSIONS.game.includes(clean)) return true;
+      return Boolean(state.submittedCodes.game && state.submittedCodes.game.has(clean));
     } else if (formTypeOrNum === 2 || formTypeOrNum === "2" || formTypeOrNum === "sim") {
-      set = state.submittedCodes.sim;
+      if (CONFIRMED_SUBMISSIONS.sim.includes(clean)) return true;
+      return Boolean(state.submittedCodes.sim && state.submittedCodes.sim.has(clean));
     } else if (formTypeOrNum === 3 || formTypeOrNum === "3" || formTypeOrNum === "global") {
-      set = state.submittedCodes.global;
+      if (CONFIRMED_SUBMISSIONS.global.includes(clean)) return true;
+      return Boolean(state.submittedCodes.global && state.submittedCodes.global.has(clean));
     }
-    if (set && set.has(clean)) return true;
     return false;
   }
 
@@ -928,6 +974,7 @@ window.SubmissionsTracker = (function () {
    */
   function init() {
     loadRegisteredCodes();
+    injectConfirmedSubmissions();
     updateAllCounters();
     connectFirebase();
     enrichGameSubmissionsFromCsv();
