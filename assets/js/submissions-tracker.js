@@ -104,9 +104,18 @@ window.SubmissionsTracker = (function () {
     if (!raw) return false;
     const clean = String(raw).trim().toUpperCase();
     if (!clean || isExcludedFromSample(clean)) return false;
-    if (/^FG2-PT(0[1-9]|[1-4]\d|50)$/i.test(clean)) return true;
-    if (/^NS-PT(0[1-9]|[1-4]\d|50)$/i.test(clean)) return true;
-    return false;
+    if (/^(NULL|UNDEFINED|NAN|N\/A|NA|NONE|NENHUM|EMPTY|FALSE|TRUE|TEST)$/i.test(clean)) return false;
+    // O formato do código não é relevante: cada país adota a nomenclatura que pretender
+    // (ex: FG2-PTxx, UNITOxx, LAORExx, ESxx, FRxx, etc.)
+    return clean.length >= 1 && clean.length <= 60;
+  }
+
+  function looksLikeParticipantCodePattern(raw) {
+    if (!raw) return false;
+    const s = String(raw).trim().toUpperCase();
+    if (!s || isExcludedFromSample(s)) return false;
+    if (/^(MALE|FEMALE|HOMEM|MULHER|OUTRO|OTHER|YES|NO|SIM|NÃO|NAO|TRUE|FALSE|NULL|UNDEFINED|NAN|N\/A|NA)$/i.test(s)) return false;
+    return /^[A-Z0-9\-_./#]{2,30}$/i.test(s) && /\d/.test(s);
   }
 
   /**
@@ -393,7 +402,7 @@ window.SubmissionsTracker = (function () {
           }
         } else if (!code) {
           for (const k of Object.keys(r)) {
-            if (/c[oó]digo|participant|usercode/i.test(k)) {
+            if (/c[oó]digo|participant|usercode|codice/i.test(k)) {
               const s = String(r[k] || "").trim().toUpperCase();
               if (isExcludedFromSample(s)) { code = null; break; }
               if (isValidParticipantCode(s)) { code = s; break; }
@@ -403,7 +412,7 @@ window.SubmissionsTracker = (function () {
             for (const k of Object.keys(r)) {
               const s = String(r[k] || "").trim().toUpperCase();
               if (isExcludedFromSample(s)) { code = null; break; }
-              if (isValidParticipantCode(s)) { code = s; break; }
+              if (looksLikeParticipantCodePattern(s)) { code = s; break; }
             }
           }
         }

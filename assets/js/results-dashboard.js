@@ -464,11 +464,21 @@ window.ResultsDashboard = (function () {
   }
 
   function isValidParticipantCode(raw) {
+    if (!raw) return false;
     const code = normalizeParticipantCode(raw);
     if (!code || isExcludedFromSample(code)) return false;
-    if (/^FG2-PT(0[1-9]|[1-4]\d|50)$/i.test(code)) return true;
-    if (/^NS-PT(0[1-9]|[1-4]\d|50)$/i.test(code)) return true;
-    return false;
+    if (/^(NULL|UNDEFINED|NAN|N\/A|NA|NONE|NENHUM|EMPTY|FALSE|TRUE|TEST)$/i.test(code)) return false;
+    // O formato do código não é relevante: cada país adota a nomenclatura que pretender
+    // (ex: FG2-PTxx, UNITOxx, LAORExx, ESxx, FRxx, etc.)
+    return code.length >= 1 && code.length <= 60;
+  }
+
+  function looksLikeParticipantCodePattern(raw) {
+    if (!raw) return false;
+    const s = normalizeParticipantCode(raw);
+    if (!s || isExcludedFromSample(s)) return false;
+    if (/^(MALE|FEMALE|HOMEM|MULHER|OUTRO|OTHER|YES|NO|SIM|NÃO|NAO|TRUE|FALSE|NULL|UNDEFINED|NAN|N\/A|NA)$/i.test(s)) return false;
+    return /^[A-Z0-9\-_./#]{2,30}$/i.test(s) && /\d/.test(s);
   }
 
   function round1(x) {
@@ -476,7 +486,7 @@ window.ResultsDashboard = (function () {
   }
 
   function isCodeHeader(h) {
-    return /c[oó]digo|participant code|usercode|participant/i.test(String(h || ""));
+    return /c[oó]digo|participant\s*code|user\s*code|participant|subject\s*id|codice/i.test(String(h || ""));
   }
 
   function isTimestampHeader(h) {
@@ -649,13 +659,13 @@ window.ResultsDashboard = (function () {
       }
     }
 
-    // 3. Varrer todos os valores do objeto procurando padrão de código FG2-PTxx ou NS-PTxx ou código excluído
+    // 3. Varrer todos os valores do objeto procurando padrão de código caso não haja cabeçalho identificado
     for (let i = 0; i < maxK; i++) {
       const k = keys[i];
       const val = row[k];
       if (val !== undefined && val !== null && typeof val !== "object") {
         const c = normalizeParticipantCode(val);
-        if (isValidParticipantCode(c) || isExcludedFromSample(c)) return c;
+        if (looksLikeParticipantCodePattern(c) || isExcludedFromSample(c)) return c;
       }
     }
 
@@ -729,17 +739,17 @@ window.ResultsDashboard = (function () {
       if (rowHasExcluded) continue;
 
       let effectiveCode = "";
-      if (isValidParticipantCode(rawCode)) {
+      if (rawCode && isValidParticipantCode(rawCode)) {
         effectiveCode = normalizeParticipantCode(rawCode);
       } else if (hasSubstantialAnswers(row) && !isExcludedFromSample(rawCode)) {
-        effectiveCode = rawCode ? `P-${rawCode}` : `RESP-${String(i + 1).padStart(2, "0")}`;
+        effectiveCode = rawCode ? normalizeParticipantCode(rawCode) : `RESP-${String(i + 1).padStart(2, "0")}`;
       } else {
         continue;
       }
 
-      row._participantCode = effectiveCode;
+      const cleanRow = Object.assign({}, row, { _participantCode: effectiveCode });
       latestByCode.delete(effectiveCode);
-      latestByCode.set(effectiveCode, row);
+      latestByCode.set(effectiveCode, cleanRow);
     }
 
     const validRows = Array.from(latestByCode.values());
@@ -1199,8 +1209,11 @@ window.ResultsDashboard = (function () {
       let k = state.kpis;
       let participantCount;
 
-      // Amostra Total (N) extraída estritamente do nó /Logins (filtrando duplicados e excluindo sufixo -MD)
-      if (state.totalLogins > 0) {
+      // Amostra Total (N): No modo Consórcio / Apresentação, provém estritamente dos dados do Consórcio (/Consortium2FG)
+      const isConsortium = (window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation") || Boolean(state.rawConsortiumData && state.rawConsortiumData.countries);
+      if (isConsortium) {
+        participantCount = typeof state.totalLogins === "number" ? Math.max(0, state.totalLogins) : 0;
+      } else if (state.totalLogins > 0) {
         participantCount = state.totalLogins;
       } else if (window.SubmissionsTracker && typeof window.SubmissionsTracker.getTotalParticipants === "function" && window.SubmissionsTracker.getTotalParticipants() > 0) {
         participantCount = window.SubmissionsTracker.getTotalParticipants();
@@ -1789,12 +1802,15 @@ window.ResultsDashboard = (function () {
             if (!val) continue;
             const normKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
             if (normKey.includes("login")) {
-              const validLogins = extractValidLoginCodes(val);
-              if (validLogins.length > 0) {
-                state.totalLogins = validLogins.length;
-                state.uniqueLoginCodes = new Set(validLogins);
-                if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
-                  window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+              const isPres = (window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation") || Boolean(state.rawConsortiumData && state.rawConsortiumData.countries);
+              if (!isPres) {
+                const validLogins = extractValidLoginCodes(val);
+                if (validLogins.length > 0) {
+                  state.totalLogins = validLogins.length;
+                  state.uniqueLoginCodes = new Set(validLogins);
+                  if (window.SubmissionsTracker && typeof window.SubmissionsTracker.setTotalParticipants === "function") {
+                    window.SubmissionsTracker.setTotalParticipants(validLogins.length, validLogins);
+                  }
                 }
               }
             } else if (normKey.includes("1") || normKey.includes("game") || normKey.includes("tallentto")) {
@@ -1824,6 +1840,8 @@ window.ResultsDashboard = (function () {
       // 1. /Logins (Amostra Total TT)
       const handleLoginsSnapshot = snapshot => {
         try {
+          const isPres = (window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation") || Boolean(state.rawConsortiumData && state.rawConsortiumData.countries);
+          if (isPres) return;
           const validLogins = extractValidLoginCodes(snapshot.val());
           if (validLogins.length > 0) {
             state.totalLogins = validLogins.length;
@@ -1926,10 +1944,57 @@ window.ResultsDashboard = (function () {
         ? [state.selectedCountry.toLowerCase()]
         : allCountries;
 
+      // 1. Contabilização oficial de participantes segundo a regra do Consórcio:
+      // Para cada país, o número de participantes é sempre o maior número verificado entre os 4 questionários
+      // (ex: Itália com Q1=22, Q2=22, Q3=23, Q4=21 contabiliza 23 participantes).
+      // Na visão "all" (Consolidado), a Amostra Total é a soma do maior número de cada país parceiro.
+      const countryParticipantCounts = {};
+      let totalConsolidatedParticipants = 0;
+
+      allCountries.forEach(cKey => {
+        const cData = state.rawConsortiumData.countries[cKey] ||
+                      state.rawConsortiumData.countries[cKey.toUpperCase()] ||
+                      (cKey === "bl" ? (state.rawConsortiumData.countries.be || state.rawConsortiumData.countries.BE) : null);
+        if (!cData) {
+          countryParticipantCounts[cKey] = 0;
+          return;
+        }
+
+        const q1aRaw = cData.q1a || cData.Q1A || cData.Q1a || [];
+        const q2bRaw = cData.q2b || cData.Q2B || cData.Q2b || [];
+        const q3cRaw = cData.q3c || cData.Q3C || cData.Q3c || [];
+        const q4dRaw = cData.q4d || cData.Q4D || cData.Q4d || [];
+
+        const q1Filtered = filterValidParticipantRows(q1aRaw);
+        const q2Filtered = filterValidParticipantRows(q2bRaw);
+        const q3Filtered = filterValidParticipantRows(q3cRaw);
+        const q4Filtered = filterValidParticipantRows(q4dRaw);
+
+        const countryMax = Math.max(
+          q1Filtered.rows.length,
+          q2Filtered.rows.length,
+          q3Filtered.rows.length,
+          q4Filtered.rows.length
+        );
+
+        countryParticipantCounts[cKey] = countryMax;
+        totalConsolidatedParticipants += countryMax;
+      });
+
+      const selectedKey = (state.selectedCountry && state.selectedCountry !== "all")
+        ? state.selectedCountry.toLowerCase()
+        : "all";
+
+      if (selectedKey === "all") {
+        state.totalLogins = totalConsolidatedParticipants;
+      } else {
+        state.totalLogins = countryParticipantCounts[selectedKey] || 0;
+      }
+
+      // 2. Extrair e agregar as respostas dos países selecionados (targetCountries)
       const mergedGameRows = [];
       const simRows = [];
       const globalRows = [];
-      const allCodes = new Set();
 
       targetCountries.forEach(cKey => {
         const cData = state.rawConsortiumData.countries[cKey] ||
@@ -1950,7 +2015,6 @@ window.ResultsDashboard = (function () {
         q1aRows.forEach((r, idx) => {
           const code = extractParticipantCodeFromRow(r) || `ROW-${cKey}-${idx}`;
           q1aMap.set(code, r);
-          if (code && !code.startsWith("ROW-")) allCodes.add(code);
         });
 
         // Fundir cada registo de q2b com q1a do mesmo participante
@@ -1967,7 +2031,6 @@ window.ResultsDashboard = (function () {
           const merged = Object.assign({}, r1 || {}, r2);
           if (code && !code.startsWith("ROW-") && !merged._participantCode) {
             merged._participantCode = code;
-            allCodes.add(code);
           }
           mergedGameRows.push(merged);
         });
@@ -1984,16 +2047,12 @@ window.ResultsDashboard = (function () {
         // Simulador (q3c)
         const q3cRows = extractRowObjects(q3cRaw);
         q3cRows.forEach(r => {
-          const code = extractParticipantCodeFromRow(r);
-          if (code) allCodes.add(code);
           simRows.push(r);
         });
 
         // Avaliação Global (q4d)
         const q4dRows = extractRowObjects(q4dRaw);
         q4dRows.forEach(r => {
-          const code = extractParticipantCodeFromRow(r);
-          if (code) allCodes.add(code);
           globalRows.push(r);
         });
       });
@@ -2003,13 +2062,13 @@ window.ResultsDashboard = (function () {
       const global = filterValidParticipantRows(globalRows);
 
       state.kpis = computeKpis(game, sim, global);
-      state.totalLogins = allCodes.size || (state.kpis && state.kpis.submissionCodes.size) || game.rows.length;
 
       const hasValidAnswers = game.rows.length + sim.rows.length + global.rows.length > 0;
       if (hasValidAnswers) {
         processRealData(game.rows, sim.rows, global.rows);
         state.isWaitingAnswers = false;
       } else {
+        state.metrics = getZeroMetrics();
         state.isWaitingAnswers = true;
       }
 
@@ -2059,6 +2118,10 @@ window.ResultsDashboard = (function () {
    * Atualiza o número de participantes da amostra total e sincroniza os cartões KPI
    */
   function setLiveParticipantCount(count) {
+    const isConsortium = (window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation") || Boolean(state.rawConsortiumData && state.rawConsortiumData.countries);
+    if (isConsortium) {
+      return;
+    }
     if (typeof count === "number" && count >= 0 && state.totalLogins !== count) {
       state.totalLogins = count;
       renderKpiCards();
@@ -2592,7 +2655,7 @@ window.ResultsDashboard = (function () {
     const finalSuggestions = feedItems.filter(f => f.tagType === "issue");
 
     state.metrics = {
-      participantCount: Math.max(gameRows.length, simRows.length, globalRows.length, state.totalLogins || 0, state.kpis?.submissionCodes?.size || 0),
+      participantCount: (typeof state.totalLogins === "number" && state.totalLogins >= 0) ? state.totalLogins : Math.max(gameRows.length, simRows.length, globalRows.length),
       susGame,
       susSim,
       nps,
