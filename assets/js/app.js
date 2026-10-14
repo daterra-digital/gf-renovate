@@ -879,54 +879,54 @@ window.switchVideo = function(url, btnElement) {
  */
 const fgSessionsGallery = [
   // 1st Focus Group (Consórcio Europeu - Ciclo 1)
-  { id: 'fg1-1', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-1.jpg', alt: '1st Focus Group Session', title: 'Abertura dos Trabalhos', titleEn: 'Opening of Proceedings' },
-  { id: 'fg1-2', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-2.jpg', alt: '1st Focus Group Session', title: 'Apresentação e Enquadramento', titleEn: 'Presentation & Framework' },
-  { id: 'fg1-3', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-3.jpg', alt: '1st Focus Group Session', title: 'Auditório com Peritos Agrários', titleEn: 'Auditorium with Agronomic Experts' },
-  { id: 'fg1-4', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-4.jpg', alt: '1st Focus Group Session', title: 'Sessão Plenária Inicial', titleEn: 'Initial Plenary Session' },
-  { id: 'fg1-5', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-5.jpg', alt: '1st Focus Group Session', title: 'Intervenção Institucional', titleEn: 'Institutional Address' },
-  { id: 'fg1-6', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-6.jpg', alt: '1st Focus Group Session', title: 'Apresentação do Consórcio Europeu', titleEn: 'European Consortium Presentation' },
-  { id: 'fg1-7', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-7.jpg', alt: '1st Focus Group Session', title: 'Mesa Redonda Participativa', titleEn: 'Participatory Roundtable' },
-  { id: 'fg1-8', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-8.jpg', alt: '1st Focus Group Session', title: 'Trabalho em Grupo e Co-criação', titleEn: 'Group Work & Co-Creation' },
-  { id: 'fg1-9', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-9.jpg', alt: '1st Focus Group Session', title: 'Debate sobre Formação Prática', titleEn: 'Practical Training Debate' },
-  { id: 'fg1-10', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-10.jpg', alt: '1st Focus Group Session', title: 'Discussão de Barreiras no Campo', titleEn: 'Discussion of Field Barriers' },
-  { id: 'fg1-11', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-11.jpg', alt: '1st Focus Group Session', title: 'Mapeamento de Competências', titleEn: 'Competence Mapping' },
-  { id: 'fg1-12', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-12.jpg', alt: '1st Focus Group Session', title: 'Interação e Partilha Ativa', titleEn: 'Active Interaction & Sharing' },
-  { id: 'fg1-13', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-13.jpg', alt: '1st Focus Group Session', title: 'Apresentação dos Resultados', titleEn: 'Results Presentation' },
-  { id: 'fg1-14', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-14.jpg', alt: '1st Focus Group Session', title: 'Registo dos Pontos-Chave', titleEn: 'Key Points Recording' },
-  { id: 'fg1-15', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-15.jpg', alt: '1st Focus Group Session', title: 'Debate Final em Auditório', titleEn: 'Final Auditorium Debate' },
-  { id: 'fg1-16', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-16.jpg', alt: '1st Focus Group Session', title: 'Sistematização de Conclusões', titleEn: 'Systematisation of Conclusions' },
-  { id: 'fg1-17', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-17.jpg', alt: '1st Focus Group Session', title: 'Recomendações para Ferramentas Digitais', titleEn: 'Recommendations for Digital Tools' },
-  { id: 'fg1-18', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-18.jpg', alt: '1st Focus Group Session', title: 'Alinhamento das Diretrizes', titleEn: 'Guidelines Alignment' },
-  { id: 'fg1-19', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-19.jpg', alt: '1st Focus Group Session', title: 'Sessão Plenária de Encerramento', titleEn: 'Closing Plenary Session' },
-  { id: 'fg1-20', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-20.jpg', alt: '1st Focus Group Session', title: 'Conclusão do 1º Grupo Focal', titleEn: 'Conclusion of 1st Focus Group' },
+  { id: 'fg1-1', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-1.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-2', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-2.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-3', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-3.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-4', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-4.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-5', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-5.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-6', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-6.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-7', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-7.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-8', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-8.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-9', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-9.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-10', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-10.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-11', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-11.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-12', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-12.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-13', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-13.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-14', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-14.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-15', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-15.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-16', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-16.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-17', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-17.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-18', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-18.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-19', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-19.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
+  { id: 'fg1-20', session: 'fg1', label: '1st Focus Group', src: 'assets/images/gf1/gf1-20.jpg', alt: 'Focus Group Sessions Gallery - 1st Focus Group', title: 'Focus Group Sessions Gallery - 1st Focus Group', titleEn: 'Focus Group Sessions Gallery - 1st Focus Group' },
 
   // 2nd Focus Group (Sessão de Testes Práticos e Validação da Plataforma - Ciclo 2)
-  { id: 'fg2-01', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-01.webp', alt: '2nd Focus Group Session', title: 'Abertura & Enquadramento do 2º Grupo Focal', titleEn: 'Opening & 2nd Focus Group Framework' },
-  { id: 'fg2-02', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-02.webp', alt: '2nd Focus Group Session', title: 'Apresentação dos Objetivos e Metodologia de Avaliação', titleEn: 'Objectives & Evaluation Methodology Presentation' },
-  { id: 'fg2-03', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-03.webp', alt: '2nd Focus Group Session', title: 'Demonstração das Novas Funcionalidades da Plataforma', titleEn: 'Demonstration of Platform Features' },
-  { id: 'fg2-04', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-04.webp', alt: '2nd Focus Group Session', title: 'Exploração do Módulo Serious Game de Calibração', titleEn: 'Calibration Serious Game Module Exploration' },
-  { id: 'fg2-05', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-05.webp', alt: '2nd Focus Group Session', title: 'Navegação e Mecânicas Interativas do Jogo', titleEn: 'Game Navigation & Interactive Mechanics' },
-  { id: 'fg2-06', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-06.webp', alt: '2nd Focus Group Session', title: 'Início dos Testes Hands-on com Participantes', titleEn: 'Hands-on Testing with Participants' },
-  { id: 'fg2-07', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-07.webp', alt: '2nd Focus Group Session', title: 'Resolução de Cenários e Quizzes de Calibração', titleEn: 'Calibration Scenarios & Quizzes Solving' },
-  { id: 'fg2-08', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-08.webp', alt: '2nd Focus Group Session', title: 'Acompanhamento Técnico e Apoio aos Utilizadores', titleEn: 'Technical Support & User Guidance' },
-  { id: 'fg2-09', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-09.webp', alt: '2nd Focus Group Session', title: 'Introdução ao Ambiente 3D do Simulador de Pulverização', titleEn: 'Introduction to 3D Spray Simulator Environment' },
-  { id: 'fg2-10', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-10.webp', alt: '2nd Focus Group Session', title: 'Configuração de Bicos e Volume de Calda no Simulador', titleEn: 'Nozzle Configuration & Spray Volume Setup' },
-  { id: 'fg2-11', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-11.webp', alt: '2nd Focus Group Session', title: 'Simulação de Condições de Campo e Fórmulas de Débito', titleEn: 'Field Conditions & Flow Rate Formulas Simulation' },
-  { id: 'fg2-12', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-12.webp', alt: '2nd Focus Group Session', title: 'Participantes em Trabalho Prático Individual', titleEn: 'Participants in Individual Practical Work' },
-  { id: 'fg2-13', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-13.webp', alt: '2nd Focus Group Session', title: 'Preenchimento do Questionário de Avaliação e Usabilidade', titleEn: 'Evaluation & Usability Questionnaire Completion' },
-  { id: 'fg2-14', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-14.webp', alt: '2nd Focus Group Session', title: 'Troca de Impressões Técnicas com Moderadores', titleEn: 'Technical Discussion with Moderators' },
-  { id: 'fg2-15', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-15.webp', alt: '2nd Focus Group Session', title: 'Debate de Grupo sobre Usabilidade e Ergonomia (SUS)', titleEn: 'Group Debate on Usability & Ergonomics (SUS)' },
-  { id: 'fg2-16', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-16.webp', alt: '2nd Focus Group Session', title: 'Análise da Eficácia Pedagógica dos Cenários Digitais', titleEn: 'Analysis of Pedagogical Effectiveness of Digital Scenarios' },
-  { id: 'fg2-17', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-17.webp', alt: '2nd Focus Group Session', title: 'Validação da Sequência de Tomada de Decisão Agronómica', titleEn: 'Validation of Agronomic Decision Sequence' },
-  { id: 'fg2-18', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-18.webp', alt: '2nd Focus Group Session', title: 'Recolha de Sugestões de Melhoria e Bloqueios', titleEn: 'Collection of Improvement Suggestions & Issues' },
-  { id: 'fg2-19', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-19.webp', alt: '2nd Focus Group Session', title: 'Mesa-Redonda sobre Adaptação Prática na Formação Agrícola', titleEn: 'Roundtable on Practical Adaptation in Agricultural Training' },
-  { id: 'fg2-20', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-20.webp', alt: '2nd Focus Group Session', title: 'Partilha de Comentários Qualitativos e Palavras-Chave', titleEn: 'Sharing Qualitative Feedback & Key Words' },
-  { id: 'fg2-21', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-21.webp', alt: '2nd Focus Group Session', title: 'Discussão Plenária sobre Recomendação e Impacto (NPS)', titleEn: 'Plenary Discussion on Recommendation & Impact (NPS)' },
-  { id: 'fg2-22', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-22.webp', alt: '2nd Focus Group Session', title: 'Síntese das Conclusões com a Equipa de Investigação', titleEn: 'Synthesis of Conclusions with Research Team' },
-  { id: 'fg2-23', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-23.webp', alt: '2nd Focus Group Session', title: 'Intervenção dos Representantes do Consórcio Europeu', titleEn: 'Address by European Consortium Representatives' },
-  { id: 'fg2-24', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-24.webp', alt: '2nd Focus Group Session', title: 'Consolidação das Diretrizes para a Versão Final', titleEn: 'Consolidation of Guidelines for the Final Version' },
-  { id: 'fg2-26', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-26.webp', alt: '2nd Focus Group Session', title: 'Registo Fotográfico dos Participantes no 2º Grupo Focal', titleEn: 'Participants Photographic Record at 2nd Focus Group' },
-  { id: 'fg2-27', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-27.webp', alt: '2nd Focus Group Session', title: 'Sessão de Encerramento e Agradecimentos Institucionais', titleEn: 'Closing Session & Institutional Acknowledgements' }
+  { id: 'fg2-01', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-01.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-02', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-02.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-03', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-03.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-04', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-04.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-05', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-05.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-06', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-06.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-07', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-07.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-08', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-08.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-09', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-09.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-10', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-10.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-11', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-11.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-12', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-12.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-13', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-13.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-14', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-14.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-15', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-15.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-16', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-16.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-17', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-17.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-18', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-18.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-19', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-19.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-20', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-20.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-21', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-21.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-22', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-22.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-23', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-23.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-24', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-24.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-26', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-26.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' },
+  { id: 'fg2-27', session: 'fg2', label: '2nd Focus Group', src: 'assets/images/gf1/gf2-27.webp', alt: 'Focus Group Sessions Gallery - 2nd Focus Group', title: 'Focus Group Sessions Gallery - 2nd Focus Group', titleEn: 'Focus Group Sessions Gallery - 2nd Focus Group' }
   // 3rd Focus Group (Espaço reservado para as fotografias da 3ª sessão após validação)
 ];
 
@@ -963,24 +963,26 @@ function renderSessionGallery(activeSession) {
   }
 
   grid.innerHTML = filtered.map((item, idx) => {
-    const sessionLabel = (window.I18nManager && typeof window.I18nManager.t === 'function')
-      ? window.I18nManager.t('fg1.filter.' + item.session, item.label || 'Focus Group')
-      : (item.label || 'Focus Group');
-
-    const itemTitle = (window.I18nManager && window.I18nManager.isEnglish() && item.titleEn)
-      ? item.titleEn
-      : (item.title || sessionLabel);
+    let sessionName = '1st Focus Group';
+    if (item.session === 'fg2') {
+      sessionName = '2nd Focus Group';
+    } else if (item.session === 'fg3') {
+      sessionName = '3rd Focus Group';
+    } else if (item.label) {
+      sessionName = item.label;
+    }
+    const singleCaption = `Focus Group Sessions Gallery - ${sessionName}`;
 
     return `
     <div onclick="openSessionGallerySlideshow(${idx})" 
          class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative group shadow-2xs cursor-pointer hover:border-[#F5B842] hover:shadow-lg transition-all duration-300"
-         title="${itemTitle}">
-      <img src="${item.src}" alt="${itemTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500" 
+         title="${singleCaption}">
+      <img src="${item.src}" alt="${singleCaption}" loading="lazy" class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500" 
            onerror="this.src='https://placehold.co/400x300/e2e8f0/475569?text=Focus+Group'">
       
       <!-- Overlay com Efeito Hover e Ícone de Ampliação / Slide Show -->
       <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3.5">
-        <span class="text-white text-xs font-bold drop-shadow-sm truncate pr-2">${itemTitle}</span>
+        <span class="text-white text-xs font-bold drop-shadow-sm truncate pr-2">${singleCaption}</span>
         <div class="w-8 h-8 rounded-full bg-[#F5B842] text-slate-950 flex items-center justify-center shrink-0 shadow-md">
           <i data-lucide="maximize-2" class="w-4 h-4"></i>
         </div>
@@ -989,7 +991,7 @@ function renderSessionGallery(activeSession) {
       <!-- Etiqueta de Identificação da Sessão -->
       <div class="absolute top-2.5 left-2.5 bg-slate-900/85 backdrop-blur-xs text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md shadow-sm border border-white/10 flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-        <span>${sessionLabel}</span>
+        <span>${sessionName}</span>
       </div>
     </div>
   `;
@@ -1929,9 +1931,6 @@ function navigateGf1Lightbox(direction) {
 }
 
 function updateLightboxContent() {
-  const isEn = window.I18nManager && window.I18nManager.isEnglish();
-  const t = (k, fallback) => (window.I18nManager && typeof window.I18nManager.t === "function" ? window.I18nManager.t(k, fallback) : fallback);
-
   const imgEl = document.getElementById("gf1-lightbox-img");
   const albumEl = document.getElementById("gf1-lightbox-album");
   const titleEl = document.getElementById("gf1-lightbox-title");
@@ -1939,8 +1938,7 @@ function updateLightboxContent() {
 
   let currentItem = null;
   let totalCount = 0;
-  let albumTitle = "";
-  let itemTitle = "";
+  let singleCaption = "";
 
   if (currentLightboxState.mode === 'session') {
     const items = currentLightboxState.items || [];
@@ -1952,10 +1950,15 @@ function updateLightboxContent() {
     currentItem = items[currentLightboxState.index];
     if (!currentItem) return;
 
-    const sessionKey = 'fg1.filter.' + currentItem.session;
-    const sessionName = t(sessionKey, currentItem.label || 'Focus Group');
-    albumTitle = t('fg1.gallerySectionTitle', 'Focus Group Sessions Gallery') + ' • ' + sessionName;
-    itemTitle = (isEn && currentItem.titleEn) ? currentItem.titleEn : (currentItem.title || currentItem.alt || sessionName);
+    let sessionName = '1st Focus Group';
+    if (currentItem.session === 'fg2') {
+      sessionName = '2nd Focus Group';
+    } else if (currentItem.session === 'fg3') {
+      sessionName = '3rd Focus Group';
+    } else if (currentItem.label) {
+      sessionName = currentItem.label;
+    }
+    singleCaption = `Focus Group Sessions Gallery - ${sessionName}`;
   } else {
     const gf1 = RENOVATE_CONFIG.gf1;
     if (!gf1 || !gf1.galleryAlbums || !currentLightboxState.albumId) return;
@@ -1969,19 +1972,20 @@ function updateLightboxContent() {
     currentItem = album.images[currentLightboxState.index];
     if (!currentItem) return;
 
-    albumTitle = (isEn && album.titleEn) ? album.titleEn : album.title;
-    itemTitle = (isEn && currentItem.titleEn) ? currentItem.titleEn : (currentItem.title || currentItem.filename || '');
+    singleCaption = "Focus Group Sessions Gallery - 1st Focus Group";
   }
 
   if (imgEl && currentItem) {
     imgEl.src = currentItem.src;
-    imgEl.alt = itemTitle;
+    imgEl.alt = singleCaption;
   }
   if (albumEl) {
-    albumEl.textContent = albumTitle;
+    albumEl.textContent = singleCaption;
+    albumEl.className = "font-bold text-white text-xs sm:text-sm block truncate";
   }
   if (titleEl) {
-    titleEl.textContent = itemTitle;
+    titleEl.textContent = "";
+    titleEl.style.display = "none";
   }
   if (counterEl) {
     counterEl.textContent = `${currentLightboxState.index + 1} / ${totalCount}`;
