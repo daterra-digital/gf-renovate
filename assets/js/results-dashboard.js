@@ -238,20 +238,28 @@ window.ResultsDashboard = (function () {
   function renderDigitalScale(roundedMean) {
     const container = document.getElementById("demo-digital-scale");
     if (!container) return;
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t.bind(window.I18nManager) : (k => k);
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const titles = isEn ? [
-      "1 - Very uncomfortable",
-      "2 - Uncomfortable",
-      "3 - Neutral",
-      "4 - Comfortable",
-      "5 - Very comfortable"
-    ] : [
-      "1 - Muito desconfortável",
-      "2 - Desconfortável",
-      "3 - Neutro",
-      "4 - Confortável",
-      "5 - Muito confortável"
-    ];
+    const qData = window.RENOVATE_CONFIG && window.RENOVATE_CONFIG.questionnaireData;
+    const currentLang = (window.I18nManager && window.I18nManager.getCurrentLanguage) ? window.I18nManager.getCurrentLanguage() : "pt-PT";
+    const q6 = qData && qData[currentLang] && qData[currentLang].find(q => q.id === "Q6");
+    const titles = (q6 && Array.isArray(q6.options) && q6.options.length === 5)
+      ? q6.options
+      : (isEn ? [
+          "1 - Very uncomfortable",
+          "2 - Uncomfortable",
+          "3 - Neutral",
+          "4 - Comfortable",
+          "5 - Very comfortable"
+        ] : [
+          "1 - Muito desconfortável",
+          "2 - Desconfortável",
+          "3 - Neutro",
+          "4 - Confortável",
+          "5 - Muito confortável"
+        ]);
+
+    const avgLabel = t("results.demo.average") || (isEn ? "Average" : "Média");
 
     let html = "";
     for (let i = 1; i <= 5; i++) {
@@ -259,7 +267,7 @@ window.ResultsDashboard = (function () {
       const badgeClass = isHighlight
         ? "px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-extrabold shadow-2xs border border-amber-300"
         : "px-1.5 py-0.5 rounded bg-slate-100 text-slate-600";
-      const text = isHighlight ? `${i} (${isEn ? "Mean" : "Média"})` : `${i}`;
+      const text = isHighlight ? `${i} (${avgLabel})` : `${i}`;
       html += `<span class="${badgeClass}" title="${titles[i - 1]}">${text}</span>`;
       if (i < 5) html += `<span class="text-slate-300">•</span>`;
     }
@@ -291,17 +299,19 @@ window.ResultsDashboard = (function () {
   };
 
   function getQ29DynamicZoneLabel(avg, isEn) {
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t.bind(window.I18nManager) : (k => k);
+    const isEnglish = (isEn !== undefined) ? isEn : (window.I18nManager && window.I18nManager.isEnglish());
     if (avg === null || avg === undefined) {
-      return isEn ? "(Awaiting responses)" : "(A aguardar respostas)";
+      return t("results.nps.zoneText") || (isEnglish ? "(Awaiting responses)" : "(A aguardar respostas)");
     }
     const a = round1(avg);
     if (a >= 4.0) {
-      return isEn ? "(Very or Extremely likely)" : "(Muito ou Extremamente provável)";
+      return t("results.nps.zoneVeryExtr") || (isEnglish ? "(Very or Extremely likely)" : "(Muito ou Extremamente provável)");
     }
     if (a >= 3.0) {
-      return isEn ? "(Moderately likely)" : "(Moderadamente provável)";
+      return t("results.nps.zoneMod") || (isEnglish ? "(Moderately likely)" : "(Moderadamente provável)");
     }
-    return isEn ? "(Unlikely or Not likely)" : "(Pouco ou Nada provável)";
+    return t("results.nps.zoneLow") || (isEnglish ? "(Unlikely or Not likely)" : "(Pouco ou Nada provável)");
   }
 
   function parseQ29Recommendation(val) {
@@ -919,44 +929,91 @@ window.ResultsDashboard = (function () {
     const s = String(val).trim();
     if (!s) return null;
 
-    // 1. Dígito direto no texto: "(4) Concordo", "4 - Concordo", "[4]", "4", etc.
-    const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s]|$)/);
+    // 1. Extração direta caso contenha número inicial ou entre parênteses: "(4) - ...", "4 - ...", "4"
+    const m = s.match(/(?:^|[(\[\s])([1-5])(?:[)\]\s\-]|$)/);
     if (m) return parseInt(m[1], 10);
 
     const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // 2. Nível 5 (Máximo / Excelente / Muito Positivo)
-    if (norm.includes("excede largamente") || norm.includes("extremamente") || norm.includes("far exceeds")) return 5;
-    if (norm.includes("concordo totalmente") || norm.includes("concordo fortemente") || norm.includes("strongly agree")) return 5;
-    if (norm.includes("muito claro") || norm.includes("muito clara") || norm.includes("muito eficaz") || norm.includes("muito util") || norm.includes("muito envolvente") || norm.includes("muito facil") || norm.includes("muito preciso") || norm.includes("muito realista") || norm.includes("muito confortavel") || norm.includes("muito provavel") || norm.includes("muito satisfeito")) return 5;
-    if (norm === "muito facil" || norm === "muito claro" || norm === "muito clara" || norm === "muito eficaz" || norm === "muito util" || norm === "muito envolvente" || norm === "muito preciso" || norm === "muito realista" || norm === "muito confortavel" || norm === "muito provavel") return 5;
+    // 2. NÍVEL 1 (Mínimo / Negativo Extremo) - Avaliado primeiro para evitar conflitos de substrings
+    if (
+      norm.includes("strongly disagree") || norm.includes("discordo totalmente") || norm.includes("discordo fortemente") ||
+      norm.includes("falls entirely short") || norm.includes("muito abaixo") || norm.includes("far below") ||
+      norm.includes("not at all likely") || norm.includes("not likely") || norm.includes("nada provavel") ||
+      norm.includes("not clear at all") || norm.includes("nada claro") || norm.includes("nada clara") ||
+      norm.includes("not effective at all") || norm.includes("nada eficaz") ||
+      norm.includes("not useful at all") || norm.includes("nada util") ||
+      norm.includes("not engaging at all") || norm.includes("nada envolvente") ||
+      norm.includes("not realistic at all") || norm.includes("nada realista") ||
+      norm.includes("not accurate at all") || norm.includes("nada preciso") || norm.includes("nada precisa") ||
+      norm.includes("very difficult") || norm.includes("muito dificil") ||
+      norm.includes("very confusing") || norm.includes("muito confuso") ||
+      norm.includes("too easy") || norm.includes("muito facil") || // Q8 Nível 1
+      norm.includes("very uncomfortable") || norm.includes("muito desconfortavel")
+    ) return 1;
 
-    // 3. Nível 4 (Alto / Positivo)
-    if (norm.includes("excede as expectativas") || norm.includes("excede expectativas") || norm.includes("exceeds")) return 4;
-    if (norm.includes("concordo") || norm.includes("agree")) return 4;
-    if (norm.includes("clara") || norm.includes("claro") || norm.includes("eficaz") || norm.includes("util") || norm.includes("envolvente") || norm.includes("facil") || norm.includes("preciso") || norm.includes("realista") || norm.includes("confortavel") || norm.includes("provavel") || norm.includes("satisfeito")) {
-      if (!norm.includes("pouco") && !norm.includes("moderad") && !norm.includes("nada") && !norm.includes("nem") && !norm.includes("nao") && !norm.includes("abaixo")) {
-        return 4;
-      }
-    }
+    // 3. NÍVEL 5 (Máximo / Muito Positivo / Excelente) - Avaliado antes dos níveis médios
+    if (
+      norm.includes("strongly agree") || norm.includes("concordo totalmente") || norm.includes("concordo fortemente") ||
+      norm.includes("greatly exceeds") || norm.includes("excede largamente") || norm.includes("far exceeds") ||
+      norm.includes("extremely likely") || norm.includes("extremamente provavel") || norm.includes("extremamente") ||
+      norm.includes("very clear") || norm.includes("muito claro") || norm.includes("muito clara") ||
+      norm.includes("very effective") || norm.includes("muito eficaz") ||
+      norm.includes("very useful") || norm.includes("muito util") ||
+      norm.includes("very engaging") || norm.includes("muito envolvente") ||
+      norm.includes("very realistic") || norm.includes("muito realista") ||
+      norm.includes("very accurate") || norm.includes("muito preciso") || norm.includes("muito precisa") ||
+      norm.includes("very easy") || norm.includes("muito facil") ||
+      norm.includes("very comfortable") || norm.includes("muito confortavel") ||
+      norm.includes("too difficult") || norm.includes("muito dificil") // Q8 Nível 5
+    ) return 5;
 
-    // 4. Nível 3 (Neutro / Médio / Adequado)
-    if (norm.includes("correspondeu") || norm.includes("atendeu") || norm.includes("met expectations")) return 3;
-    if (norm.includes("nem concordo") || norm.includes("neutro") || norm.includes("indiferente") || norm.includes("neither") || norm.includes("nem confuso") || norm.includes("nem facil")) return 3;
-    if (norm.includes("moderada") || norm.includes("moderad") || norm.includes("equilibrad") || norm.includes("adequado") || norm.includes("razoavel")) return 3;
+    // 4. NÍVEL 3 (Neutro / Adequado / Médio) - Avaliado antes de Nível 2 e 4 para isolar "Neither", "Moderately" e "Meets"
+    if (
+      norm.includes("meets expectations") || norm.includes("correspondeu") || norm.includes("atendeu") ||
+      norm.includes("moderately likely") || norm.includes("moderadamente provavel") || norm.includes("moderavelmente provavel") ||
+      norm.includes("moderately clear") || norm.includes("moderadamente claro") || norm.includes("moderadamente clara") ||
+      norm.includes("moderately effective") || norm.includes("moderadamente eficaz") ||
+      norm.includes("moderately useful") || norm.includes("moderadamente util") ||
+      norm.includes("moderately engaging") || norm.includes("moderadamente envolvente") ||
+      norm.includes("moderately realistic") || norm.includes("moderadamente realista") ||
+      norm.includes("moderately accurate") || norm.includes("moderadamente preciso") ||
+      norm.includes("neither") || norm.includes("neutro") || norm.includes("neutral") || norm.includes("indiferente") ||
+      norm.includes("adequate") || norm.includes("adequado") || norm.includes("razoavel")
+    ) return 3;
 
-    // 5. Nível 2 (Baixo / Negativo / Pouco)
-    if (norm.includes("abaixo das expectativas") || norm.includes("below expectations")) return 2;
-    if (norm.includes("discordo") || norm.includes("disagree")) return 2;
-    if (norm.includes("pouco") || norm.includes("um pouco") || norm.includes("confuso") || norm.includes("ineficaz") || norm.includes("inutil") || norm.includes("desconfortavel") || norm.includes("improvavel") || norm.includes("insatisfeito")) {
-      if (!norm.includes("nada") && !norm.includes("muito")) return 2;
-    }
-    if (norm.includes("dificil") && !norm.includes("muito") && !norm.includes("nem")) return 2;
+    // 5. NÍVEL 2 (Baixo / Negativo Ligeiro) - Avaliado antes do Nível 4 para que "slightly/disagree" prevaleçam sobre "agree/clear/easy"
+    if (
+      norm.includes("falls slightly short") || norm.includes("abaixo das expectativas") || norm.includes("below expectations") ||
+      norm.includes("slightly likely") || norm.includes("pouco provavel") || norm.includes("unlikely") ||
+      norm.includes("slightly clear") || norm.includes("pouco claro") || norm.includes("pouco clara") ||
+      norm.includes("slightly effective") || norm.includes("pouco eficaz") ||
+      norm.includes("slightly useful") || norm.includes("pouco util") ||
+      norm.includes("slightly engaging") || norm.includes("pouco envolvente") ||
+      norm.includes("slightly realistic") || norm.includes("pouco realista") ||
+      norm.includes("slightly accurate") || norm.includes("pouco preciso") ||
+      norm.includes("somewhat easy") || norm.includes("um pouco facil") || // Q8 Nível 2
+      (!norm.includes("somewhat") && !norm.includes("um pouco") && (norm === "difficult" || norm.includes(" difficult") || norm.includes("dificil"))) ||
+      norm === "confusing" || norm.includes(" confusing") || norm.includes("confuso") ||
+      norm.includes("uncomfortable") || norm.includes("desconfortavel") ||
+      norm.includes("disagree") || norm.includes("discordo")
+    ) return 2;
 
-    // 6. Nível 1 (Mínimo / Muito Negativo)
-    if (norm.includes("muito abaixo") || norm.includes("far below")) return 1;
-    if (norm.includes("discordo totalmente") || norm.includes("discordo fortemente") || norm.includes("strongly disagree")) return 1;
-    if (norm.includes("nada") || norm.includes("not ") || norm.includes("muito dificil") || norm.includes("muito confuso") || norm.includes("pessimo")) return 1;
+    // 6. NÍVEL 4 (Alto / Positivo)
+    if (
+      norm.includes("exceeds expectations") || norm.includes("excede as expectativas") || norm.includes("excede expectativas") ||
+      norm.includes("very likely") || norm.includes("muito provavel") ||
+      norm.includes("agree") || norm.includes("concordo") ||
+      norm.includes("somewhat difficult") || norm.includes("um pouco dificil") || // Q8 Nível 4
+      norm === "clear" || norm.includes(" clear") || norm.includes("claro") || norm.includes("clara") ||
+      norm === "effective" || norm.includes(" effective") || norm.includes("eficaz") ||
+      norm === "useful" || norm.includes(" useful") || norm.includes("util") ||
+      norm === "engaging" || norm.includes(" engaging") || norm.includes("envolvente") ||
+      norm === "realistic" || norm.includes(" realistic") || norm.includes("realista") ||
+      norm === "accurate" || norm.includes(" accurate") || norm.includes("preciso") || norm.includes("precisa") ||
+      norm === "easy" || norm.includes(" easy") || norm.includes("facil") ||
+      norm === "comfortable" || norm.includes(" comfortable") || norm.includes("confortavel")
+    ) return 4;
 
     return null;
   }
@@ -1114,19 +1171,21 @@ window.ResultsDashboard = (function () {
   }
 
   function getSusLabel(score, isEn) {
-    if (score === null) return isEn ? "Awaiting responses" : "A aguardar respostas";
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    if (score === null || score === undefined) return (window.I18nManager && window.I18nManager.isEnglish()) ? "Awaiting responses" : "A aguardar respostas";
     const s = round1(score);
-    if (s >= SUS_EXCELLENT_MIN) return isEn ? "Excellent" : "Excelente";
-    if (s >= SUS_GOOD_MIN) return isEn ? "Good" : "Bom";
-    return isEn ? "Below Average" : "Abaixo da Média";
+    if (s >= SUS_EXCELLENT_MIN) return (window.I18nManager && window.I18nManager.t("results.sus.excellent")) || "Excelente";
+    if (s >= SUS_GOOD_MIN) return t("results.bench.good");
+    return t("results.bench.belowAvg");
   }
 
   function getQ29Label(avg, isEn) {
-    if (avg === null) return isEn ? "Awaiting responses" : "A aguardar respostas";
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    if (avg === null || avg === undefined) return (window.I18nManager && window.I18nManager.isEnglish()) ? "Awaiting responses" : "A aguardar respostas";
     const a = round1(avg);
-    if (a >= Q29_HIGH_MIN) return isEn ? "High Recommendation Intent" : "Elevada Intenção de Recomendação";
-    if (a >= Q29_MODERATE_MIN) return isEn ? "Moderate Intent" : "Intenção Moderada";
-    return isEn ? "Low Recommendation Intent" : "Baixa Intenção de Recomendação";
+    if (a >= Q29_HIGH_MIN) return t("results.npsZoneLabel");
+    if (a >= Q29_MODERATE_MIN) return (window.I18nManager && window.I18nManager.isEnglish()) ? "Moderate Intent" : "Intenção Moderada";
+    return (window.I18nManager && window.I18nManager.isEnglish()) ? "Low Recommendation Intent" : "Baixa Intenção de Recomendação";
   }
 
   /**
@@ -1297,6 +1356,8 @@ window.ResultsDashboard = (function () {
       sim: null,
       global: null
     },
+    rawConsortiumData: null,
+    selectedCountry: "all",
     metrics: getZeroMetrics(),
     kpis: null, // dados reais (filtrados) dos 4 cartões de resumo
     charts: window.chartInstances
@@ -1337,6 +1398,11 @@ window.ResultsDashboard = (function () {
    * Ligação de eventos da interface
    */
   function bindEvents() {
+    // Escuta evento global de alteração de idioma
+    window.addEventListener("languageChanged", () => {
+      renderAllDashboardMetrics();
+    });
+
     // Botão de Atualização Manual
     const refreshBtn = document.getElementById("btn-refresh-results");
     if (refreshBtn) {
@@ -1352,6 +1418,17 @@ window.ResultsDashboard = (function () {
         } catch (err) {
           console.error("Erro ao clicar no botão de atualização:", err);
           stopRefreshSpinner();
+        }
+      });
+    }
+
+    // Seletor Discreto de País para Apresentação Europeia
+    const countrySelect = document.getElementById("results-country-select");
+    if (countrySelect) {
+      countrySelect.addEventListener("change", (e) => {
+        state.selectedCountry = e.target.value;
+        if (state.rawConsortiumData) {
+          syncConsortiumData();
         }
       });
     }
@@ -1726,6 +1803,8 @@ window.ResultsDashboard = (function () {
               state.rawFirebaseData.sim = val;
             } else if (normKey.includes("3") || normKey.includes("global") || normKey.includes("nps")) {
               state.rawFirebaseData.global = val;
+            } else if (normKey.includes("consortium") || normKey === "consortium2fg") {
+              state.rawConsortiumData = val;
             }
           }
           syncAllFirebaseData();
@@ -1800,6 +1879,18 @@ window.ResultsDashboard = (function () {
       };
       safeListen(["/RespostasdoFormulário3", "/RespostasdoFormulario3", "/Respostas do Formulário 3", "/Respostas do Formulario 3", "/Formulário3", "/Formulario3"], handleGlobalSnapshot);
 
+      // 5. /Consortium2FG (Dados dos 6 Países do Consórcio Europeu)
+      db.ref("/Consortium2FG").on("value", snap => {
+        const val = snap.val();
+        if (val !== null) {
+          state.rawConsortiumData = val;
+          const isPres = window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation";
+          if (isPres) {
+            syncConsortiumData();
+          }
+        }
+      });
+
       state.isLive = true;
       updateConnectionBadge(true);
     } catch (err) {
@@ -1821,9 +1912,125 @@ window.ResultsDashboard = (function () {
   });
 
   /**
+   * Sincroniza e processa os dados consolidados do Consórcio Europeu (/Consortium2FG)
+   * Suporta visão agrupada de todos os países (all) ou filtro individual por país.
+   */
+  function syncConsortiumData() {
+    try {
+      if (!state.rawConsortiumData || !state.rawConsortiumData.countries) {
+        return;
+      }
+
+      const allCountries = ["pt", "es", "it", "fr", "bl", "pl"];
+      const targetCountries = (state.selectedCountry && state.selectedCountry !== "all")
+        ? [state.selectedCountry.toLowerCase()]
+        : allCountries;
+
+      const mergedGameRows = [];
+      const simRows = [];
+      const globalRows = [];
+      const allCodes = new Set();
+
+      targetCountries.forEach(cKey => {
+        const cData = state.rawConsortiumData.countries[cKey] ||
+                      state.rawConsortiumData.countries[cKey.toUpperCase()] ||
+                      (cKey === "bl" ? (state.rawConsortiumData.countries.be || state.rawConsortiumData.countries.BE) : null);
+        if (!cData) return;
+
+        const q1aRaw = cData.q1a || cData.Q1A || cData.Q1a || [];
+        const q2bRaw = cData.q2b || cData.Q2B || cData.Q2b || [];
+        const q3cRaw = cData.q3c || cData.Q3C || cData.Q3c || [];
+        const q4dRaw = cData.q4d || cData.Q4D || cData.Q4d || [];
+
+        const q1aRows = extractRowObjects(q1aRaw);
+        const q2bRows = extractRowObjects(q2bRaw);
+
+        // Mapear q1a por código de participante
+        const q1aMap = new Map();
+        q1aRows.forEach((r, idx) => {
+          const code = extractParticipantCodeFromRow(r) || `ROW-${cKey}-${idx}`;
+          q1aMap.set(code, r);
+          if (code && !code.startsWith("ROW-")) allCodes.add(code);
+        });
+
+        // Fundir cada registo de q2b com q1a do mesmo participante
+        const matchedCodes = new Set();
+        q2bRows.forEach((r2, idx) => {
+          const code = extractParticipantCodeFromRow(r2) || `ROW-${cKey}-${idx}`;
+          let r1 = null;
+          if (q1aMap.has(code)) {
+            r1 = q1aMap.get(code);
+            matchedCodes.add(code);
+          } else if (q1aRows[idx]) {
+            r1 = q1aRows[idx];
+          }
+          const merged = Object.assign({}, r1 || {}, r2);
+          if (code && !code.startsWith("ROW-") && !merged._participantCode) {
+            merged._participantCode = code;
+            allCodes.add(code);
+          }
+          mergedGameRows.push(merged);
+        });
+
+        // Registos de q1a que não submeteram q2b
+        q1aRows.forEach((r1, idx) => {
+          const code = extractParticipantCodeFromRow(r1) || `ROW-${cKey}-${idx}`;
+          if (matchedCodes.has(code)) return;
+          if (!q2bRows[idx]) {
+            mergedGameRows.push(Object.assign({}, r1));
+          }
+        });
+
+        // Simulador (q3c)
+        const q3cRows = extractRowObjects(q3cRaw);
+        q3cRows.forEach(r => {
+          const code = extractParticipantCodeFromRow(r);
+          if (code) allCodes.add(code);
+          simRows.push(r);
+        });
+
+        // Avaliação Global (q4d)
+        const q4dRows = extractRowObjects(q4dRaw);
+        q4dRows.forEach(r => {
+          const code = extractParticipantCodeFromRow(r);
+          if (code) allCodes.add(code);
+          globalRows.push(r);
+        });
+      });
+
+      const game = filterValidParticipantRows(mergedGameRows);
+      const sim = filterValidParticipantRows(simRows);
+      const global = filterValidParticipantRows(globalRows);
+
+      state.kpis = computeKpis(game, sim, global);
+      state.totalLogins = allCodes.size || (state.kpis && state.kpis.submissionCodes.size) || game.rows.length;
+
+      const hasValidAnswers = game.rows.length + sim.rows.length + global.rows.length > 0;
+      if (hasValidAnswers) {
+        processRealData(game.rows, sim.rows, global.rows);
+        state.isWaitingAnswers = false;
+      } else {
+        state.isWaitingAnswers = true;
+      }
+
+      state.isLive = true;
+      renderAllDashboardMetrics();
+      updateConnectionBadge(true);
+    } catch (err) {
+      console.warn("⚠️ Aviso ao processar dados do consórcio (/Consortium2FG):", err);
+    }
+  }
+
+  /**
    * Sincroniza e processa os dados reais recebidos dos nós do Firebase
    */
   function syncAllFirebaseData() {
+    const isPres = window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation";
+    if (isPres && state.rawConsortiumData) {
+      syncConsortiumData();
+      return;
+    }
+
     try {
       const game = filterValidParticipantRows(state.rawFirebaseData.game);
       const sim = filterValidParticipantRows(state.rawFirebaseData.sim);
@@ -1897,6 +2104,49 @@ window.ResultsDashboard = (function () {
     }, 10000);
 
     try {
+      const isPres = window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation";
+      if (isPres) {
+        if (typeof firebase !== "undefined" && firebase.database) {
+          const db = firebase.database();
+          try { db.goOnline(); } catch (e) {}
+          try {
+            const snap = await db.ref("/Consortium2FG").once("value");
+            if (snap && snap.exists() && snap.val() !== null) {
+              state.rawConsortiumData = snap.val();
+            }
+          } catch (e) {
+            console.warn("Aviso ao ler /Consortium2FG no fetchData:", e);
+          }
+        }
+
+        syncConsortiumData();
+
+        const isEn = window.I18nManager && window.I18nManager.isEnglish();
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString(isEn ? "en-GB" : "pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        state.lastUpdated = timeStr;
+
+        const timeEl = document.getElementById("results-last-sync-time");
+        if (timeEl) {
+          timeEl.textContent = isEn ? `Last update: ${timeStr}` : `Última atualização: ${timeStr}`;
+        }
+        updateConnectionBadge(true);
+
+        if (isManualRefresh) {
+          const count = state.kpis ? state.kpis.submissionCodes.size : 0;
+          const countryLabel = state.selectedCountry === "all" ? "Consolidated RENOVATE" : state.selectedCountry.toUpperCase();
+          const msg = isEn
+            ? `Consortium data (${countryLabel}) updated successfully at ${timeStr} (${state.totalLogins} participants, ${count} respondents)`
+            : `Dados do consórcio (${countryLabel}) atualizados com sucesso às ${timeStr} (${state.totalLogins} participantes, ${count} respondentes)`;
+          showToast(msg, "success");
+        }
+
+        stopRefreshSpinner();
+        clearTimeout(watchdogTimer);
+        isFetchingData = false;
+        return;
+      }
+
       if (typeof firebase !== "undefined" && firebase.database) {
         const db = firebase.database();
         try { db.goOnline(); } catch (e) {}
@@ -2527,7 +2777,9 @@ window.ResultsDashboard = (function () {
    * Renderiza todos os KPIs, gráficos e tabelas do Dashboard
    */
   function renderAllDashboardMetrics() {
-    if (!state.metrics) return;
+    if (!state.metrics) {
+      state.metrics = getZeroMetrics();
+    }
     const m = state.metrics;
 
     // 1. Atualizar Indicadores Principais (KPI Strip - 4 cartões de resumo)
@@ -2757,18 +3009,20 @@ window.ResultsDashboard = (function () {
     // Badge de Comparação (Verde se positivo, Vermelho se negativo face a 68.0)
     function updateSusBadge(el, score) {
       if (!el) return;
+      const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+      const vsGlobalLabel = t("results.sus.vsGlobal") || (isEn ? "vs Global Avg" : "vs Média Mundial");
       el.className = "inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full border transition-colors";
       if (score !== null) {
         const delta = round1(score - 68.0);
         const sign = delta >= 0 ? "+" : "";
-        el.textContent = `${sign}${delta.toFixed(1)} ${isEn ? "vs Global Avg" : "vs Média Mundial"}`;
+        el.textContent = `${sign}${delta.toFixed(1)} ${vsGlobalLabel}`;
         if (delta >= 0) {
           el.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-300");
         } else {
           el.classList.add("bg-rose-100", "text-rose-800", "border-rose-300");
         }
       } else {
-        el.textContent = `— ${isEn ? "vs Global Avg" : "vs Média Mundial"}`;
+        el.textContent = `— ${vsGlobalLabel}`;
         el.classList.add("bg-slate-100", "text-slate-500", "border-slate-200");
       }
     }
@@ -2832,40 +3086,19 @@ window.ResultsDashboard = (function () {
     if (window.chartInstances.susComparison) return;
 
     const ctx = canvas.getContext("2d");
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabelsPt = [
-      "1. Frequência de Uso",
-      "2. Baixa Complexidade",
-      "3. Facilidade de Uso",
-      "4. Independência Técnica",
-      "5. Boa Integração",
-      "6. Consistência Geral",
-      "7. Aprendizagem Rápida",
-      "8. Conforto de Uso",
-      "9. Confiança Operacional",
-      "10. Fácil Iniciação"
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    const susCategories = [
+      t("results.sus.d1"), t("results.sus.d2"), t("results.sus.d3"), t("results.sus.d4"), t("results.sus.d5"),
+      t("results.sus.d6"), t("results.sus.d7"), t("results.sus.d8"), t("results.sus.d9"), t("results.sus.d10")
     ];
-    const susLabelsEn = [
-      "1. Frequency of Use",
-      "2. Low Complexity",
-      "3. Ease of Use",
-      "4. Tech Independence",
-      "5. Well Integrated",
-      "6. Overall Consistency",
-      "7. Quick Learning",
-      "8. Usability Comfort",
-      "9. Confidence in Use",
-      "10. Easy Onboarding"
-    ];
-    const susLabels = isEn ? susLabelsEn : susLabelsPt;
 
     window.chartInstances.susComparison = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: susLabels,
+        labels: susCategories,
         datasets: [
           {
-            label: "Serious Game (Tallentto)",
+            label: t("results.sus.seriousGame"),
             data: new Array(10).fill(0),
             backgroundColor: "#F5B842",
             borderColor: "#D97706",
@@ -2874,7 +3107,7 @@ window.ResultsDashboard = (function () {
             maxBarThickness: 28
           },
           {
-            label: isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)",
+            label: t("results.sus.renovateSim"),
             data: new Array(10).fill(0),
             backgroundColor: "#0F172A",
             borderColor: "#0F172A",
@@ -2952,7 +3185,7 @@ window.ResultsDashboard = (function () {
             },
             title: {
               display: true,
-              text: isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)",
+              text: t("results.chart.likert1to5") || (isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)"),
               font: { size: 12, weight: "bold" },
               color: "#334155"
             },
@@ -3011,32 +3244,11 @@ window.ResultsDashboard = (function () {
     const chart = window.chartInstances.susComparison;
     if (!chart) return;
 
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const susLabelsPt = [
-      "1. Frequência de Uso",
-      "2. Baixa Complexidade",
-      "3. Facilidade de Uso",
-      "4. Independência Técnica",
-      "5. Boa Integração",
-      "6. Consistência Geral",
-      "7. Aprendizagem Rápida",
-      "8. Conforto de Uso",
-      "9. Confiança Operacional",
-      "10. Fácil Iniciação"
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    const susCategories = [
+      t("results.sus.d1"), t("results.sus.d2"), t("results.sus.d3"), t("results.sus.d4"), t("results.sus.d5"),
+      t("results.sus.d6"), t("results.sus.d7"), t("results.sus.d8"), t("results.sus.d9"), t("results.sus.d10")
     ];
-    const susLabelsEn = [
-      "1. Frequency of Use",
-      "2. Low Complexity",
-      "3. Ease of Use",
-      "4. Tech Independence",
-      "5. Well Integrated",
-      "6. Overall Consistency",
-      "7. Quick Learning",
-      "8. Usability Comfort",
-      "9. Confidence in Use",
-      "10. Easy Onboarding"
-    ];
-    const susLabels = isEn ? susLabelsEn : susLabelsPt;
 
     const gameHasData = (state.kpis?.susGame?.average !== null && state.kpis?.susGame?.average !== undefined) ||
                         (state.metrics?.susGame?.average !== null && state.metrics?.susGame?.average !== undefined);
@@ -3051,16 +3263,20 @@ window.ResultsDashboard = (function () {
       ? (state.kpis?.susSim?.itemsAvg || state.metrics?.susSim?.itemsAvg || new Array(10).fill(0))
       : new Array(10).fill(0);
 
-    chart.data.labels = susLabels;
+    chart.data.labels = susCategories;
     if (chart.data.datasets[0]) {
       chart.data.datasets[0].data = gameItems;
+      chart.data.datasets[0].label = t("results.sus.seriousGame");
     }
     if (chart.data.datasets[1]) {
       chart.data.datasets[1].data = simItems;
-      chart.data.datasets[1].label = isEn ? "RENOVATE Simulator (Virmedex)" : "Simulador RENOVATE (Virmedex)";
+      chart.data.datasets[1].label = t("results.sus.renovateSim");
     }
     if (chart.options.scales?.y?.title) {
-      chart.options.scales.y.title.text = isEn ? "Likert Scale (1 to 5)" : "Escala Likert (1 a 5)";
+      chart.options.scales.y.title.text = t("results.chart.likert1to5");
+    }
+    if (chart.options.scales?.x?.title) {
+      chart.options.scales.x.title.text = t("results.chart.likert1to5");
     }
     chart.update();
   }
@@ -3074,13 +3290,10 @@ window.ResultsDashboard = (function () {
     if (window.chartInstances.gamePedagogy) return;
 
     const ctx = canvas.getContext("2d");
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const labels = isEn ? [
-      "Q7. Explanation Clarity", "Q8. Difficulty Suitability", "Q9. Scenario Realism",
-      "Q10. Calibration Usefulness", "Q11. Gamified Engagement", "Q12. Global Expectations"
-    ] : [
-      "Q7. Clareza das Explicações", "Q8. Adequação da Dificuldade", "Q9. Realismo dos Cenários",
-      "Q10. Utilidade na Calibração", "Q11. Envolvimento Lúdico", "Q12. Expectativas Globais"
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    const labels = [
+      t("results.ped.game1"), t("results.ped.game2"), t("results.ped.game3"),
+      t("results.ped.game4"), t("results.ped.game5"), t("results.ped.game6")
     ];
 
     window.chartInstances.gamePedagogy = new Chart(ctx, {
@@ -3088,7 +3301,7 @@ window.ResultsDashboard = (function () {
       data: {
         labels: labels,
         datasets: [{
-          label: isEn ? "Mean Rating (1 to 5)" : "Média (1 a 5)",
+          label: t("results.ped.avg1to5"),
           data: [0, 0, 0, 0, 0, 0],
           backgroundColor: "#F5B842",
           borderColor: "#D97706",
@@ -3139,7 +3352,7 @@ window.ResultsDashboard = (function () {
             },
             title: {
               display: true,
-              text: isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)",
+              text: t("results.chart.likert0to5"),
               font: { size: 11, weight: "bold" },
               color: "#334155"
             },
@@ -3172,22 +3385,19 @@ window.ResultsDashboard = (function () {
     const chart = window.chartInstances.gamePedagogy;
     if (!chart || !state.metrics) return;
 
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
     const p = state.metrics.gamePedagogy || { q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0 };
 
-    chart.data.labels = isEn ? [
-      "Q7. Explanation Clarity", "Q8. Difficulty Suitability", "Q9. Scenario Realism",
-      "Q10. Calibration Usefulness", "Q11. Gamified Engagement", "Q12. Global Expectations"
-    ] : [
-      "Q7. Clareza das Explicações", "Q8. Adequação da Dificuldade", "Q9. Realismo dos Cenários",
-      "Q10. Utilidade na Calibração", "Q11. Envolvimento Lúdico", "Q12. Expectativas Globais"
+    chart.data.labels = [
+      t("results.ped.game1"), t("results.ped.game2"), t("results.ped.game3"),
+      t("results.ped.game4"), t("results.ped.game5"), t("results.ped.game6")
     ];
     if (chart.data.datasets[0]) {
-      chart.data.datasets[0].label = isEn ? "Mean Rating (1 to 5)" : "Média (1 a 5)";
+      chart.data.datasets[0].label = t("results.ped.avg1to5");
       chart.data.datasets[0].data = [p.q7, p.q8, p.q9, p.q10, p.q11, p.q12];
     }
     if (chart.options.scales?.x?.title) {
-      chart.options.scales.x.title.text = isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)";
+      chart.options.scales.x.title.text = t("results.chart.likert0to5");
     }
     chart.update();
   }
@@ -3201,15 +3411,11 @@ window.ResultsDashboard = (function () {
     if (window.chartInstances.simModules) return;
 
     const ctx = canvas.getContext("2d");
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const labels = isEn ? [
-      "Q15. Navigation & Controls", "Q16. Tutorials & Menus", "Q17. Pedagogical Efficacy",
-      "Q18. Decision Sequence", "Q19. Calculations & Formulas", "Q20. Nozzles & Spray Volume",
-      "Q21. Selection & Label", "Q22. Field Variables", "Q23. Global Expectations"
-    ] : [
-      "Q15. Navegação e Controlos", "Q16. Tutoriais e Menus", "Q17. Eficácia Pedagógica",
-      "Q18. Sequência de Decisão", "Q19. Cálculos e Fórmulas", "Q20. Bicos e Vol. de Calda",
-      "Q21. Seleção e Rótulo", "Q22. Variáveis de Campo", "Q23. Expectativas Globais"
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+    const labels = [
+      t("results.ped.sim1"), t("results.ped.sim2"), t("results.ped.sim3"),
+      t("results.ped.sim4"), t("results.ped.sim5"), t("results.ped.sim6"),
+      t("results.ped.sim7"), t("results.ped.sim8"), t("results.ped.sim9")
     ];
 
     window.chartInstances.simModules = new Chart(ctx, {
@@ -3217,7 +3423,7 @@ window.ResultsDashboard = (function () {
       data: {
         labels: labels,
         datasets: [{
-          label: isEn ? "Mean Score (1 to 5)" : "Média (1 a 5)",
+          label: t("results.ped.avg1to5"),
           data: new Array(9).fill(0),
           backgroundColor: "#059669",
           borderColor: "#047857",
@@ -3260,7 +3466,7 @@ window.ResultsDashboard = (function () {
             },
             title: {
               display: true,
-              text: isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)",
+              text: t("results.chart.likert0to5"),
               font: { size: 11, weight: "bold" },
               color: "#334155"
             },
@@ -3293,26 +3499,22 @@ window.ResultsDashboard = (function () {
     const chart = window.chartInstances.simModules;
     if (!chart || !state.metrics) return;
 
-    const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
     const s = state.metrics.simModules || {
       q15: 0, q16: 0, q17: 0, q18: 0, q19: 0, q20: 0, q21: 0, q22: 0, q23: 0
     };
 
-    chart.data.labels = isEn ? [
-      "Q15. Navigation & Controls", "Q16. Tutorials & Menus", "Q17. Pedagogical Efficacy",
-      "Q18. Decision Sequence", "Q19. Calculations & Formulas", "Q20. Nozzles & Spray Volume",
-      "Q21. Selection & Label", "Q22. Field Variables", "Q23. Global Expectations"
-    ] : [
-      "Q15. Navegação e Controlos", "Q16. Tutoriais e Menus", "Q17. Eficácia Pedagógica",
-      "Q18. Sequência de Decisão", "Q19. Cálculos e Fórmulas", "Q20. Bicos e Vol. de Calda",
-      "Q21. Seleção e Rótulo", "Q22. Variáveis de Campo", "Q23. Expectativas Globais"
+    chart.data.labels = [
+      t("results.ped.sim1"), t("results.ped.sim2"), t("results.ped.sim3"),
+      t("results.ped.sim4"), t("results.ped.sim5"), t("results.ped.sim6"),
+      t("results.ped.sim7"), t("results.ped.sim8"), t("results.ped.sim9")
     ];
     if (chart.data.datasets[0]) {
-      chart.data.datasets[0].label = isEn ? "Mean Score (1 to 5)" : "Média (1 a 5)";
+      chart.data.datasets[0].label = t("results.ped.avg1to5");
       chart.data.datasets[0].data = [s.q15, s.q16, s.q17, s.q18, s.q19, s.q20, s.q21, s.q22, s.q23];
     }
     if (chart.options.scales?.x?.title) {
-      chart.options.scales.x.title.text = isEn ? "Likert Scale (0 to 5)" : "Escala Likert (0 a 5)";
+      chart.options.scales.x.title.text = t("results.chart.likert0to5");
     }
     chart.update();
   }
@@ -3419,6 +3621,28 @@ window.ResultsDashboard = (function () {
     if (!state.metrics?.demographics) return;
     const demo = state.metrics.demographics;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
+
+    function getLocalizedProfile(p) {
+      const lower = String(p).toLowerCase();
+      if (lower.includes("agricultor") || lower.includes("farmer")) return t("results.demo.farmer");
+      if (lower.includes("formador") || lower.includes("trainer")) return t("results.demo.trainer");
+      if (lower.includes("indústria") || lower.includes("industria") || lower.includes("industry")) return t("results.demo.industry");
+      if (lower.includes("reguladora") || lower.includes("regulator") || lower.includes("pública") || lower.includes("publica")) return t("results.demo.regulator");
+      if (lower.includes("estudante") || lower.includes("student")) return t("results.demo.student");
+      return isEn ? (PROFILE_TRANSLATIONS[p] || p) : p;
+    }
+
+    function getLocalizedCrop(c) {
+      const lower = String(c).toLowerCase();
+      if (lower.includes("vinha") || lower.includes("vineyard")) return t("results.demo.vineyards");
+      if (lower.includes("hortícola") || lower.includes("horticola") || lower.includes("vegetable")) return t("results.demo.vegetables");
+      if (lower.includes("pomóidea") || lower.includes("pomoidea") || lower.includes("prunóidea") || lower.includes("prunoidea") || lower.includes("orchard")) return t("results.demo.orchards");
+      if (lower.includes("cereal") || lower.includes("arvense") || lower.includes("arable")) return t("results.demo.cereals");
+      if (lower.includes("olival") || lower.includes("olive")) return t("results.demo.olives");
+      if (lower.includes("citrino") || lower.includes("citrus")) return t("results.demo.citrus");
+      return isEn ? (CROP_TRANSLATIONS[c] || c) : c;
+    }
 
     // 1. Gráfico de Perfis Profissionais (Q1 - Donut)
     if (!window.chartInstances.demoProfiles) {
@@ -3440,7 +3664,7 @@ window.ResultsDashboard = (function () {
             const count = demo.profiles[p] || 0;
             const pct = Math.round((count / totalProfiles) * 100);
             return {
-              label: isEn ? (PROFILE_TRANSLATIONS[p] || p) : p,
+              label: getLocalizedProfile(p),
               count,
               pct
             };
@@ -3468,7 +3692,7 @@ window.ResultsDashboard = (function () {
     const chartCrops = window.chartInstances.demoCrops;
     if (chartCrops) {
       const cEntries = OFFICIAL_CROPS.map(c => ({
-        label: isEn ? (CROP_TRANSLATIONS[c] || c) : c,
+        label: getLocalizedCrop(c),
         count: demo.crops[c] || 0
       })).sort((a, b) => b.count - a.count);
 
@@ -3487,11 +3711,15 @@ window.ResultsDashboard = (function () {
 
     if (digitalEl) {
       digitalEl.textContent = hasComfort ? `${parseFloat(demo.digitalComfortAvg).toFixed(1)} / 5.0` : "— / 5.0";
+      if (hasComfort) {
+        digitalEl.title = `${t("results.demo.average")}: ${parseFloat(demo.digitalComfortAvg).toFixed(1)} / 5.0`;
+      }
     }
     if (digitalLabelEl) {
+      const awaitingText = t("results.nps.zoneText") ? t("results.nps.zoneText").replace(/^\(|\)$/g, "") : (isEn ? "Awaiting responses" : "A aguardar respostas");
       digitalLabelEl.textContent = hasComfort
-        ? getComfortLevelLabel(demo.digitalComfortAvg, isEn)
-        : (isEn ? "Awaiting responses" : "A aguardar respostas");
+        ? t("results.demo.comfortLevel")
+        : awaitingText;
     }
     renderDigitalScale(hasComfort ? Math.round(parseFloat(demo.digitalComfortAvg)) : null);
   }
@@ -3505,12 +3733,14 @@ window.ResultsDashboard = (function () {
     if (window.chartInstances.npsGauge) return;
 
     const ctx = canvas.getContext("2d");
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t.bind(window.I18nManager) : (k => k);
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const awaitingClean = t("results.nps.zoneText") ? t("results.nps.zoneText").replace(/^\(|\)$/g, "") : (isEn ? "Awaiting responses" : "A aguardar respostas");
 
     window.chartInstances.npsGauge = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: [isEn ? "Awaiting responses" : "A aguardar respostas"],
+        labels: [awaitingClean],
         datasets: [{
           data: [1],
           backgroundColor: ["#E2E8F0"],
@@ -3529,9 +3759,11 @@ window.ResultsDashboard = (function () {
               label: function (context) {
                 const n = state.metrics?.nps;
                 const isZero = !n || !n.total || n.total === 0;
+                const curT = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t.bind(window.I18nManager) : (k => k);
                 const isE = window.I18nManager && window.I18nManager.isEnglish();
                 if (isZero) {
-                  return isE ? " Awaiting responses: 0" : " A aguardar respostas: 0";
+                  const awaitingTooltip = curT("results.nps.zoneText") ? curT("results.nps.zoneText").replace(/^\(|\)$/g, "") : (isE ? "Awaiting responses" : "A aguardar respostas");
+                  return ` ${awaitingTooltip}: 0`;
                 }
                 const val = context.raw || 0;
                 const total = n.total || 1;
@@ -3556,19 +3788,20 @@ window.ResultsDashboard = (function () {
     const chart = window.chartInstances.npsGauge;
     if (!chart || !state.metrics?.nps) return;
 
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t.bind(window.I18nManager) : (k => k);
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const n = state.metrics.nps;
     const isZero = !n.total || n.total === 0;
 
     let labels, data, colors;
     if (isZero) {
-      labels = [isEn ? "Awaiting responses" : "A aguardar respostas"];
+      const awaitingClean = t("results.nps.zoneText") ? t("results.nps.zoneText").replace(/^\(|\)$/g, "") : (isEn ? "Awaiting responses" : "A aguardar respostas");
+      labels = [awaitingClean];
       data = [1];
       colors = ["#E2E8F0"];
     } else {
       const order = [1, 2, 3, 4, 5];
-      const labelMap = isEn ? Q29_LABELS_EN : Q29_LABELS_PT;
-      labels = order.map(k => labelMap[k]);
+      labels = order.map(k => t("results.nps.opt" + k) || (isEn ? Q29_LABELS_EN[k] : Q29_LABELS_PT[k]));
       data = order.map(k => n.counts[k] || 0);
       colors = order.map(k => Q29_COLORS[k]);
     }
@@ -3590,7 +3823,7 @@ window.ResultsDashboard = (function () {
     const npsZoneEl = document.getElementById("nps-zone-label");
     if (npsZoneEl) {
       npsZoneEl.textContent = isZero
-        ? (isEn ? "(Awaiting responses)" : "(A aguardar respostas)")
+        ? (t("results.nps.zoneText") || (isEn ? "(Awaiting responses)" : "(A aguardar respostas)"))
         : getQ29DynamicZoneLabel(n.average, isEn);
     }
   }
@@ -3617,9 +3850,24 @@ window.ResultsDashboard = (function () {
     if (!state.metrics?.qualitativeFeedback) return;
 
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
+    const t = (window.I18nManager && window.I18nManager.t) ? window.I18nManager.t : (k => k);
     const feed = state.metrics.qualitativeFeedback.feed || [];
 
-    const noSuggestionsText = isEn ? "No suggestions recorded yet." : "Sem sugestões registadas de momento.";
+    const noSuggestionsText = t("results.feedback.none") || (isEn ? "No suggestions recorded yet." : "Sem sugestões registadas de momento.");
+
+    function getTagLabel(typeStr) {
+      const s = String(typeStr || "").toLowerCase();
+      if (s.includes("bug") || s.includes("suggestion") || s.includes("sugestão") || s.includes("sugestao") || s.includes("issue") || s.includes("erro")) {
+        return t("results.feedback.tagBug");
+      }
+      if (s.includes("simulator") || s.includes("simulador") || s.includes("sim")) {
+        return t("results.feedback.tagSim");
+      }
+      if (s.includes("global")) {
+        return t("results.feedback.tagGlobal");
+      }
+      return t("results.feedback.tagGlobal");
+    }
 
     if (feedContainer) {
       if (!feed.length) {
@@ -3649,7 +3897,7 @@ window.ResultsDashboard = (function () {
             quoteBorder = "border-rose-400";
           }
 
-          const tagLabel = isEn ? (item.tagEN || item.tagPT) : item.tagPT;
+          const tagLabel = getTagLabel(item.tagType || item.type || item.tagEN || item.tagPT);
 
           return `
             <div class="p-3 bg-slate-50/70 hover:bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-2xs transition-all space-y-2 flex flex-col justify-between">
@@ -3685,7 +3933,7 @@ window.ResultsDashboard = (function () {
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
                 <span>${item.code}</span>
               </span>
-              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="gamepad-2" class="w-3 h-3"></i> [${isEn ? "Simulator" : "Simulador"}]</span>
+              <span class="text-amber-800 font-semibold flex items-center gap-1"><i data-lucide="gamepad-2" class="w-3 h-3"></i> [${t("results.feedback.tagSim")}]</span>
             </div>
             <p class="text-xs text-slate-800 leading-relaxed font-medium italic">“${item.text}”</p>
           </div>
@@ -3705,7 +3953,7 @@ window.ResultsDashboard = (function () {
                 <i data-lucide="user" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i>
                 <span>${item.code}</span>
               </span>
-              <span class="text-rose-800 font-semibold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> [${isEn ? "Bug / Suggestion" : "Erro / Sugestão"}]</span>
+              <span class="text-rose-800 font-semibold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> [${t("results.feedback.tagBug")}]</span>
             </div>
             <p class="text-xs text-slate-800 leading-relaxed font-medium italic">“${item.text}”</p>
           </div>
@@ -3783,9 +4031,13 @@ window.ResultsDashboard = (function () {
     onTabShown,
     resizeAllCharts,
     setSectionFilter,
-    renderKpiCards
+    renderKpiCards,
+    renderAllDashboardMetrics
   };
 })();
+
+// Alias lowercase para compatibilidade total
+window.resultsDashboard = window.ResultsDashboard;
 
 // Inicialização preventiva dos gráficos com data: [] no DOMContentLoaded
 if (typeof document !== "undefined") {

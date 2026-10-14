@@ -31,7 +31,7 @@ window.AuthModule = (function () {
       const currentCode = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE);
       if (isSessionActive && currentCode) {
         const clean = currentCode.trim().toUpperCase();
-        if (clean !== "MODERATOR") {
+        if (clean !== "MODERATOR" && clean !== "FOCUSGROUP") {
           const base = clean.replace(/-MD$/, "");
           inUse.add(clean);
           inUse.add(base);
@@ -43,7 +43,7 @@ window.AuthModule = (function () {
         activeList.forEach(c => {
           if (c) {
             const raw = String(c).trim().toUpperCase();
-            if (raw !== "MODERATOR") {
+            if (raw !== "MODERATOR" && raw !== "FOCUSGROUP") {
               inUse.add(raw);
               inUse.add(raw.replace(/-MD$/, ""));
             }
@@ -58,7 +58,7 @@ window.AuthModule = (function () {
     if (!code) return;
     try {
       const clean = String(code).trim().toUpperCase();
-      if (clean === "MODERATOR") return;
+      if (clean === "MODERATOR" || clean === "FOCUSGROUP") return;
       const base = clean.replace(/-MD$/, "");
       const activeList = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_CODES) || "[]");
       const list = Array.isArray(activeList) ? activeList : [];
@@ -296,6 +296,7 @@ window.AuthModule = (function () {
    */
   function getParticipantType(code) {
     const c = (code || getParticipantCode()).toUpperCase();
+    if (c === "FOCUSGROUP" || getUserRole() === "presentation") return "FOCUSGROUP";
     if (c.includes("-MD") || c.includes("ADMIN") || c === "MODERATOR" || getUserRole() === "moderator") return "MOD";
     if (c.startsWith("FG2")) return "FG2";
     if (c.startsWith("NS")) return "NS";
@@ -334,7 +335,10 @@ window.AuthModule = (function () {
 
     const record = {
       "Carimbo de datahora": timestamp,
-      "Código do Participante": cleanCode
+      "Código do Participante": cleanCode,
+      code: cleanCode,
+      participantCode: cleanCode,
+      role: role
     };
 
     // 1. Firebase Realtime Database (/Logins)
@@ -415,11 +419,67 @@ window.AuthModule = (function () {
    */
   function login(code, key, consent) {
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
-    const cleanCode = (code || "").trim().toUpperCase();
+    const cleanCode = (code || "").trim().toUpperCase().replace(/^FG2-PT-(\d+)/, "FG2-PT$1").replace(/^NS-PT-(\d+)/, "NS-PT$1");
     const cleanKey = (key || "").trim().toLowerCase();
     const isModKey = isModeratorMasterKey(key);
 
-    // Identificar códigos de moderação especiais
+    // Identificar códigos de apresentação e moderação especiais
+    const isPresentationCode = cleanCode === "FOCUSGROUP";
+    const isPresentationKey = cleanKey === "focusgroup2renovate";
+
+    if (isPresentationCode) {
+      if (!isPresentationKey) {
+        return {
+          success: false,
+          error: isEn
+            ? "Incorrect presentation password."
+            : "Palavra-passe de apresentação incorreta."
+        };
+      }
+      const userRole = "presentation";
+      const finalCode = "FOCUSGROUP";
+
+      if (window.I18nManager && typeof window.I18nManager.setLanguage === "function") {
+        window.I18nManager.setLanguage("en-GB");
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.SESSION_ACTIVE, "true");
+        localStorage.setItem(STORAGE_KEYS.PARTICIPANT_CODE, finalCode);
+        localStorage.setItem(STORAGE_KEYS.USER_ROLE, userRole);
+        localStorage.setItem(STORAGE_KEYS.CONSENT_TIMESTAMP, new Date().toISOString());
+      } catch (e) {
+        console.error("Erro ao gravar sessão de apresentação:", e);
+      }
+
+      // 3. Injeção nos formulários de avaliação com o código final e sincronização com LiveSession
+      injectParticipantCodeToForms(finalCode);
+      if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
+        window.LiveSession.setParticipantCode(finalCode);
+      }
+
+      // Registo oficial de login em simultâneo na Firebase Realtime Database (/Logins) e Google Sheets
+      registerLoginRemote(finalCode, userRole);
+
+      unlockWebsite();
+      renderHeaderUserBadge();
+      if (typeof window.updateNavVisibility === "function") {
+        window.updateNavVisibility();
+      }
+      if (typeof window.applyPresentationModeUI === "function") {
+        window.applyPresentationModeUI();
+      }
+      if (window.LiveSession && typeof window.LiveSession.render === "function") {
+        window.LiveSession.render();
+      }
+
+      return {
+        success: true,
+        code: finalCode,
+        role: userRole
+      };
+    }
+
     const isSpecialModCode = cleanCode === "MODERATOR";
     const isSpecialModKey = cleanKey === "focusgroup2renovate";
     const isAdminCode = cleanCode === "ADMIN-FG2" || cleanCode === "ADMIN" || cleanCode === "ADMINFG2" || cleanCode === "MOD-PT01" || cleanCode.startsWith("MOD-");
@@ -589,6 +649,9 @@ window.AuthModule = (function () {
     if (window.updateNavVisibility) {
       window.updateNavVisibility();
     }
+    if (typeof window.applyPresentationModeUI === "function") {
+      window.applyPresentationModeUI();
+    }
 
     return {
       success: true,
@@ -655,6 +718,9 @@ window.AuthModule = (function () {
       renderHeaderUserBadge();
       if (window.updateNavVisibility) {
         window.updateNavVisibility();
+      }
+      if (typeof window.applyPresentationModeUI === "function") {
+        window.applyPresentationModeUI();
       }
 
       if (window.showToast) {
@@ -726,6 +792,14 @@ window.AuthModule = (function () {
     if (mainContent) mainContent.style.display = "none";
     if (footerContent) footerContent.style.display = "none";
 
+    // Ocultar logótipos locais (DATERRA e ESAS) e separadores no cabeçalho na tela de login
+    const logoDaterra = document.getElementById("header-logo-daterra");
+    const logoEsas = document.getElementById("header-logo-esas");
+    const headerSeps = document.querySelectorAll(".header-local-sep");
+    if (logoDaterra) logoDaterra.style.display = "none";
+    if (logoEsas) logoEsas.style.display = "none";
+    headerSeps.forEach(sep => sep.style.display = "none");
+
     // Configurar o logótipo RENOVATE para abrir o site oficial antes do login
     const homeLogo = document.getElementById("nav-logo-home");
     if (homeLogo) {
@@ -775,6 +849,18 @@ window.AuthModule = (function () {
     if (mainContent) mainContent.style.display = "";
     if (footerContent) footerContent.style.display = "";
 
+    // Restaurar visibilidade dos logótipos no cabeçalho ou aplicar apresentação
+    if (typeof window.applyPresentationModeUI === "function") {
+      window.applyPresentationModeUI();
+    } else {
+      const logoDaterra = document.getElementById("header-logo-daterra");
+      const logoEsas = document.getElementById("header-logo-esas");
+      const headerSeps = document.querySelectorAll(".header-local-sep");
+      if (logoDaterra) logoDaterra.style.display = "";
+      if (logoEsas) logoEsas.style.display = "";
+      headerSeps.forEach(sep => sep.style.display = "");
+    }
+
     // Configurar o logótipo RENOVATE para levar à Home do website pós-login
     const homeLogo = document.getElementById("nav-logo-home");
     if (homeLogo) {
@@ -797,8 +883,8 @@ window.AuthModule = (function () {
 
     const filter = (filterText || "").trim().toUpperCase();
 
-    // Se o código digitado for o especial confidencial "MODERATOR", ocultar dropdown imediatamente
-    if (filter === "MODERATOR") {
+    // Se o código digitado for o especial confidencial "MODERATOR" ou "FOCUSGROUP", ocultar dropdown imediatamente
+    if (filter === "MODERATOR" || filter === "FOCUSGROUP") {
       hideCodesDropdown();
       return;
     }
@@ -819,8 +905,8 @@ window.AuthModule = (function () {
 
     let html = "";
 
-    // Grupo Participantes Ativos (apenas crachás oficiais; nunca lista moderadores)
-    const filteredCodes = codes.filter(c => c !== "MODERATOR" && !c.includes("ADMIN") && !c.includes("MOD") && (!filter || c.toUpperCase().includes(filter)));
+    // Grupo Participantes Ativos (apenas crachás oficiais; nunca lista moderadores nem apresentação)
+    const filteredCodes = codes.filter(c => c !== "MODERATOR" && c !== "FOCUSGROUP" && !c.includes("ADMIN") && !c.includes("MOD") && (!filter || c.toUpperCase().includes(filter)));
     html += `<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-700 flex items-center justify-between border-t border-b border-slate-200">`;
     html += `  <span>${phaseTitle}</span>`;
     html += `  <span class="text-[9px] font-mono text-slate-500">${filteredCodes.length} ${isEn ? "items" : "códigos"}</span>`;
@@ -892,7 +978,7 @@ window.AuthModule = (function () {
     const input = document.getElementById("auth-participant-code");
     if (!panel) return;
     const currentVal = input ? input.value.trim().toUpperCase() : "";
-    if (currentVal === "MODERATOR") {
+    if (currentVal === "MODERATOR" || currentVal === "FOCUSGROUP") {
       hideCodesDropdown();
       return;
     }
@@ -1097,15 +1183,19 @@ window.AuthModule = (function () {
     const type = getParticipantType(code);
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
 
+    const isPresentation = type === "FOCUSGROUP" || getUserRole() === "presentation";
     const isMOD = type === "MOD" || getUserRole() === "moderator";
     const isFG2 = type === "FG2";
     let typeLabel = isFG2 ? (isEn ? "In-Person" : "Presencial") : (isEn ? "Remote" : "Remoto");
     let avatarBg = "bg-amber-400 text-slate-900";
-    if (isMOD) {
+    if (isPresentation) {
+      typeLabel = isEn ? "Presentation" : "Apresentação";
+      avatarBg = "bg-blue-600 text-white";
+    } else if (isMOD) {
       typeLabel = isEn ? "Moderator" : "Moderador";
     }
 
-    const groupTag = isMOD ? "MOD" : (isFG2 ? "FG2" : type);
+    const groupTag = isPresentation ? "EU" : (isMOD ? "MOD" : (isFG2 ? "FG2" : type));
 
     container.className = "flex items-center pl-1 sm:pl-2 shrink-0 animate-fadeIn";
     container.innerHTML = `
@@ -1210,6 +1300,11 @@ window.AuthModule = (function () {
           if (window.showToast) {
             window.showToast(`${isEn ? 'Authenticated as' : 'Sessão iniciada com o código'} ${result.code}!`);
           }
+          if (result.role === "presentation") {
+            if (typeof window.switchTab === "function") {
+              window.switchTab("results");
+            }
+          }
         } else {
           if (errBox) {
             errBox.textContent = result.error;
@@ -1241,12 +1336,12 @@ window.AuthModule = (function () {
     if (codeInput) {
       codeInput.addEventListener("focus", () => {
         const val = codeInput.value.trim().toUpperCase();
-        if (val === "MODERATOR") return;
+        if (val === "MODERATOR" || val === "FOCUSGROUP") return;
         showCodesDropdown();
       });
       codeInput.addEventListener("input", (e) => {
         const val = (e.target.value || "").trim().toUpperCase();
-        if (val === "MODERATOR") {
+        if (val === "MODERATOR" || val === "FOCUSGROUP") {
           hideCodesDropdown();
           return;
         }
@@ -1265,7 +1360,7 @@ window.AuthModule = (function () {
         e.preventDefault();
         e.stopPropagation();
         const val = codeInput ? codeInput.value.trim().toUpperCase() : "";
-        if (val === "MODERATOR") {
+        if (val === "MODERATOR" || val === "FOCUSGROUP") {
           hideCodesDropdown();
           return;
         }
@@ -1467,10 +1562,16 @@ window.AuthModule = (function () {
       renderHeaderUserBadge();
       const code = getParticipantCode();
       injectParticipantCodeToForms(code);
+      if (window.LiveSession && typeof window.LiveSession.setParticipantCode === "function") {
+        window.LiveSession.setParticipantCode(code);
+      }
       if (isModerator()) {
         try {
           sessionStorage.setItem("renovate_mod_authenticated", "true");
         } catch (e) {}
+      }
+      if (typeof window.applyPresentationModeUI === "function") {
+        window.applyPresentationModeUI();
       }
     }
 

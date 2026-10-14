@@ -907,14 +907,18 @@ window.SubmissionsTracker = (function () {
     const pendingText = (window.I18nManager && window.I18nManager.t("live.badge.pending")) || (isEn ? "Pending" : "Pendente");
 
     const currentCode = (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (window.LiveSession ? window.LiveSession.getParticipantCode() : "");
+    const isFocusGroupUser = Boolean(currentCode && String(currentCode).trim().toLowerCase() === "focusgroup");
+    const liveSessionCompleted = (window.LiveSession && typeof window.LiveSession.getState === "function")
+      ? (window.LiveSession.getState().completedSteps || [])
+      : [];
 
-    const isForm1Done = hasParticipantSubmitted(1, currentCode);
-    const isForm2Done = hasParticipantSubmitted(2, currentCode);
-    const isForm3Done = hasParticipantSubmitted(3, currentCode);
+    const isForm1Done = isFocusGroupUser ? liveSessionCompleted.includes(3) : hasParticipantSubmitted(1, currentCode);
+    const isForm2Done = isFocusGroupUser ? liveSessionCompleted.includes(4) : hasParticipantSubmitted(2, currentCode);
+    const isForm3Done = isFocusGroupUser ? liveSessionCompleted.includes(5) : hasParticipantSubmitted(3, currentCode);
 
-    const isStep3Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(3);
-    const isStep4Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(4);
-    const isStep5Alert = window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(5);
+    const isStep3Alert = !isForm1Done && window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(3);
+    const isStep4Alert = !isForm2Done && window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(4);
+    const isStep5Alert = !isForm3Done && window.LiveSession && typeof window.LiveSession.isStepInJumpAlert === "function" && window.LiveSession.isStepInJumpAlert(5);
 
     const greenBadge = `
       <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">

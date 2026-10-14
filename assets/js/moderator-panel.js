@@ -321,7 +321,7 @@ window.ModeratorPanel = (function () {
     const fgContainer = document.getElementById("grid-submissions-fg");
     const nsContainer = document.getElementById("grid-submissions-ns");
 
-    if (fgContainer && fgContainer.children.length === 0) {
+    if (fgContainer && (!fgContainer.children || fgContainer.children.length === 0)) {
       const fgCards = [];
       for (let i = 1; i <= 50; i++) {
         const num = String(i).padStart(2, "0");
@@ -340,7 +340,7 @@ window.ModeratorPanel = (function () {
       fgContainer.innerHTML = fgCards.join("");
     }
 
-    if (nsContainer && nsContainer.children.length === 0) {
+    if (nsContainer && (!nsContainer.children || nsContainer.children.length === 0)) {
       const nsCards = [];
       for (let i = 1; i <= 50; i++) {
         const num = String(i).padStart(2, "0");
@@ -368,7 +368,7 @@ window.ModeratorPanel = (function () {
     const nsContainer = document.getElementById("grid-submissions-ns");
     if (!fgContainer || !nsContainer) return;
 
-    if (fgContainer.children.length === 0 || nsContainer.children.length === 0) {
+    if (!fgContainer.children || fgContainer.children.length === 0 || !nsContainer.children || nsContainer.children.length === 0) {
       renderSubmissionsGrid();
     }
 

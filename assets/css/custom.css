@@ -336,6 +336,16 @@ body.auth-locked footer {
   display: none !important;
 }
 
+/* Ocultar logótipos locais (DATERRA e ESAS) e separadores no cabeçalho apenas na tela de login */
+html.auth-locked #header-logo-daterra,
+html.auth-locked #header-logo-esas,
+html.auth-locked .header-local-sep,
+body.auth-locked #header-logo-daterra,
+body.auth-locked #header-logo-esas,
+body.auth-locked .header-local-sep {
+  display: none !important;
+}
+
 #auth-login-modal {
   z-index: 50 !important;
   background-color: #0F172A !important; /* 100% Sólido e Opaco, sem transparência */

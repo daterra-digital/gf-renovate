@@ -31,6 +31,14 @@ const LiveSession = (function () {
   };
 
   /**
+   * Verifica se o código de participante corresponde ao utilizador de apresentação/teste 'focusgroup'
+   */
+  function isFocusGroupCode(code) {
+    const c = (code !== undefined ? code : state.participantCode) || "";
+    return String(c).trim().toLowerCase() === "focusgroup";
+  }
+
+  /**
    * Atualiza o ícone de calendário em tempo real com iniciais em pt-PT
    */
   function updateLiveCalendar() {
@@ -71,7 +79,7 @@ const LiveSession = (function () {
    */
   function loadStorageState() {
     try {
-      const savedCode = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE);
+      const savedCode = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "");
       if (savedCode) {
         state.participantCode = savedCode.trim().toUpperCase();
       }
@@ -95,12 +103,14 @@ const LiveSession = (function () {
         }
       }
 
-      const savedCompleted = localStorage.getItem(STORAGE_KEYS.COMPLETED_STEPS);
+      const codeKey = (state.participantCode || "").toLowerCase() || "anon";
+      const savedCompleted = localStorage.getItem(`${STORAGE_KEYS.COMPLETED_STEPS}_${codeKey}`) || localStorage.getItem(STORAGE_KEYS.COMPLETED_STEPS);
       if (savedCompleted) {
         state.completedSteps = JSON.parse(savedCompleted) || [];
+      } else if (codeKey === "focusgroup") {
+        state.completedSteps = [1];
       }
 
-      const codeKey = state.participantCode || "anon";
       state.clickedSlides = localStorage.getItem(`${STORAGE_KEYS.CLICKED_SLIDES}_${codeKey}`) === "true";
       state.clickedGame = localStorage.getItem(`${STORAGE_KEYS.CLICKED_GAME}_${codeKey}`) === "true";
       state.clickedSim = localStorage.getItem(`${STORAGE_KEYS.CLICKED_SIM}_${codeKey}`) === "true";
@@ -129,7 +139,8 @@ const LiveSession = (function () {
       localStorage.setItem(STORAGE_KEYS.UNLOCKED_STEPS, JSON.stringify(state.unlockedSteps));
       localStorage.setItem(STORAGE_KEYS.COMPLETED_STEPS, JSON.stringify(state.completedSteps));
 
-      const codeKey = state.participantCode || "anon";
+      const codeKey = (state.participantCode || "").toLowerCase() || "anon";
+      localStorage.setItem(`${STORAGE_KEYS.COMPLETED_STEPS}_${codeKey}`, JSON.stringify(state.completedSteps));
       localStorage.setItem(`${STORAGE_KEYS.CLICKED_SLIDES}_${codeKey}`, String(state.clickedSlides));
       localStorage.setItem(`${STORAGE_KEYS.CLICKED_GAME}_${codeKey}`, String(state.clickedGame));
       localStorage.setItem(`${STORAGE_KEYS.CLICKED_SIM}_${codeKey}`, String(state.clickedSim));
@@ -362,8 +373,21 @@ const LiveSession = (function () {
    * Passo 5: Ativado após a submissão e registo do Formulário 3 no Firebase.
    */
   function evaluateStepConditions() {
-    const code = state.participantCode;
+    const code = (state.participantCode || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || "")).trim().toUpperCase();
+    if (code && !state.participantCode) {
+      state.participantCode = code;
+    }
     const tracker = window.SubmissionsTracker;
+
+    // Se o código for 'focusgroup', a conclusão é 100% manual: NÃO sobrescrever state.completedSteps
+    if (isFocusGroupCode(code)) {
+      saveStorageState();
+      renderLiveSessionUI();
+      if (tracker && typeof tracker.renderProgramStatusBadges === "function") {
+        tracker.renderProgramStatusBadges();
+      }
+      return;
+    }
 
     const isForm1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
     const isForm2Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(2, code));
@@ -437,6 +461,22 @@ const LiveSession = (function () {
     const code = state.participantCode;
     const tracker = window.SubmissionsTracker;
 
+    // Para o utilizador de teste 'focusgroup', respeitar a marcação manual dos passos
+    if (isFocusGroupCode(code)) {
+      if (targetStep === 4) {
+        if (!state.completedSteps.includes(3)) triggerJumpAlert(3);
+        else clearJumpAlert(3);
+      } else if (targetStep === 5) {
+        if (!state.completedSteps.includes(3)) triggerJumpAlert(3);
+        if (!state.completedSteps.includes(4)) triggerJumpAlert(4);
+        if (state.completedSteps.includes(3) && state.completedSteps.includes(4)) {
+          clearJumpAlert(3);
+          clearJumpAlert(4);
+        }
+      }
+      return true;
+    }
+
     if (targetStep === 4) {
       const form1Done = Boolean(tracker && typeof tracker.hasParticipantSubmitted === "function" && tracker.hasParticipantSubmitted(1, code));
       if (!form1Done) {
@@ -482,6 +522,50 @@ const LiveSession = (function () {
     const code = state.participantCode;
     const isEn = window.I18nManager && window.I18nManager.isEnglish();
     const tracker = window.SubmissionsTracker;
+
+    // APENAS no código de participante 'focusgroup', tornar manual o processo de colocar o Passo completo ou não
+    if (isFocusGroupCode(code)) {
+      const isCurrentlyCompleted = state.completedSteps.includes(stepNumber);
+      if (isCurrentlyCompleted) {
+        // Desmarcar passo
+        state.completedSteps = state.completedSteps.filter(s => s !== stepNumber);
+        if (stepNumber === 2) state.clickedSlides = false;
+        if (stepNumber === 3) state.clickedGame = false;
+        if (stepNumber === 4) state.clickedSim = false;
+        // Limpar alerta de pendência para que o cartão volte ao estado neutro
+        state.jumpAlertSteps = state.jumpAlertSteps.filter(s => s !== stepNumber);
+
+        let msg = isEn ? `Step ${stepNumber} unmarked (Pending)` : `Passo ${stepNumber} desmarcado (Pendente)`;
+        if (window.I18nManager && typeof window.I18nManager.t === "function") {
+          const tpl = window.I18nManager.t("live.manualToast.unmarked");
+          if (tpl && tpl.includes("{step}")) msg = tpl.replace("{step}", stepNumber);
+        }
+        if (window.showToast) window.showToast(msg);
+      } else {
+        // Marcar passo como concluído
+        if (!state.completedSteps.includes(stepNumber)) {
+          state.completedSteps.push(stepNumber);
+        }
+        if (stepNumber === 2) state.clickedSlides = true;
+        if (stepNumber === 3) state.clickedGame = true;
+        if (stepNumber === 4) state.clickedSim = true;
+        clearJumpAlert(stepNumber);
+
+        let msg = isEn ? `Step ${stepNumber} marked as Completed` : `Passo ${stepNumber} marcado como Concluído`;
+        if (window.I18nManager && typeof window.I18nManager.t === "function") {
+          const tpl = window.I18nManager.t("live.manualToast.completed");
+          if (tpl && tpl.includes("{step}")) msg = tpl.replace("{step}", stepNumber);
+        }
+        if (window.showToast) window.showToast(msg);
+      }
+
+      saveStorageState();
+      renderLiveSessionUI();
+      if (tracker && typeof tracker.renderProgramStatusBadges === "function") {
+        tracker.renderProgramStatusBadges();
+      }
+      return;
+    }
 
     if (stepNumber === 1) {
       if (code) {
@@ -678,14 +762,27 @@ const LiveSession = (function () {
     // Atualizar preview do Código Ativo no Passo 1
     const step1CodePreview = document.getElementById("step1-code-preview");
     if (step1CodePreview) {
-      if (state.participantCode) {
-        step1CodePreview.textContent = state.participantCode;
-        step1CodePreview.classList.add("text-emerald-800", "bg-emerald-100", "px-2", "py-0.5", "rounded-md");
-        step1CodePreview.classList.remove("text-slate-900");
+      const activeCode = (state.participantCode || (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function" ? window.AuthModule.getParticipantCode() : "") || (localStorage.getItem(STORAGE_KEYS.PARTICIPANT_CODE) || "")).trim();
+      const isPresentation = (window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation") || activeCode.toUpperCase() === "FOCUSGROUP";
+      const codeBox = document.getElementById("step1-code-box") || step1CodePreview.closest('.rounded-xl') || step1CodePreview.closest('div');
+
+      if (activeCode) {
+        step1CodePreview.removeAttribute("data-i18n");
+        const displayCode = isPresentation ? "focusgroup" : activeCode.toUpperCase();
+        step1CodePreview.textContent = displayCode;
+        step1CodePreview.className = "font-mono font-extrabold text-sm text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-lg shadow-2xs";
+        if (codeBox) {
+          codeBox.classList.remove("bg-amber-50", "border-amber-200", "text-amber-900");
+          codeBox.classList.add("bg-emerald-50/80", "border-emerald-200", "text-emerald-950");
+        }
       } else {
+        step1CodePreview.setAttribute("data-i18n", "live.step1.configuredTop");
         step1CodePreview.textContent = window.I18nManager ? window.I18nManager.t("live.step1.configuredTop") : (isEn ? "Configured at Top" : "Configurado no Topo");
-        step1CodePreview.classList.remove("text-emerald-800", "bg-emerald-100", "px-2", "py-0.5", "rounded-md");
-        step1CodePreview.classList.add("text-slate-900");
+        step1CodePreview.className = "font-mono font-bold text-slate-900 text-sm";
+        if (codeBox) {
+          codeBox.classList.add("bg-amber-50", "border-amber-200", "text-amber-900");
+          codeBox.classList.remove("bg-emerald-50/80", "border-emerald-200", "text-emerald-950");
+        }
       }
     }
 
@@ -705,12 +802,13 @@ const LiveSession = (function () {
 
         if (isCompleted) {
           card.classList.add("completed", "border-emerald-500");
-          card.classList.remove("alert-jump", "border-red-500");
+          card.classList.remove("alert-jump", "border-red-500", "border-slate-200");
         } else if (isAlert) {
-          card.classList.remove("completed", "border-emerald-500");
+          card.classList.remove("completed", "border-emerald-500", "border-slate-200");
           card.classList.add("alert-jump", "border-red-500");
         } else {
           card.classList.remove("completed", "border-emerald-500", "alert-jump", "border-red-500");
+          card.classList.add("border-slate-200");
         }
       }
 

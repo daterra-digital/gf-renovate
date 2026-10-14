@@ -47,10 +47,10 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos Customizados -->
-  <link rel="stylesheet" href="assets/css/custom.css?v=20261007-1345">
+  <link rel="stylesheet" href="assets/css/custom.css?v=20261014-2220">
 
   <!-- Estado Global do Sistema RENOVATE FG2 (Aberto/Manutenção) -->
-  <script src="system-status.js?v=20261007-1345"></script>
+  <script src="system-status.js?v=20261014-2220"></script>
 
   <!-- Verificação Imediata de Sessão e Estado do Sistema (Previne Flash) -->
   <script>
@@ -79,40 +79,50 @@
                onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-1.5 py-0.5 rounded bg-[#FFCC66] text-[#0F172A] font-extrabold text-[10px] sm:text-sm tracking-wider border border-slate-900\'>RENOVATE</span>';">
         </a>
 
-        <div class="h-4 sm:h-7 w-[1px] bg-slate-200"></div>
+        <div class="h-4 sm:h-7 w-[1px] bg-slate-200 header-local-sep"></div>
 
         <!-- Logótipo DATERRA -->
-        <a href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" title="DATERRA - Lógica de Terra" class="shrink-0 flex items-center">
+        <a id="header-logo-daterra" href="https://daterra.com.pt/" target="_blank" rel="noopener noreferrer" title="DATERRA - Lógica de Terra" class="shrink-0 flex items-center">
           <img src="logo-daterra.png" alt="Logótipo DATERRA" class="h-5 sm:h-8 md:h-10 w-auto max-w-[55px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'px-1 py-0.5 rounded bg-slate-100 text-slate-800 font-bold text-[9px] sm:text-xs border border-slate-300\'>DATERRA</span>';">
         </a>
 
-        <div class="h-4 sm:h-7 w-[1px] bg-slate-200"></div>
+        <div class="h-4 sm:h-7 w-[1px] bg-slate-200 header-local-sep"></div>
 
         <!-- Logótipo ESAS (Escola Superior Agrária de Santarém) -->
-        <a href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
+        <a id="header-logo-esas" href="https://www.ipsantarem.pt/escola-superior-agraria-de-santarem/" target="_blank" rel="noopener noreferrer" title="Escola Superior Agrária de Santarém - Universidade Politécnica de Santarém" class="shrink-0 flex items-center">
           <img src="logo-esas.png" alt="Logótipo ESAS" class="h-6 sm:h-9 md:h-11 w-auto max-w-[75px] sm:max-w-none object-contain" 
                onerror="this.onerror=null; this.src='assets/images/logos/esas.png';">
         </a>
       </div>
 
-      <!-- Título de Contexto & Acesso de Moderação & Seletor de Idioma -->
-      <div class="flex items-center gap-1 sm:gap-3 shrink-0">
+      <!-- Bloco Central: Título Institucional RENOVATE Focus Group -->
+      <div id="header-center-title-container" class="flex-1 flex flex-col items-center justify-center text-center px-1 sm:px-2 min-w-0">
+        <h1 data-i18n="header.title" class="text-xs sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight truncate max-w-full">
+          RENOVATE Focus Group
+        </h1>
+        <p id="header-subtitle" data-i18n="header.subtitle" class="text-[10px] sm:text-[11px] text-slate-500 font-medium tracking-normal mt-0.5 hidden sm:block">
+          06 Outubro 2026 • ESAS - Santarém
+        </p>
+      </div>
+
+      <!-- Bloco Direito: Dropdown de Idioma & Área do Utilizador c/ Logout -->
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0 justify-end">
         <!-- Dropdown de Idioma (pt-PT / en-GB) -->
         <div class="relative inline-flex items-center">
           <label for="lang-select" class="sr-only">Idioma / Language</label>
-          <select id="lang-select" aria-label="Idioma / Language" class="appearance-none bg-white hover:bg-slate-50 text-slate-800 text-[11px] sm:text-xs font-bold py-1 sm:py-1.5 pl-2 sm:pl-2.5 pr-6 sm:pr-7 rounded-lg border border-slate-300 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#F5B842] focus:border-slate-900 cursor-pointer transition">
-            <option value="pt-PT" selected>🇵🇹 pt-PT</option>
+          <select id="lang-select" aria-label="Idioma / Language" class="appearance-none bg-white hover:bg-slate-50 text-slate-800 text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 pl-2 sm:pl-2.5 pr-6 sm:pr-7 rounded-xl border border-slate-300 shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B842] focus:border-slate-900 cursor-pointer transition">
             <option value="en-GB">🇬🇧 en-GB</option>
+            <option value="it-IT">🇮🇹 it-IT</option>
+            <option value="fr-FR">🇫🇷 fr-FR</option>
+            <option value="es-ES">🇪🇸 es-ES</option>
+            <option value="pl-PL">🇵🇱 pl-PL</option>
+            <option value="nl-BE">🇧🇪 nl-BE</option>
+            <option value="pt-PT" selected>🇵🇹 pt-PT</option>
           </select>
           <div class="pointer-events-none absolute right-1.5 sm:right-2 text-slate-500 flex items-center">
             <i data-lucide="chevron-down" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
           </div>
-        </div>
-
-        <div class="text-right hidden md:block">
-          <h1 data-i18n="header.title" class="text-sm font-bold text-slate-900 leading-tight">2ª Sessão do Grupo Focal</h1>
-          <p data-i18n="header.subtitle" class="text-[11px] text-slate-500 font-medium">06 Outubro 2026 • ESAS - Santarém</p>
         </div>
 
         <!-- Área Reservada do Utilizador no Topo Direito (Avatar, Código e Logout) -->
@@ -133,9 +143,9 @@
           <i data-lucide="calendar" class="w-4 h-4"></i>
           <span data-i18n="nav.program">Programa & Slides</span>
         </button>
-        <button type="button" data-tab="fg1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
+        <button type="button" id="tab-btn-fg1" data-tab="fg1" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="history" class="w-4 h-4"></i>
-          <span data-i18n="nav.fg1">Grupo Focal 1 (Lisboa)</span>
+          <span data-i18n="nav.fg1">1st Focus Group</span>
         </button>
         <button type="button" data-tab="results" class="nav-tab-btn flex items-center gap-2 py-3 px-4 border-b-2 text-sm font-semibold transition-all">
           <i data-lucide="folder-check" class="w-4 h-4"></i>
@@ -189,6 +199,33 @@
         </div>
       </div>
 
+      <!-- Guia de Questões Q1 a Q30 -->
+      <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3.5 mb-6 cursor-pointer hover:bg-blue-100/60 transition shadow-2xs" onclick="const g = this.querySelector('.q-guide-panel'); if (g) g.classList.toggle('hidden');">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-blue-900 flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-700"></i>
+            <span data-i18n="qguide.headerTitle">Questionnaire Guide & Structure (Q1 to Q30)</span>
+          </span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-blue-700"></i>
+        </div>
+        <div id="q-guide-panel" class="q-guide-panel hidden mt-3 text-xs text-blue-900 space-y-2.5 border-t border-blue-200/80 pt-3" onclick="event.stopPropagation();">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block A • Q1 to Q6:</strong> Demographic Profile & Digital Familiarity (Age, Role, Digital Tool Literacy).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block B • Q7 to Q14:</strong> Serious Game Evaluation (Pedagogy Q7-Q12, SUS Usability Q13 & 3-Words Feedback Q14).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block C • Q15 to Q24:</strong> Simulator Evaluation (Controls, Decision Flow, Formulas, Spray Mechanics & SUS Usability Q24).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block D • Q25 to Q30:</strong> Global Evaluation & Roadblocks (Qualitative Q25-Q28, Q29 NPS Recommendation & Wrap-up Q30).
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Grelha de Passos da Sessão ao Vivo (Passos 1 a 5 com Badges de Dispositivos e .locked-section) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -213,7 +250,7 @@
           </div>
 
           <div id="step-actions-1" class="mt-6 pt-4 border-t border-slate-100 space-y-3">
-            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+            <div id="step1-code-box" class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
               <span data-i18n="live.step1.activeCodeLabel" class="font-medium">Código Ativo:</span>
               <span class="font-mono font-bold text-slate-900 text-sm" id="step1-code-preview" data-i18n="live.step1.configuredTop">Configurado no Topo</span>
             </div>
@@ -365,7 +402,7 @@
               <a id="btn-simulator-virmedex" href="https://simulator.renovateproject.eu/auth/login" target="_blank" rel="noopener noreferrer" 
                  class="simulator-link-virmedex inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold border border-slate-900 transition shadow-xs">
                 <i data-lucide="laptop" class="w-4 h-4"></i>
-                <span data-i18n="live.step4.btnSim">Abrir Simulador</span>
+                <span data-i18n="live.step4.btnSim">Play RENOVATE Simulator</span>
               </a>
               <a id="btn-form-3" data-form="2" href="#" target="_blank" rel="noopener noreferrer" 
                  class="form-link-sim inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs">
@@ -479,7 +516,7 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- TAB 3: GRUPO FOCAL 1 (LISBOA, 22-10-2024)  -->
+    <!-- TAB 3: 1ST FOCUS GROUP                     -->
     <!-- ========================================== -->
     <section id="content-fg1" class="tab-pane hidden space-y-8">
       
@@ -487,168 +524,80 @@
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div class="flex items-center gap-2 text-xs font-bold text-amber-700 uppercase tracking-wider">
           <i data-lucide="map-pin" class="w-4 h-4"></i>
-          <span data-i18n="fg1.badge">Lisboa • 22 de outubro de 2024</span>
+          <span data-i18n="fg1.badge">EU CONSORTIUM • OCTOBER 2024 – MARCH 2025</span>
         </div>
         <h2 data-i18n="fg1.title" class="text-2xl font-extrabold text-slate-900">
-          1ª Sessão do Grupo Focal RENOVATE
+          1st RENOVATE Focus Group Session
         </h2>
         <p data-i18n="fg1.desc" class="text-sm text-slate-600 max-w-3xl leading-relaxed">
-          O primeiro Grupo Focal em Portugal reuniu peritos do setor agrário, formadores e consultores para mapear as principais necessidades de formação em proteção sustentável das culturas e avaliar a recetividade do setor a soluções digitais.
+          The first Focus Group cycle brought together 153 agricultural stakeholders, advisors, trainers, and researchers across 6 European countries (BE, FR, IT, PL, PT, ES) to assess training needs, barriers to technology adoption, and requirements for the RENOVATE digital platform.
         </p>
 
         <!-- Métricas Chave do GF1 -->
-        <div id="gf1-metrics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-          <!-- Renderizado via app.js -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs text-center space-y-1">
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 block tracking-tight">153</span>
+            <span data-i18n="fg1.kpi.participants" class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider block">SPECIALIST PARTICIPANTS</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs text-center space-y-1">
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 block tracking-tight">85+</span>
+            <span data-i18n="fg1.kpi.entities" class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider block">REPRESENTED ENTITIES</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs text-center space-y-1">
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 block tracking-tight">24+</span>
+            <span data-i18n="fg1.kpi.needs" class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider block">MAPPED TRAINING NEEDS</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs text-center space-y-1">
+            <span class="text-2xl sm:text-3xl font-black text-slate-900 block tracking-tight">8</span>
+            <span data-i18n="fg1.kpi.areas" class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider block">PRIORITY THEMATIC AREAS</span>
+          </div>
         </div>
       </div>
 
-      <!-- Vídeo Oficial do Grupo Focal 1 (Embed 16:9) -->
-      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-              <i data-lucide="video" class="w-5 h-5"></i>
+      <!-- Multi-Video Slider com os Vídeos Oficiais RENOVATE -->
+      <div class="mt-8 space-y-4">
+        <h3 data-i18n="fg1.videoCoverageTitle" class="text-lg font-extrabold text-slate-900">Audiovisual Coverage</h3>
+        <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-lg aspect-video">
+          <iframe id="main-video-player" class="w-full h-full" data-src="https://www.youtube.com/embed/nWiqYTdcrzk" src="" title="RENOVATE Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button onclick="window.switchVideo('https://www.youtube.com/embed/nWiqYTdcrzk', this)" class="video-thumb active ring-2 ring-[#F5B842] rounded-xl overflow-hidden relative group text-left">
+            <img src="https://img.youtube.com/vi/nWiqYTdcrzk/hqdefault.jpg" class="w-full h-20 sm:h-24 object-cover opacity-90 group-hover:opacity-100 transition" alt="1. RENOVATE Official Video">
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900 to-transparent p-2 pt-6">
+              <span data-i18n="fg1.video1.title" class="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1">1. RENOVATE Official Video</span>
             </div>
-            <div>
-              <h3 data-i18n="fg1.videoTitle" class="text-base sm:text-lg font-bold text-slate-900">Vídeo Oficial do Grupo Focal 1 (Lisboa)</h3>
-              <p data-i18n="fg1.videoDesc" class="text-xs text-slate-500">Reportagem audiovisual da sessão inaugural.</p>
+          </button>
+          <button onclick="window.switchVideo('https://www.youtube.com/embed/Vxj4jZUkYek', this)" class="video-thumb rounded-xl overflow-hidden relative group text-left opacity-70 hover:opacity-100 transition">
+            <img src="https://img.youtube.com/vi/Vxj4jZUkYek/hqdefault.jpg" class="w-full h-20 sm:h-24 object-cover transition" alt="2. RENOVATE nos Synergy Days em Barcelona">
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900 to-transparent p-2 pt-6">
+              <span data-i18n="fg1.video2.title" class="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1">2. RENOVATE nos Synergy Days em Barcelona</span>
             </div>
-          </div>
-          <a href="https://youtu.be/1_jQYkNluhY?si=BJvw2ftMW5WyCqki" target="_blank" rel="noopener noreferrer" 
-             class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#FF0000] hover:bg-[#e60000] text-white text-xs font-bold transition shadow-sm">
-            <i data-lucide="youtube" class="w-4 h-4"></i>
-            <span data-i18n="fg1.videoBtn">Ver no YouTube</span>
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-          </a>
+          </button>
+          <button onclick="window.switchVideo('https://www.youtube.com/embed/1_jQYkNluhY', this)" class="video-thumb rounded-xl overflow-hidden relative group text-left opacity-70 hover:opacity-100 transition">
+            <img src="https://img.youtube.com/vi/1_jQYkNluhY/hqdefault.jpg" class="w-full h-20 sm:h-24 object-cover transition" alt="3. Grupos Focais RENOVATE">
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900 to-transparent p-2 pt-6">
+              <span data-i18n="fg1.video3.title" class="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1">3. Grupos Focais RENOVATE</span>
+            </div>
+          </button>
         </div>
-
-        <!-- Player 16:9 Responsivo em Alta Resolução (HD Facade Interativo) -->
-        <div id="gf1-video-player-container" 
-             class="aspect-16-9 bg-slate-900 rounded-xl overflow-hidden shadow-xl relative group cursor-pointer border border-slate-200"
-             style="background-image: url('assets/images/gf1/gf1-2.jpg'); background-size: cover; background-position: center;">
-          <!-- Thumbnail Nativa HD (assets/images/gf1/gf1-2.jpg) -->
-          <img 
-            id="gf1-video-thumbnail-img"
-            src="assets/images/gf1/gf1-2.jpg?v=20261001-1730" 
-            onerror="this.onerror=null; this.src='assets/images/gf1/gf1-2.jpg';"
-            alt="Vídeo Oficial: 1ª Sessão do Grupo Focal RENOVATE (Lisboa)" 
-            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-            loading="eager"
-            decoding="sync"
-          />
-          
-          <!-- Overlay de gradiente suave para realce do botão play e badges sem escurecer a foto -->
-          <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-
-          <!-- Botão Play Central Estilo YouTube Oficial -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            <button type="button" aria-label="Reproduzir vídeo em alta resolução" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-600/95 text-white flex items-center justify-center shadow-2xl group-hover:bg-red-600 group-hover:scale-110 transition-all duration-300 ring-4 ring-white/30 backdrop-blur-xs">
-              <svg class="w-8 h-8 sm:w-10 sm:h-10 translate-x-0.5 fill-current" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Badges Informativos no Topo e Fundo do Player -->
-          <div class="absolute top-3 left-3 flex items-center gap-2">
-            <span class="bg-red-600 text-white text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
-              YouTube HD
-            </span>
-            <span class="bg-slate-900/80 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md hidden sm:inline-block">
-              1ª Sessão Lisboa • DATERRA & Consórcio RENOVATE
-            </span>
-          </div>
-
-          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
-            <span class="bg-slate-900/85 backdrop-blur-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 shadow">
-              <i data-lucide="play-circle" class="w-4 h-4 text-red-400"></i>
-              <span data-i18n="fg1.videoPlay">Clique para reproduzir em alta resolução</span>
-            </span>
-            <span class="bg-black/75 px-2.5 py-1 rounded-md font-mono text-[11px] font-bold">
-              HD 1080p
-            </span>
-          </div>
-        </div>
-        <p data-i18n="fg1.videoCaption" class="text-[11px] text-slate-500 italic">
-          O primeiro Grupo Focal em Portugal juntou especialistas, consultores e produtores para definir os requisitos das ferramentas pedagógicas digitais.
-        </p>
       </div>
 
-      <!-- Recursos & Documentação do GF1 (Notícia DATERRA & PDF de Conclusões) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Cartão 1: Notícia DATERRA -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
-          <div class="space-y-3">
-            <span data-i18n="fg1.newsBadge" class="inline-block px-2.5 py-1 rounded bg-[#FFCC66] text-[#0F172A] text-xs font-extrabold">
-              Página de Notícias da DATERRA
-            </span>
-            <h4 data-i18n="fg1.newsTitle" class="text-lg font-bold leading-snug">
-              Grupo Focal RENOVATE: Primeira Sessão em Lisboa Reúne Agricultores e Especialistas
-            </h4>
-            <p data-i18n="fg1.newsDesc" class="text-xs text-slate-300 leading-relaxed">
-              Consulte o artigo DATERRA com o resumo das perspectivas recolhidas na primeira sessão em Lisboa.
-            </p>
-          </div>
+      <!-- Galeria Fotográfica por Sessão de Grupo Focal -->
+      <div class="mt-12 space-y-5">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <a href="https://daterra.com.pt/grupo-focal-renovate-primeira-sessao-em-lisboa-reune-agricultores-e-especialistas/" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC66] hover:bg-[#FBBF24] text-[#0F172A] text-xs font-bold transition w-full justify-center shadow-sm">
-              <span data-i18n="fg1.newsBtn">Ler Notícia na DATERRA</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-            </a>
+            <h3 data-i18n="fg1.gallerySectionTitle" class="text-lg font-extrabold text-slate-900">Focus Group Sessions Gallery</h3>
+            <p data-i18n="fg1.gallerySectionSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">Field moments and co-creation workshops across the project cycles.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" id="session-gallery-filters">
+            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white transition filter-session-btn" data-session="all" data-i18n="fg1.filter.all">All Sessions</button>
+            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg1" data-i18n="fg1.filter.fg1">1st Focus Group</button>
+            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg2" data-i18n="fg1.filter.fg2">2nd Focus Group</button>
+            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg3" data-i18n="fg1.filter.fg3">3rd Focus Group</button>
           </div>
         </div>
-
-        <!-- Cartão 2: Documento de Resultados (PDF) -->
-        <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-5">
-          <div class="space-y-3">
-            <span data-i18n="fg1.docBadge" class="inline-block px-2.5 py-1 rounded bg-emerald-300 text-emerald-950 text-xs font-extrabold">
-              Documento Oficial (PDF)
-            </span>
-            <h4 data-i18n="fg1.docTitle" class="text-lg font-bold leading-snug">
-              Conclusões da 1ª Sessão do Grupo Focal RENOVATE
-            </h4>
-            <p data-i18n="fg1.docDesc" class="text-xs text-slate-300 leading-relaxed">
-              Aceda ao relatório com a síntese dos resultados, o mapeamento de necessidades e as recomendações prioritárias apuradas na 1ª Sessão do Grupo Focal RENOVATE em Portugal.
-            </p>
-          </div>
-          <div>
-            <a href="https://daterra.com.pt/wp-content/uploads/2025/03/10_ConclusoesGrupoFocalRENOVATE_pt.pdf" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-bold transition w-full justify-center shadow-sm">
-              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-              <span data-i18n="fg1.docBtn">Abrir Documento de Conclusões (PDF)</span>
-              <i data-lucide="download" class="w-3.5 h-3.5 ml-1"></i>
-            </a>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Principais Conclusões Extraídas -->
-      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <h3 data-i18n="fg1.highlightsTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
-          Principais Conclusões & Diretrizes Extraídas
-        </h3>
-        <ul id="gf1-highlights-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <!-- Renderizado via app.js -->
-        </ul>
-      </div>
-
-      <!-- Galeria Fotográfica do Grupo Focal 1 (Espaço para Imagens do Evento) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 data-i18n="fg1.galleryTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="images" class="w-5 h-5 text-amber-600"></i>
-              Galeria Fotográfica do Grupo Focal 1
-            </h3>
-            <p data-i18n="fg1.galleryDesc" class="text-xs text-slate-500">Registo fotográfico das dinâmicas e grupos de trabalho em Lisboa.</p>
-          </div>
-        </div>
-
-        <div id="gf1-gallery-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Renderizado dinamicamente via app.js -->
+        <div id="fg-session-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          <!-- Renderizado dinamicamente via JS sem etiquetas de país -->
         </div>
       </div>
     </section>
@@ -658,6 +607,33 @@
     <!-- ========================================== -->
     <section id="content-results" class="tab-pane hidden space-y-8">
       
+      <!-- Guia de Questões Q1 a Q30 -->
+      <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3.5 cursor-pointer hover:bg-blue-100/60 transition shadow-2xs" onclick="const g = this.querySelector('.q-guide-panel'); if (g) g.classList.toggle('hidden');">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-blue-900 flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-700"></i>
+            <span data-i18n="qguide.headerTitle">Questionnaire Guide & Structure (Q1 to Q30)</span>
+          </span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-blue-700"></i>
+        </div>
+        <div id="q-guide-panel-results" class="q-guide-panel hidden mt-3 text-xs text-blue-900 space-y-2.5 border-t border-blue-200/80 pt-3" onclick="event.stopPropagation();">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block A • Q1 to Q6:</strong> Demographic Profile & Digital Familiarity (Age, Role, Digital Tool Literacy).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block B • Q7 to Q14:</strong> Serious Game Evaluation (Pedagogy Q7-Q12, SUS Usability Q13 & 3-Words Feedback Q14).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block C • Q15 to Q24:</strong> Simulator Evaluation (Controls, Decision Flow, Formulas, Spray Mechanics & SUS Usability Q24).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <strong>Block D • Q25 to Q30:</strong> Global Evaluation & Roadblocks (Qualitative Q25-Q28, Q29 NPS Recommendation & Wrap-up Q30).
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Painel Principal de Resultados em Tempo Real -->
       <div class="bg-white rounded-2xl p-5 sm:p-6 border-2 border-slate-200 shadow-sm space-y-6">
         
@@ -680,6 +656,24 @@
           </div>
 
           <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <!-- Seletor Discreto de País para Apresentação Europeia -->
+            <div id="results-country-filter-container" class="relative inline-flex items-center hidden">
+              <label for="results-country-select" class="sr-only">Filtrar por País</label>
+              <select id="results-country-select" aria-label="Filtrar por País" 
+                      class="appearance-none bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold py-2 pl-3 pr-8 rounded-xl border border-slate-300 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#F5B842] focus:border-slate-900 cursor-pointer transition">
+                <option value="all" selected>🇪🇺 Consolidated RENOVATE</option>
+                <option value="pt">🇵🇹 Portugal (PT)</option>
+                <option value="es">🇪🇸 Spain (ES)</option>
+                <option value="it">🇮🇹 Italy (IT)</option>
+                <option value="fr">🇫🇷 France (FR)</option>
+                <option value="bl">🇧🇪 Belgium (BL)</option>
+                <option value="pl">🇵🇱 Poland (PL)</option>
+              </select>
+              <div class="pointer-events-none absolute right-2.5 text-slate-500 flex items-center">
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+
             <!-- Botão Atualizar Resultados -->
             <button type="button" id="btn-refresh-results" 
                     class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
@@ -922,7 +916,7 @@
             </details>
             <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1 text-[10px] text-slate-500">
               <span class="font-medium"><strong>Q13</strong> (Serious Game) vs <strong>Q24</strong> (Simulador 3D)</span>
-              <span class="font-mono text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Questões emparelhadas Q13.1|Q24.1 a Q13.10|Q24.10</span>
+              <span data-i18n="results.sus.pairedQ" class="font-mono text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Questões emparelhadas Q13.1 | Q24.1 a Q13.10 | Q24.10</span>
             </div>
           </div>
         </div>
@@ -1022,7 +1016,7 @@
                 <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <i data-lucide="gamepad-2" class="w-4 h-4 text-amber-600"></i> <span data-i18n="results.ped.gameTitle">Serious Game (Q7 a Q12)</span>
                 </span>
-                <span data-i18n="results.ped.gameBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">Média (1 a 5)</span>
+                <span data-i18n="results.ped.avg1to5" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">Média (1 a 5)</span>
               </div>
               <div class="h-[340px]">
                 <canvas id="chart-game-pedagogy"></canvas>
@@ -1035,7 +1029,7 @@
                 <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <i data-lucide="cpu" class="w-4 h-4 text-emerald-700"></i> <span data-i18n="results.ped.simTitle">Simulador (Q15 a Q23)</span>
                 </span>
-                <span data-i18n="results.ped.simBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Média (1 a 5)</span>
+                <span data-i18n="results.ped.avg1to5" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Média (1 a 5)</span>
               </div>
               <div class="h-[340px]">
                 <canvas id="chart-sim-modules"></canvas>
@@ -1164,185 +1158,60 @@
           <h3 data-i18n="results.deliv.highlightsTitle" class="text-sm sm:text-base font-extrabold text-slate-900 mb-3 sm:mb-4">
             Principais Conclusões & Diretrizes Extraídas
           </h3>
-          <div id="deliverable-highlights-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
-            <!-- Renderizado via app.js -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Secção de Vídeos Oficiais & Multimédia RENOVATE (Carrossel Interativo) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 data-i18n="results.videoSection.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
-              Galeria de Vídeos & Reportagem Audiovisual
-            </h3>
-            <p data-i18n="results.videoSection.desc" class="text-xs text-slate-500">
-              Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS e sessões RENOVATE.
-            </p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="video-slider-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-300 shadow-2xs">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span id="video-slider-badge-text">Vídeo 1 de 3: RENOVATE 1</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Contentor Principal do Carrossel (Slider) com Navegação Lateral -->
-        <div class="relative group/slider w-full">
-          <!-- Botão de Navegação Esquerda (<<) -->
-          <button type="button" id="slider-btn-prev" aria-label="Vídeo anterior" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white flex items-center justify-center shadow-xl backdrop-blur-xs border border-white/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
-            <i data-lucide="chevron-left" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-          </button>
-
-          <!-- Botão de Navegação Direita (>>) -->
-          <button type="button" id="slider-btn-next" aria-label="Próximo vídeo" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white flex items-center justify-center shadow-xl backdrop-blur-xs border border-white/20 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
-            <i data-lucide="chevron-right" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-          </button>
-
-          <!-- Slider Track -->
-          <div id="video-slider-track" class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar rounded-2xl bg-slate-950 shadow-xl border border-slate-200">
-            <!-- Slide 1 (Predefinido / Inicial): Vídeo RENOVATE 1 -->
-            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="0">
-              <div class="relative w-full aspect-video rounded-lg overflow-hidden cursor-pointer group video-facade" data-video-id="nWiqYTdcrzk">
-                <!-- Imagem de Fundo -->
-                <img src="assets/images/gf1/renovate-video.png" alt="Vídeo RENOVATE" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                <!-- Gradiente de Escurecimento (Legibilidade) -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
-                <!-- Badges Topo -->
-                <div class="absolute top-4 left-4 flex gap-2">
-                  <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">YouTube HD</span>
-                  <span class="bg-slate-900/80 backdrop-blur text-slate-100 text-[10px] font-medium px-2 py-1 rounded">Projeto RENOVATE</span>
-                </div>
-                <!-- Botão Play Central -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-16 h-12 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-red-600/30">
-                    <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  </div>
-                </div>
-                <!-- Barra Inferior -->
-                <div class="absolute bottom-4 left-4 flex items-center gap-2 text-slate-200 text-[11px] font-medium">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/></svg>
-                  <span>Clique para reproduzir em alta resolução</span>
-                </div>
-                <div class="absolute bottom-4 right-4 text-white font-bold text-[10px] bg-black/50 px-2 py-1 rounded">
-                  HD 1080p
-                </div>
+          <!-- 4 Cartões Visuais Oficiais do Deliverable 1.3 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <!-- Cartão 1 -->
+            <div class="bg-gradient-to-br from-blue-50/80 to-white p-4 rounded-xl border border-blue-200/80 shadow-xs flex items-start gap-3.5 hover:shadow-sm transition">
+              <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="wrench" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block mb-1">T1.3 / WP1</span>
+                <p data-i18n="results.d13.rec1" class="text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+                  Need for practical training using field demonstrations and interactive simulators.
+                </p>
               </div>
             </div>
 
-            <!-- Slide 2: Vídeo RENOVATE 2 -->
-            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="1">
-              <div class="relative w-full aspect-video rounded-lg overflow-hidden cursor-pointer group video-facade" data-video-id="Vxj4jZUkYek">
-                <!-- Imagem de Fundo -->
-                <img src="assets/images/gf1/renovate-synergy.png" alt="Vídeo RENOVATE Synergy Days" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                <!-- Gradiente de Escurecimento (Legibilidade) -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
-                <!-- Badges Topo -->
-                <div class="absolute top-4 left-4 flex gap-2">
-                  <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">YouTube HD</span>
-                  <span class="bg-slate-900/80 backdrop-blur text-slate-100 text-[10px] font-medium px-2 py-1 rounded">RENOVATE Synergy Days</span>
-                </div>
-                <!-- Botão Play Central -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-16 h-12 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-red-600/30">
-                    <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  </div>
-                </div>
-                <!-- Barra Inferior -->
-                <div class="absolute bottom-4 left-4 flex items-center gap-2 text-slate-200 text-[11px] font-medium">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/></svg>
-                  <span>Clique para reproduzir em alta resolução</span>
-                </div>
-                <div class="absolute bottom-4 right-4 text-white font-bold text-[10px] bg-black/50 px-2 py-1 rounded">
-                  HD 1080p
-                </div>
+            <!-- Cartão 2 -->
+            <div class="bg-gradient-to-br from-blue-50/80 to-white p-4 rounded-xl border border-blue-200/80 shadow-xs flex items-start gap-3.5 hover:shadow-sm transition">
+              <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="languages" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block mb-1">T1.3 / WP1</span>
+                <p data-i18n="results.d13.rec2" class="text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+                  Adaptation of training content to local contexts, using simple and direct language.
+                </p>
               </div>
             </div>
 
-            <!-- Slide 3 (Espaço Reservado para Santarém): Vídeo Oficial do Grupo Focal 2 -->
-            <div class="min-w-full snap-center relative flex items-center justify-center p-0" data-slide-index="2">
-              <div class="w-full aspect-video rounded-lg overflow-hidden relative bg-slate-900 border border-slate-800 flex flex-col items-center justify-center p-4 sm:p-8 text-center">
-                <!-- Fundo Gradiente Cinematográfico Escuro -->
-                <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-amber-950/70"></div>
-                <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: radial-gradient(rgba(255, 204, 102, 0.4) 1px, transparent 1px); background-size: 24px 24px;"></div>
+            <!-- Cartão 3 -->
+            <div class="bg-gradient-to-br from-emerald-50/80 to-white p-4 rounded-xl border border-emerald-200/80 shadow-xs flex items-start gap-3.5 hover:shadow-sm transition">
+              <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="scale" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 block mb-1">T1.3 / WP1</span>
+                <p data-i18n="results.d13.rec3" class="text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+                  Integration of simulators for practical scenario evaluation and cost-benefit analysis.
+                </p>
+              </div>
+            </div>
 
-                <!-- Badges Informativos no Topo -->
-                <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2 z-10">
-                  <span class="inline-flex items-center gap-1.5 bg-red-600/90 text-white text-[10px] sm:text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-md tracking-wider shadow">
-                    <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
-                    YouTube HD • GF2
-                  </span>
-                  <span class="bg-slate-900/85 backdrop-blur-sm text-slate-200 text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 hidden sm:inline-block">
-                    2ª Sessão Santarém • ESAS & Consórcio RENOVATE
-                  </span>
-                </div>
-
-                <!-- Conteúdo Central: Em Produção / Brevemente -->
-                <div class="relative z-10 flex flex-col items-center justify-center space-y-2 sm:space-y-3 max-w-lg px-4">
-                  <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-xl ring-4 ring-amber-400/30">
-                    <i data-lucide="video" class="w-6 h-6 sm:w-8 sm:h-8"></i>
-                  </div>
-
-                  <div class="space-y-1">
-                    <h4 data-i18n="results.gf2video.title" class="text-white text-sm sm:text-lg font-extrabold tracking-tight drop-shadow-sm">
-                      Vídeo Oficial do Grupo Focal 2 (Santarém)
-                    </h4>
-                    <p data-i18n="results.gf2video.desc" class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-md mx-auto line-clamp-2 sm:line-clamp-none">
-                      Reportagem audiovisual, dinâmicas de formação e testemunhos dos participantes na ESAS.
-                    </p>
-                  </div>
-
-                  <div class="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/15 text-amber-300 text-[11px] sm:text-xs font-semibold">
-                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span data-i18n="results.gf2video.badge">Disponível Brevemente</span>
-                  </div>
-                </div>
-
-                <!-- Badges de Rodapé do Player -->
-                <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs z-10">
-                  <span class="bg-slate-900/85 backdrop-blur-sm px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5 border border-white/10 shadow text-[10px] sm:text-xs">
-                    <i data-lucide="film" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span data-i18n="results.gf2video.footer">Reportagem Audiovisual DATERRA & RENOVATE</span>
-                  </span>
-                  <span class="bg-black/75 px-2 py-0.5 rounded font-mono text-[10px] sm:text-[11px] font-bold">
-                    Full HD 1080p
-                  </span>
-                </div>
+            <!-- Cartão 4 -->
+            <div class="bg-gradient-to-br from-amber-50/80 to-white p-4 rounded-xl border border-amber-200/80 shadow-xs flex items-start gap-3.5 hover:shadow-sm transition">
+              <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block mb-1">T1.3 / WP1</span>
+                <p data-i18n="results.d13.rec4" class="text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+                  Development of an intuitive platform with audiovisual content and gamification elements.
+                </p>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Indicadores de Paginação / Dots do Carrossel -->
-        <div class="flex justify-center items-center gap-2 mt-4">
-          <button type="button" class="video-slider-dot flex-none shrink-0 h-2.5 w-6 rounded-full bg-amber-500 transition-all duration-300 cursor-pointer p-0 border-0" data-slide="0" aria-label="Slide 1: RENOVATE 1"></button>
-          <button type="button" class="video-slider-dot flex-none shrink-0 h-2.5 w-2.5 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300 cursor-pointer p-0 border-0" data-slide="1" aria-label="Slide 2: RENOVATE 2"></button>
-          <button type="button" class="video-slider-dot flex-none shrink-0 h-2.5 w-2.5 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300 cursor-pointer p-0 border-0" data-slide="2" aria-label="Slide 3: Santarém"></button>
-        </div>
-      </div>
-
-      <!-- Galeria Fotográfica do Grupo Focal 2 (Etapas do Programa) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 data-i18n="results.gallery.title" class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="images" class="w-5 h-5 text-amber-600"></i>
-              Galeria Fotográfica do Grupo Focal 2
-            </h3>
-            <p data-i18n="results.gallery.desc" class="text-xs text-slate-500">
-              Registo fotográfico organizado pelas etapas do programa oficial da sessão na ESAS Santarém.
-            </p>
-          </div>
-          <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-            6 Etapas da Sessão
-          </span>
-        </div>
-
-        <div id="media-gallery-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Renderizado via app.js -->
         </div>
       </div>
 
@@ -1698,7 +1567,7 @@
           </div>
 
           <!-- Grupo 2: Organização & Iniciativas -->
-          <div class="space-y-3">
+          <div id="footer-group-org" class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
               <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
               <span data-i18n="footer.orgInitiatives">Organização &amp; Iniciativas</span>
@@ -1722,7 +1591,7 @@
           </div>
 
           <!-- Grupo 3: Anfitrião -->
-          <div class="space-y-3">
+          <div id="footer-group-host" class="space-y-3">
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#FFCC66] flex items-center gap-1.5">
               <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
               <span data-i18n="footer.hostLabel">Anfitrião</span>
@@ -1878,12 +1747,18 @@
       </div>
 
       <!-- Barra Inferior de Informação e Legenda -->
-      <div class="w-full mt-3 flex items-center justify-between text-white text-xs sm:text-sm px-2">
-        <div class="pr-4">
-          <span id="gf1-lightbox-album" class="font-extrabold text-[#FFCC66] uppercase text-[11px] tracking-wider block"></span>
-          <span id="gf1-lightbox-title" class="font-semibold text-slate-200"></span>
+      <div class="w-full mt-3 flex items-center justify-between text-white text-xs sm:text-sm px-2 gap-3">
+        <div class="pr-2 min-w-0">
+          <span id="gf1-lightbox-album" class="font-extrabold text-[#FFCC66] uppercase text-[11px] tracking-wider block truncate"></span>
+          <span id="gf1-lightbox-title" class="font-semibold text-slate-200 block truncate"></span>
         </div>
-        <div id="gf1-lightbox-counter" class="font-mono text-xs text-slate-300 bg-white/10 px-3 py-1 rounded-full border border-white/10 shrink-0">
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button type="button" id="btn-slideshow-toggle" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-[#FFCC66] text-slate-200 hover:text-slate-950 text-xs font-bold transition border border-white/15 cursor-pointer" title="Slide Show (Barra de Espaço)" aria-label="Slide Show">
+            <i data-lucide="play" id="slideshow-icon" class="w-3.5 h-3.5"></i>
+            <span id="slideshow-text" data-i18n="lightbox.slideshow">Slide Show</span>
+          </button>
+          <div id="gf1-lightbox-counter" class="font-mono text-xs text-slate-300 bg-white/10 px-3 py-1 rounded-full border border-white/10 shrink-0">
+          </div>
         </div>
       </div>
 
@@ -1899,16 +1774,12 @@
       <!-- Faixa de Cores Oficial RENOVATE -->
       <div class="absolute top-0 left-0 right-0 h-1.5 renovate-palette-bar"></div>
 
-      <!-- Topo: Logótipos Institucionais e Badge UE -->
+      <!-- Topo: Logótipo Institucional RENOVATE e Badge UE -->
       <div class="flex items-center justify-between gap-2 pt-1 border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2 sm:gap-3">
           <a href="https://renovateproject.eu/" target="_blank" rel="noopener noreferrer" title="Website Oficial do Projeto RENOVATE (renovateproject.eu)" class="shrink-0 flex items-center hover:opacity-85 transition">
             <img src="logo-renovate.png" alt="RENOVATE" class="h-7 sm:h-8 w-auto object-contain">
           </a>
-          <div class="h-4 w-[1px] bg-slate-200"></div>
-          <img src="logo-daterra.png" alt="DATERRA" class="h-6 sm:h-7 w-auto object-contain">
-          <div class="h-4 w-[1px] bg-slate-200"></div>
-          <img src="logo-esas.png" alt="ESAS" class="h-6 sm:h-7 w-auto object-contain">
         </div>
         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100/80 text-amber-900 font-extrabold text-[10px] uppercase tracking-wider border border-amber-200">
           <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-700"></i>
@@ -2102,15 +1973,15 @@
   </div>
 
   <!-- Scripts da Aplicação com Cache Buster -->
-  <script src="system-status.js?v=20261007-1520"></script>
-  <script src="assets/js/i18n.js?v=20261007-1520"></script>
-  <script src="assets/js/content-data.js?v=20261007-1520"></script>
-  <script src="assets/js/auth.js?v=20261007-1520"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261007-1520"></script>
-  <script src="assets/js/live-session.js?v=20261007-1520"></script>
-  <script src="assets/js/results-dashboard.js?v=20261007-1520"></script>
-  <script src="assets/js/moderator-panel.js?v=20261007-1520"></script>
-  <script src="assets/js/app.js?v=20261007-1520"></script>
+  <script src="system-status.js?v=20261014-2220"></script>
+  <script src="assets/js/i18n.js?v=20261014-2220"></script>
+  <script src="assets/js/content-data.js?v=20261014-2220"></script>
+  <script src="assets/js/auth.js?v=20261014-2220"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261014-2220"></script>
+  <script src="assets/js/live-session.js?v=20261014-2220"></script>
+  <script src="assets/js/results-dashboard.js?v=20261014-2220"></script>
+  <script src="assets/js/moderator-panel.js?v=20261014-2220"></script>
+  <script src="assets/js/app.js?v=20261014-2220"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {
