@@ -1584,7 +1584,16 @@ function initVideoSlider() {
  * Oculta referências locais (ESAS, DATERRA, Santarém) e destaca a identidade europeia do RENOVATE.
  */
 function applyPresentationModeUI() {
-  const isPres = window.AuthModule && typeof window.AuthModule.getUserRole === "function" && window.AuthModule.getUserRole() === "presentation";
+  const userRole = (window.AuthModule && typeof window.AuthModule.getUserRole === "function") 
+    ? window.AuthModule.getUserRole() 
+    : (typeof localStorage !== "undefined" ? localStorage.getItem("renovate_user_role") || "" : "");
+  const partCode = (window.AuthModule && typeof window.AuthModule.getParticipantCode === "function") 
+    ? window.AuthModule.getParticipantCode() 
+    : ((window.LiveSession && typeof window.LiveSession.getParticipantCode === "function") 
+      ? window.LiveSession.getParticipantCode() 
+      : (typeof localStorage !== "undefined" ? localStorage.getItem("renovate_participant_code") || "" : ""));
+
+  const isPres = userRole === "presentation" || String(partCode).trim().toLowerCase() === "focusgroup";
 
   // 1. Cabeçalho
   const logoDaterra = document.getElementById("header-logo-daterra");
@@ -1674,6 +1683,69 @@ function applyPresentationModeUI() {
     }
     if (typeof window.LiveSession.render === "function") {
       window.LiveSession.render();
+    }
+  }
+
+  // 8. Menus de Navegação (Exclusivo para o código "focusgroup")
+  // "Results & Media" passa para apenas "Results"
+  // "1st Focus Group" passa para "Focus Groups & Media" (reúne o resumo transversal e as fotografias e vídeos)
+  const isEn = window.I18nManager ? window.I18nManager.isEnglish() : true;
+  const t = (k, fb) => (window.I18nManager && typeof window.I18nManager.t === "function") ? window.I18nManager.t(k, fb) : fb;
+
+  const navResultsSpan = document.querySelector('#tab-btn-results span[data-i18n="nav.results"]') || document.querySelector('button[data-tab="results"] span[data-i18n="nav.results"]');
+  const mobileNavResultsSpan = document.querySelector('#mobile-tab-btn-results span[data-i18n="nav.mobile.results"]') || document.querySelector('#mobile-nav-grid button[data-tab="results"] span[data-i18n="nav.mobile.results"]');
+  const navFg1Span = document.querySelector('#tab-btn-fg1 span[data-i18n="nav.fg1"]') || document.querySelector('button[data-tab="fg1"] span[data-i18n="nav.fg1"]');
+  const mobileNavFg1Span = document.querySelector('#mobile-tab-btn-fg1 span[data-i18n="nav.mobile.fg1"]') || document.querySelector('#mobile-nav-grid button[data-tab="fg1"] span[data-i18n="nav.mobile.fg1"]');
+
+  const fg1HeaderBadge = document.querySelector('#content-fg1 [data-i18n="fg1.badge"]');
+  const fg1HeaderTitle = document.querySelector('#content-fg1 [data-i18n="fg1.title"]');
+  const fg1HeaderDesc = document.querySelector('#content-fg1 [data-i18n="fg1.desc"]');
+
+  if (isPres) {
+    if (navResultsSpan) {
+      navResultsSpan.textContent = t("nav.results.presentation", isEn ? "Results" : "Resultados");
+    }
+    if (mobileNavResultsSpan) {
+      mobileNavResultsSpan.textContent = t("nav.mobile.results.presentation", isEn ? "Results" : "Resultados");
+    }
+    if (navFg1Span) {
+      navFg1Span.textContent = t("nav.fg1.presentation", isEn ? "Focus Groups & Media" : "Grupos Focais & Media");
+    }
+    if (mobileNavFg1Span) {
+      mobileNavFg1Span.textContent = t("nav.mobile.fg1.presentation", isEn ? "FG & Media" : "GF & Media");
+    }
+    if (fg1HeaderBadge) {
+      fg1HeaderBadge.textContent = t("fg1.badge.presentation", isEn ? "EU CONSORTIUM • FOCUS GROUP CYCLES & MEDIA" : "CONSÓRCIO EUROPEU • CICLOS DOS GRUPOS FOCAIS & MEDIA");
+    }
+    if (fg1HeaderTitle) {
+      fg1HeaderTitle.textContent = t("fg1.title.presentation", isEn ? "RENOVATE Focus Groups & Media" : "Grupos Focais RENOVATE & Media");
+    }
+    if (fg1HeaderDesc) {
+      fg1HeaderDesc.textContent = t("fg1.desc.presentation", isEn 
+        ? "Cross-cutting summary of the European Focus Group co-creation cycles across partner countries (BE, FR, IT, PL, PT, ES), highlighting key participation metrics, official audiovisual coverage, and complete photographic records across sessions."
+        : "Síntese transversal dos ciclos de cocriação dos Grupos Focais nos países parceiros europeus (BE, FR, IT, PL, PT, ES), reunindo indicadores de participação, cobertura audiovisual oficial e registos fotográficos de todas as sessões.");
+    }
+  } else {
+    if (navResultsSpan && window.I18nManager) {
+      navResultsSpan.textContent = window.I18nManager.t("nav.results", "Resultados & Media");
+    }
+    if (mobileNavResultsSpan && window.I18nManager) {
+      mobileNavResultsSpan.textContent = window.I18nManager.t("nav.mobile.results", "Resultados");
+    }
+    if (navFg1Span && window.I18nManager) {
+      navFg1Span.textContent = window.I18nManager.t("nav.fg1", "1st Focus Group");
+    }
+    if (mobileNavFg1Span && window.I18nManager) {
+      mobileNavFg1Span.textContent = window.I18nManager.t("nav.mobile.fg1", "GF1");
+    }
+    if (fg1HeaderBadge && window.I18nManager) {
+      fg1HeaderBadge.textContent = window.I18nManager.t("fg1.badge", "EU CONSORTIUM • OCTOBER 2024 – MARCH 2025");
+    }
+    if (fg1HeaderTitle && window.I18nManager) {
+      fg1HeaderTitle.textContent = window.I18nManager.t("fg1.title", "1st RENOVATE Focus Group Session");
+    }
+    if (fg1HeaderDesc && window.I18nManager) {
+      fg1HeaderDesc.textContent = window.I18nManager.t("fg1.desc");
     }
   }
 
