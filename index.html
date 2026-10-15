@@ -589,11 +589,18 @@
             <h3 data-i18n="fg1.gallerySectionTitle" class="text-lg font-extrabold text-slate-900">Focus Group Sessions Gallery</h3>
             <p data-i18n="fg1.gallerySectionSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">Field moments and co-creation workshops across the project cycles.</p>
           </div>
-          <div class="flex flex-wrap items-center gap-2" id="session-gallery-filters">
-            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white transition filter-session-btn" data-session="all" data-i18n="fg1.filter.all">All Sessions</button>
-            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg1" data-i18n="fg1.filter.fg1">1st Focus Group</button>
-            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg2" data-i18n="fg1.filter.fg2">2nd Focus Group</button>
-            <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition filter-session-btn" data-session="fg3" data-i18n="fg1.filter.fg3">3rd Focus Group</button>
+          <div class="flex flex-wrap items-center gap-2.5" id="session-gallery-filters">
+            <div class="inline-flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-2xl sm:rounded-full border border-slate-200">
+              <button class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white transition filter-session-btn cursor-pointer shadow-xs" data-session="all" data-i18n="fg1.filter.all">All Sessions</button>
+              <button class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 transition filter-session-btn cursor-pointer" data-session="fg1" data-i18n="fg1.filter.fg1">1st Focus Group</button>
+              <button class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 transition filter-session-btn cursor-pointer" data-session="fg2" data-i18n="fg1.filter.fg2">2nd Focus Group</button>
+              <button class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 transition filter-session-btn cursor-pointer" data-session="fg3" data-i18n="fg1.filter.fg3">3rd Focus Group</button>
+            </div>
+            <button type="button" id="btn-session-gallery-slideshow" onclick="window.openSessionGallerySlideshow(0, undefined, true)"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black bg-[#F5B842] hover:bg-[#e6a832] text-slate-950 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer border border-amber-400 shrink-0">
+              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+              <span id="lbl-session-slideshow-btn">Slide Show (46 Fotos)</span>
+            </button>
           </div>
         </div>
         <div id="fg-session-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
@@ -1974,14 +1981,14 @@
 
   <!-- Scripts da Aplicação com Cache Buster -->
   <script src="system-status.js?v=20261015-0055"></script>
-  <script src="assets/js/i18n.js?v=20261015-0055"></script>
-  <script src="assets/js/content-data.js?v=20261015-0055"></script>
-  <script src="assets/js/auth.js?v=20261015-0055"></script>
-  <script src="assets/js/submissions-tracker.js?v=20261015-0055"></script>
-  <script src="assets/js/live-session.js?v=20261015-0055"></script>
-  <script src="assets/js/results-dashboard.js?v=20261015-0055"></script>
-  <script src="assets/js/moderator-panel.js?v=20261015-0055"></script>
-  <script src="assets/js/app.js?v=20261015-0055"></script>
+  <script src="assets/js/i18n.js?v=20261015-0108"></script>
+  <script src="assets/js/content-data.js?v=20261015-0108"></script>
+  <script src="assets/js/auth.js?v=20261015-0108"></script>
+  <script src="assets/js/submissions-tracker.js?v=20261015-0108"></script>
+  <script src="assets/js/live-session.js?v=20261015-0108"></script>
+  <script src="assets/js/results-dashboard.js?v=20261015-0108"></script>
+  <script src="assets/js/moderator-panel.js?v=20261015-0108"></script>
+  <script src="assets/js/app.js?v=20261015-0108"></script>
   <script>
     // Inicialização adicional de segurança dos ícones Lucide
     if (window.lucide) {

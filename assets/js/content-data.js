@@ -541,9 +541,9 @@ const RENOVATE_CONFIG = {
     ],
     // Fallback de retrocompatibilidade com fotos reais
     gallery: [
-      { filename: "gf1-1.jpg", src: "assets/images/gf1/gf1-1.jpg", alt: "Abertura & Apresentação", title: "Abertura & Apresentação", titleEn: "Opening & Presentation", caption: "Auditório com peritos agrários e investigadores no Grupo Focal 1 em Lisboa.", captionEn: "Auditorium with agricultural experts and researchers at Focus Group 1 in Lisbon." },
-      { filename: "gf1-7.jpg", src: "assets/images/gf1/gf1-7.jpg", alt: "Dinâmica de Co-criação", title: "Dinâmica de Co-criação", titleEn: "Co-Creation Dynamics", caption: "Trabalho participativo e mapeamento de competências agrárias.", captionEn: "Participatory work and agricultural skills mapping." },
-      { filename: "gf1-13.jpg", src: "assets/images/gf1/gf1-13.jpg", alt: "Síntese dos Resultados", title: "Síntese dos Resultados", titleEn: "Synthesis of Results", caption: "Partilha em plenário e consolidação das conclusões dos grupos.", captionEn: "Plenary sharing and consolidation of group conclusions." }
+      { filename: "gf1-1.jpg", src: "assets/images/gf1/gf1-1.jpg", alt: "Focus Group Sessions Gallery - 1st Focus Group", title: "Focus Group Sessions Gallery - 1st Focus Group", titleEn: "Focus Group Sessions Gallery - 1st Focus Group", caption: "Focus Group Sessions Gallery - 1st Focus Group", captionEn: "Focus Group Sessions Gallery - 1st Focus Group" },
+      { filename: "gf1-7.jpg", src: "assets/images/gf1/gf1-7.jpg", alt: "Focus Group Sessions Gallery - 1st Focus Group", title: "Focus Group Sessions Gallery - 1st Focus Group", titleEn: "Focus Group Sessions Gallery - 1st Focus Group", caption: "Focus Group Sessions Gallery - 1st Focus Group", captionEn: "Focus Group Sessions Gallery - 1st Focus Group" },
+      { filename: "gf1-13.jpg", src: "assets/images/gf1/gf1-13.jpg", alt: "Focus Group Sessions Gallery - 1st Focus Group", title: "Focus Group Sessions Gallery - 1st Focus Group", titleEn: "Focus Group Sessions Gallery - 1st Focus Group", caption: "Focus Group Sessions Gallery - 1st Focus Group", captionEn: "Focus Group Sessions Gallery - 1st Focus Group" }
     ]
   },
 

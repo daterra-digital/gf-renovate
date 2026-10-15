@@ -932,6 +932,45 @@ const fgSessionsGallery = [
 
 let currentSessionGalleryFilter = 'all';
 
+/**
+ * Seleciona um grupo de fotografias representativo para a visualização compacta (preview de 7 fotos)
+ */
+function getCuratedSessionPhotos(filtered, activeSession) {
+  if (activeSession === 'all') {
+    const fg1Photos = filtered.filter(p => p.session === 'fg1');
+    const fg2Photos = filtered.filter(p => p.session === 'fg2');
+    const curated = [];
+    const fg1Picks = ['fg1-1', 'fg1-7', 'fg1-13'];
+    const fg2Picks = ['fg2-01', 'fg2-06', 'fg2-12', 'fg2-20'];
+    fg1Picks.forEach(id => {
+      const p = fg1Photos.find(x => x.id === id);
+      if (p) curated.push(p);
+    });
+    fg2Picks.forEach(id => {
+      const p = fg2Photos.find(x => x.id === id);
+      if (p) curated.push(p);
+    });
+    return curated.length === 7 ? curated : filtered.slice(0, 7);
+  } else if (activeSession === 'fg1') {
+    const fg1Picks = ['fg1-1', 'fg1-4', 'fg1-7', 'fg1-10', 'fg1-13', 'fg1-16', 'fg1-19'];
+    const curated = [];
+    fg1Picks.forEach(id => {
+      const p = filtered.find(x => x.id === id);
+      if (p) curated.push(p);
+    });
+    return curated.length === 7 ? curated : filtered.slice(0, 7);
+  } else if (activeSession === 'fg2') {
+    const fg2Picks = ['fg2-01', 'fg2-05', 'fg2-09', 'fg2-13', 'fg2-17', 'fg2-21', 'fg2-24'];
+    const curated = [];
+    fg2Picks.forEach(id => {
+      const p = filtered.find(x => x.id === id);
+      if (p) curated.push(p);
+    });
+    return curated.length === 7 ? curated : filtered.slice(0, 7);
+  }
+  return filtered.slice(0, 7);
+}
+
 function renderSessionGallery(activeSession) {
   if (activeSession !== undefined) {
     currentSessionGalleryFilter = activeSession;
@@ -942,14 +981,41 @@ function renderSessionGallery(activeSession) {
   if (!grid) return;
 
   const filtered = fgSessionsGallery.filter(item => activeSession === 'all' || item.session === activeSession);
+  const t = (k, fb) => (window.I18nManager && typeof window.I18nManager.t === 'function') ? window.I18nManager.t(k, fb) : fb;
+
+  // Atualizar estado e texto do botão de Slide Show no cabeçalho dos filtros
+  const slideshowBtn = document.getElementById('btn-session-gallery-slideshow');
+  const slideshowLbl = document.getElementById('lbl-session-slideshow-btn');
+
+  if (slideshowBtn && slideshowLbl) {
+    if (filtered.length === 0) {
+      const tProc = t('fg1.processingSession', '{session} (Em processamento)');
+      slideshowLbl.textContent = tProc.replace('{session}', '3rd Focus Group');
+      slideshowBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      slideshowBtn.classList.remove('cursor-pointer', 'hover:shadow-md');
+      slideshowBtn.onclick = null;
+    } else {
+      slideshowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      slideshowBtn.classList.add('cursor-pointer', 'hover:shadow-md');
+      slideshowBtn.onclick = () => openSessionGallerySlideshow(0, activeSession, true);
+
+      let sessionLabel = 'All Sessions';
+      if (activeSession === 'fg1') sessionLabel = '1st Focus Group';
+      else if (activeSession === 'fg2') sessionLabel = '2nd Focus Group';
+
+      if (activeSession === 'all') {
+        const textPattern = t('fg1.btnSlideshowAll', 'Slide Show • Todas as Sessões ({count} Fotos)');
+        slideshowLbl.textContent = textPattern.replace('{count}', filtered.length);
+      } else {
+        const textPattern = t('fg1.btnSlideshowSession', `Slide Show • ${sessionLabel} ({count} Fotos)`);
+        slideshowLbl.textContent = textPattern.replace('{session}', sessionLabel).replace('{count}', filtered.length);
+      }
+    }
+  }
 
   if (filtered.length === 0) {
-    const tTitle = (window.I18nManager && typeof window.I18nManager.t === 'function') 
-      ? window.I18nManager.t('fg1.galleryEmptyTitle', 'Photographic records in processing') 
-      : 'Photographic records in processing';
-    const tDesc = (window.I18nManager && typeof window.I18nManager.t === 'function') 
-      ? window.I18nManager.t('fg1.galleryEmptyDesc', 'The photographs for this session will be published following consortium validation.') 
-      : 'The photographs for this session will be published following consortium validation.';
+    const tTitle = t('fg1.galleryEmptyTitle', 'Photographic records in processing');
+    const tDesc = t('fg1.galleryEmptyDesc', 'The photographs for this session will be published following consortium validation.');
     
     grid.innerHTML = `
       <div class="col-span-full py-12 text-center bg-slate-50/80 rounded-2xl border border-dashed border-slate-300 space-y-2">
@@ -962,7 +1028,11 @@ function renderSessionGallery(activeSession) {
     return;
   }
 
-  grid.innerHTML = filtered.map((item, idx) => {
+  // Obter grupo de fotos selecionadas para a visão compacta (preview representativo de 7 fotos)
+  const curated = getCuratedSessionPhotos(filtered, activeSession);
+
+  // Renderizar os 7 cartões fotográficos representativos
+  let html = curated.map((item) => {
     let sessionName = '1st Focus Group';
     if (item.session === 'fg2') {
       sessionName = '2nd Focus Group';
@@ -974,17 +1044,17 @@ function renderSessionGallery(activeSession) {
     const singleCaption = `Focus Group Sessions Gallery - ${sessionName}`;
 
     return `
-    <div onclick="openSessionGallerySlideshow(${idx})" 
+    <div onclick="openSessionGallerySlideshow('${item.id}', '${activeSession}', false)" 
          class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative group shadow-2xs cursor-pointer hover:border-[#F5B842] hover:shadow-lg transition-all duration-300"
          title="${singleCaption}">
       <img src="${item.src}" alt="${singleCaption}" loading="lazy" class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500" 
            onerror="this.src='https://placehold.co/400x300/e2e8f0/475569?text=Focus+Group'">
       
       <!-- Overlay com Efeito Hover e Ícone de Ampliação / Slide Show -->
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3.5">
-        <span class="text-white text-xs font-bold drop-shadow-sm truncate pr-2">${singleCaption}</span>
-        <div class="w-8 h-8 rounded-full bg-[#F5B842] text-slate-950 flex items-center justify-center shrink-0 shadow-md">
-          <i data-lucide="maximize-2" class="w-4 h-4"></i>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3 sm:p-3.5">
+        <span class="text-white text-[11px] sm:text-xs font-bold drop-shadow-sm truncate pr-2">${singleCaption}</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#F5B842] text-slate-950 flex items-center justify-center shrink-0 shadow-md">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
         </div>
       </div>
 
@@ -997,6 +1067,42 @@ function renderSessionGallery(activeSession) {
   `;
   }).join('');
 
+  // 8º Cartão Interativo: Acesso ao Slide Show da Sessão Selecionada
+  if (filtered.length > curated.length) {
+    const remainingCount = filtered.length - curated.length;
+    const coverItem = filtered[curated.length] || filtered[0];
+    const coverSrc = coverItem ? coverItem.src : '';
+    const tMore = t('fg1.morePhotosCount', '+{count} Fotos').replace('{count}', remainingCount);
+    const tViewSlideshow = (activeSession === 'all') 
+      ? t('fg1.viewAllSlideshow', 'Ver Slide Show Completo') 
+      : t('fg1.viewSlideshow', 'Ver Slide Show');
+    const tTotal = t('fg1.totalPhotosCount', '{count} fotos no total').replace('{count}', filtered.length);
+
+    html += `
+    <div onclick="openSessionGallerySlideshow(0, '${activeSession}', true)" 
+         class="aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 border-2 border-dashed border-amber-400/60 hover:border-amber-400 relative group shadow-md cursor-pointer hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center p-4 text-center"
+         title="${tViewSlideshow}">
+      
+      <img src="${coverSrc}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-108 transition-all duration-500 blur-[1px]">
+      <div class="absolute inset-0 bg-slate-950/70 group-hover:bg-slate-950/60 transition-colors"></div>
+
+      <div class="relative z-10 flex flex-col items-center justify-center space-y-2">
+        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#F5B842] text-slate-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+        </div>
+        <div class="space-y-0.5">
+          <span class="text-amber-300 text-xs sm:text-sm font-black tracking-wide block uppercase">${tMore}</span>
+          <span class="text-white text-[11px] sm:text-xs font-bold block">${tViewSlideshow}</span>
+        </div>
+        <span class="inline-flex items-center gap-1 text-[10px] text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/15">
+          ${tTotal}
+        </span>
+      </div>
+    </div>
+    `;
+  }
+
+  grid.innerHTML = html;
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -1007,11 +1113,11 @@ function initSessionGalleryFilters() {
       const targetBtn = e.target.closest('.filter-session-btn');
       if (!targetBtn) return;
       buttons.forEach(b => {
-        b.classList.remove('bg-slate-900', 'text-white');
-        b.classList.add('bg-slate-100', 'text-slate-600');
+        b.classList.remove('bg-slate-900', 'text-white', 'shadow-xs');
+        b.classList.add('text-slate-600');
       });
-      targetBtn.classList.remove('bg-slate-100', 'text-slate-600');
-      targetBtn.classList.add('bg-slate-900', 'text-white');
+      targetBtn.classList.remove('text-slate-600');
+      targetBtn.classList.add('bg-slate-900', 'text-white', 'shadow-xs');
       renderSessionGallery(targetBtn.dataset.session);
     });
   });
@@ -1829,16 +1935,26 @@ function openGf1Lightbox(albumId, index) {
 
 /**
  * Abre as fotografias da "Focus Group Sessions Gallery" em modo Slide Show / Lightbox
+ * Permite navegação por ID ou índice, override de sessão ('all', 'fg1', 'fg2') e início imediato de reprodução.
  */
-function openSessionGallerySlideshow(index = 0) {
-  const filtered = fgSessionsGallery.filter(item => currentSessionGalleryFilter === 'all' || item.session === currentSessionGalleryFilter);
+function openSessionGallerySlideshow(indexOrId = 0, sessionOverride, autoPlay = false) {
+  const targetSession = sessionOverride || currentSessionGalleryFilter;
+  const filtered = fgSessionsGallery.filter(item => targetSession === 'all' || item.session === targetSession);
   if (!filtered || filtered.length === 0) return;
 
   stopSlideshow();
   currentLightboxState.mode = 'session';
   currentLightboxState.albumId = null;
   currentLightboxState.items = filtered;
-  currentLightboxState.index = Math.max(0, Math.min(index, filtered.length - 1));
+
+  let index = 0;
+  if (typeof indexOrId === 'string') {
+    const foundIdx = filtered.findIndex(item => item.id === indexOrId);
+    index = foundIdx !== -1 ? foundIdx : 0;
+  } else if (typeof indexOrId === 'number') {
+    index = Math.max(0, Math.min(indexOrId, filtered.length - 1));
+  }
+  currentLightboxState.index = index;
 
   updateLightboxContent();
 
@@ -1847,6 +1963,10 @@ function openSessionGallerySlideshow(index = 0) {
     modal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
     if (window.lucide) window.lucide.createIcons();
+  }
+
+  if (autoPlay) {
+    startSlideshow();
   }
 }
 
